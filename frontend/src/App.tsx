@@ -3,17 +3,27 @@ import { useCollectionStore } from '@/store/collection-store';
 import { Navbar } from '@/components/layout/Navbar';
 import { AppShell } from '@/components/layout/AppShell';
 import { LandingPage } from '@/components/landing/LandingPage';
+import { StatsDashboard } from '@/components/stats/StatsDashboard';
 import { Zap } from 'lucide-react';
 import { trackPageView } from '@/lib/analytics';
 
 export const App: React.FC = () => {
   const { init, isLoading } = useCollectionStore();
   const [view, setView] = useState<'studio' | 'landing'>('studio');
+  const isStats = typeof window !== 'undefined' && (
+    window.location.pathname.startsWith('/stats') || window.location.pathname.startsWith('/admin/stats')
+  );
 
   useEffect(() => {
-    init();
+    if (!isStats) {
+      init();
+    }
     trackPageView();
-  }, [init]);
+  }, [init, isStats]);
+
+  if (isStats) {
+    return <StatsDashboard />;
+  }
 
   if (isLoading) {
     return (

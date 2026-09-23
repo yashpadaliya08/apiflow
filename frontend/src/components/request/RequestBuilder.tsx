@@ -186,7 +186,7 @@ export const RequestBuilder: React.FC = () => {
 
       {/* Main Request Control Bar: Method + Path + Scenario + Send Button */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#0C0E12]/60 space-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Method selector */}
           <select
             value={activeEndpoint.method}
@@ -194,7 +194,7 @@ export const RequestBuilder: React.FC = () => {
               updateActiveEndpointDraft({ method: e.target.value as HttpMethod });
               saveActiveEndpointDraft();
             }}
-            className="h-9 px-2.5 bg-[#1C2030] border border-[#2A2F45] text-white font-mono font-bold text-xs rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer"
+            className="flex-shrink-0 h-9 px-2 sm:px-2.5 bg-[#1C2030] border border-[#2A2F45] text-white font-mono font-bold text-xs rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             {methods.map((m) => (
               <option key={m} value={m}>
@@ -204,18 +204,14 @@ export const RequestBuilder: React.FC = () => {
           </select>
 
           {/* URL Path input */}
-          <div className="flex-1 relative flex items-center">
-            <span className="absolute left-2.5 text-xs font-mono text-white/30 select-none pointer-events-none truncate max-w-[140px]">
-              {resolvedBase}
-            </span>
+          <div className="flex-1 min-w-[80px] relative flex items-center">
             <input
               type="text"
               value={activeEndpoint.path}
               onChange={(e) => updateActiveEndpointDraft({ path: e.target.value })}
               onBlur={saveActiveEndpointDraft}
               placeholder="/api/v1/resource"
-              style={{ paddingLeft: `${Math.min(resolvedBase.length * 7.5 + 16, 180)}px` }}
-              className="w-full h-9 pr-3 bg-[#1C2030] border border-[#2A2F45] rounded-md font-mono text-xs text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full h-9 px-3 bg-[#1C2030] border border-[#2A2F45] rounded-md font-mono text-xs text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
 
@@ -228,7 +224,7 @@ export const RequestBuilder: React.FC = () => {
                 updateActiveEndpointDraft({ mockScenario: sc });
                 saveActiveEndpointDraft();
               }}
-              className="h-9 px-2.5 bg-[#1C2030] border border-[#2A2F45] text-xs font-mono text-white/90 rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="flex-shrink-0 h-9 px-2 bg-[#1C2030] border border-[#2A2F45] text-xs font-mono text-white/90 rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer max-w-[110px]"
               title="Select simulated HTTP status response scenario"
             >
               {scenarios.map((s) => (
@@ -239,13 +235,14 @@ export const RequestBuilder: React.FC = () => {
             </select>
           )}
 
-          {/* Send Button */}
+          {/* Send / Simulate Button - Guaranteed flex-shrink-0 & visible */}
           <Button
             variant={executionMode === 'mock' ? 'accent' : 'primary'}
             size="md"
             isLoading={isExecuting}
             onClick={handleExecute}
-            leftIcon={executionMode === 'mock' ? <Sparkles className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+            className="flex-shrink-0 whitespace-nowrap font-semibold px-3 sm:px-4 shadow-md shadow-indigo-500/25"
+            leftIcon={executionMode === 'mock' ? <Sparkles className="w-3.5 h-3.5 flex-shrink-0" /> : <Send className="w-3.5 h-3.5 flex-shrink-0" />}
             title="Execute request (Ctrl+Enter)"
           >
             {executionMode === 'mock' ? 'Simulate' : 'Send'}
