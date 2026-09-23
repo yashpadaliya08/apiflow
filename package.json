@@ -1,0 +1,19 @@
+{
+  "name": "apiflow-studio",
+  "version": "1.0.0",
+  "description": "Standalone API Testing Studio & Synthetic Mock Runner",
+  "main": "backend/server.js",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "start": "node backend/server.js",
+    "dev:backend": "node backend/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
+  },
+  "keywords": ["api", "testing", "mock", "faker", "synthetic", "openapi", "postman"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
