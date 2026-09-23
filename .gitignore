@@ -6,10 +6,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Production build outputs
-dist/
-frontend/dist/
-build/
+# Production build outputs (allow frontend/dist for zero-build phone hosting)
+/dist/
+/build/
+!frontend/dist
+!frontend/dist/**
+
+
 
 # Marketing & Internal drafts (excluded from public repo)
 marketing/
