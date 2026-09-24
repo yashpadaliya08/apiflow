@@ -9,7 +9,7 @@
 
 ```powershell
 # 1. Start fullstack production server (serves frontend + CORS proxy on port 5000)
-cd "d:\projects\fake api testing\apiflow-studio"
+cd "path/apiflow-studio"
 node backend/server.js
 
 # 2. Open in browser
