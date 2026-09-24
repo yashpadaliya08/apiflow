@@ -4,26 +4,39 @@
 
 ---
 
-## 1. Local PC Deployment (Quick Start)
+## 1. Quick Start Deployments
 
-### Production Server (Frontend + CORS Proxy)
-```powershell
+### Option A: Docker Compose (Recommended for Homelabs & VPS)
+```bash
+# Clone the repository
+git clone https://github.com/yashpadaliya08/apiflow.git
+cd apiflow
+
+# Start containerized studio
+docker compose up -d
+```
+Access the studio at `http://localhost:5000`.
+
+### Option B: Local Node.js Production Server
+```bash
 # Navigate to project folder
-cd "path/apiflow-studio"
+git clone https://github.com/yashpadaliya08/apiflow.git
+cd apiflow
 
-# Start the fullstack Express server
+# Install dependencies and start server
+npm install
 node backend/server.js
 ```
 The server will run on `http://localhost:5000` (serving both the compiled React 19 single-page app and the `/proxy` gateway).
 
 ### Development Mode (Vite Hot-Reload)
-```powershell
+```bash
 # In terminal 1: Start backend proxy
-cd "path\apiflow-studio\backend"
+cd backend
 node server.js
 
 # In terminal 2: Start Vite development server
-cd "path\apiflow-studio\frontend"
+cd frontend
 npm run dev
 ```
 Open `http://localhost:5173`. Any changes to frontend code will update instantly via Hot Module Replacement (HMR).
@@ -77,7 +90,7 @@ With **StackDoctor** (Laravel Doctor), you can transform a spare Android phone i
    - Host: `192.168.1.xxx`
    - Port: `8022`
    - User: `u0_a...` (your Termux username)
-3. Select the **APIFlow Studio** project directory (`path\apiflow-studio`).
+3. Select the **APIFlow Studio** project directory (the cloned repository folder).
 4. StackDoctor's Doctor Engine will automatically:
    - Detect the stack as **Node.js — MERN Full-Stack** (98% confidence).
    - Pre-compile the Vite frontend bundle on your host machine.

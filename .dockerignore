@@ -1,0 +1,12 @@
+node_modules
+*/node_modules
+.git
+.github
+.gitignore
+.env
+.env.*
+*.zip
+*.webp
+*.log
+marketing
+docs

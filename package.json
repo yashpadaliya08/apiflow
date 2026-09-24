@@ -11,7 +11,7 @@
     "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
   },
   "keywords": ["api", "testing", "mock", "faker", "synthetic", "openapi", "postman"],
-  "author": "",
+  "author": "Yash Padaliya",
   "license": "MIT",
   "dependencies": {
     "express": "^5.2.1"

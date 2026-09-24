@@ -19,13 +19,19 @@ Welcome to the official documentation for **APIFlow Studio** — the lightweight
 
 ## ⚡ Quick Start
 
-```powershell
-# 1. Clone or navigate to the project directory
-cd "d:\projects\fake api testing\apiflow-studio"
+### Docker Compose
+```bash
+git clone https://github.com/yashpadaliya08/apiflow.git
+cd apiflow
+docker compose up -d
+# Studio available at http://localhost:5000
+```
 
-# 2. Run the fullstack server (frontend + proxy)
+### Local Node.js
+```bash
+git clone https://github.com/yashpadaliya08/apiflow.git
+cd apiflow
+npm install
 node backend/server.js
-
-# 3. Open in browser
-# http://localhost:5000
+# Studio available at http://localhost:5000
 ```
