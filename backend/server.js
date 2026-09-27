@@ -3,6 +3,8 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
+const dns = require('dns').promises;
+const net = require('net');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +26,9 @@ app.use(express.raw({ type: '*/*', limit: '20mb' }));
 // Real-time Traffic, Visitor & Telemetry Analytics Engine
 // ═══════════════════════════════════════════════════════════════
 
+const MAX_UNIQUE_IPS = 10000;
+const MAX_ACTIVE_SESSIONS = 5000;
+
 const globalStats = {
   totalPageviews: 0,
   totalEvents: 0,
@@ -31,6 +36,7 @@ const globalStats = {
   totalLiveProxy: 0,
   totalCodeCopies: 0,
   totalExports: 0,
+  uniqueVisitorsCount: 0,
   uniqueIps: new Set(),
   activeSessions: new Map(), // ip -> lastActiveTimestamp
   recentVisits: [], // last 100 visits
@@ -125,6 +131,26 @@ function parseReferrer(rawReferrer, refParam) {
   }
 }
 
+function trackSession(ip) {
+  if (!ip) return;
+  if (globalStats.activeSessions.size >= MAX_ACTIVE_SESSIONS) {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    for (const [sIp, lastSeen] of globalStats.activeSessions.entries()) {
+      if (lastSeen < fiveMinutesAgo) {
+        globalStats.activeSessions.delete(sIp);
+      }
+    }
+    if (globalStats.activeSessions.size >= MAX_ACTIVE_SESSIONS) {
+      let count = 0;
+      for (const k of globalStats.activeSessions.keys()) {
+        globalStats.activeSessions.delete(k);
+        if (++count >= 500) break;
+      }
+    }
+  }
+  globalStats.activeSessions.set(ip, Date.now());
+}
+
 function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, country }) {
   const parsed = parseReferrer(referrer, refParam);
   const device = parseDevice(userAgent);
@@ -132,8 +158,17 @@ function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, count
   const now = new Date();
 
   globalStats.totalPageviews++;
-  globalStats.uniqueIps.add(ip);
-  globalStats.activeSessions.set(ip, Date.now());
+
+  // Cap uniqueIps set size to prevent unbounded memory growth (PERF-001)
+  if (!globalStats.uniqueIps.has(ip)) {
+    globalStats.uniqueVisitorsCount = (globalStats.uniqueVisitorsCount || 0) + 1;
+    if (globalStats.uniqueIps.size >= MAX_UNIQUE_IPS) {
+      globalStats.uniqueIps.clear();
+    }
+    globalStats.uniqueIps.add(ip);
+  }
+
+  trackSession(ip);
 
   // Count source
   const src = globalStats.sourceCounts[parsed.source] !== undefined ? parsed.source : 'Other';
@@ -180,8 +215,20 @@ function getActiveVisitorsCount() {
       globalStats.activeSessions.delete(ip);
     }
   }
+  // Periodic cleanup of uniqueIps if it grows too large (PERF-001)
+  if (globalStats.uniqueIps.size > 10000) {
+    globalStats.uniqueIps.clear();
+  }
   return Math.max(active, 1); // at least current session
 }
+
+// Background memory guard: periodically prune inactive sessions and bound unique IPs
+setInterval(() => {
+  getActiveVisitorsCount();
+  if (globalStats.uniqueIps.size > 10000) {
+    globalStats.uniqueIps.clear();
+  }
+}, 5 * 60 * 1000).unref();
 
 // Telemetry & Visitor Ingestion Endpoint
 app.post(['/api/telemetry', '/api/visit'], (req, res) => {
@@ -207,15 +254,15 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
       globalStats.totalEvents++;
       if (data.properties?.mode === 'live') globalStats.totalLiveProxy++;
       else globalStats.totalSimulations++;
-      globalStats.activeSessions.set(clientIp, Date.now());
+      trackSession(clientIp);
     } else if (data?.event === 'code_copied') {
       globalStats.totalEvents++;
       globalStats.totalCodeCopies++;
-      globalStats.activeSessions.set(clientIp, Date.now());
+      trackSession(clientIp);
     } else if (data?.event === 'spec_exported') {
       globalStats.totalEvents++;
       globalStats.totalExports++;
-      globalStats.activeSessions.set(clientIp, Date.now());
+      trackSession(clientIp);
     }
 
     res.json({ ok: true, activeVisitors: getActiveVisitorsCount() });
@@ -229,7 +276,7 @@ app.get('/api/stats', (req, res) => {
   res.json({
     status: 'online',
     activeVisitors: getActiveVisitorsCount(),
-    uniqueVisitors: Math.max(globalStats.uniqueIps.size, 1),
+    uniqueVisitors: Math.max(globalStats.uniqueVisitorsCount || globalStats.uniqueIps.size, 1),
     totalPageviews: globalStats.totalPageviews,
     totalSimulations: globalStats.totalSimulations,
     totalLiveProxy: globalStats.totalLiveProxy,
@@ -662,12 +709,106 @@ app.get('/health', (req, res) => {
     arch: process.arch,
     metrics: {
       activeVisitors: getActiveVisitorsCount(),
-      uniqueVisitors: globalStats.uniqueIps.size,
+      uniqueVisitors: Math.max(globalStats.uniqueVisitorsCount || globalStats.uniqueIps.size, 1),
       totalPageviews: globalStats.totalPageviews,
       totalSimulations: globalStats.totalSimulations,
     },
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+// CORS Proxy Security & SSRF Protection Engine (SEC-001)
+// ═══════════════════════════════════════════════════════════════
+
+const DEFAULT_ALLOWED_DOMAINS = ['api.enterprise.dev', 'api.example.com'];
+const ALLOWED_PROXY_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS
+  ? process.env.ALLOWED_PROXY_DOMAINS.split(',')
+  : DEFAULT_ALLOWED_DOMAINS
+)
+  .map(d => d.trim().toLowerCase())
+  .filter(Boolean);
+
+const BLOCKED_HOSTNAMES = [
+  'localhost',
+  '127.0.0.1',
+  '::1',
+  '0.0.0.0',
+  'metadata.google.internal',
+  'instance-data',
+  'metadata.azure.com',
+];
+
+const BLOCKED_PORTS = [21, 22, 23, 25, 53, 110, 143, 389, 445, 1433, 1521, 3306, 5432, 6379, 9200, 11211, 27017, 28017];
+
+function isPrivateOrReservedIp(ip) {
+  if (!ip) return true;
+
+  // Handle IPv4-mapped IPv6 addresses (e.g. ::ffff:192.168.1.1)
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substring(7);
+  }
+
+  // IPv4 checks
+  if (net.isIPv4(ip)) {
+    const parts = ip.split('.').map(Number);
+    if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
+      return true;
+    }
+    const [a, b, c, d] = parts;
+
+    if (a === 0) return true; // 0.0.0.0/8
+    if (a === 10) return true; // 10.0.0.0/8
+    if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 CGNAT
+    if (a === 127) return true; // 127.0.0.0/8 Loopback
+    if (a === 169 && b === 254) return true; // 169.254.0.0/16 Link-local / Cloud metadata
+    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12 Private
+    if (a === 192 && b === 0 && c === 0) return true; // 192.0.0.0/24
+    if (a === 192 && b === 0 && c === 2) return true; // 192.0.2.0/24 TEST-NET-1
+    if (a === 192 && b === 88 && c === 99) return true; // 192.88.99.0/24 6to4
+    if (a === 192 && b === 168) return true; // 192.168.0.0/16 Private
+    if (a === 198 && (b === 18 || b === 19)) return true; // 198.18.0.0/15
+    if (a === 198 && b === 51 && c === 100) return true; // 198.51.100.0/24 TEST-NET-2
+    if (a === 203 && b === 0 && c === 113) return true; // 203.0.113.0/24 TEST-NET-3
+    if (a >= 224 && a <= 239) return true; // 224.0.0.0/4 Multicast
+    if (a >= 240) return true; // 240.0.0.0/4 Reserved
+    if (a === 255 && b === 255 && c === 255 && d === 255) return true;
+
+    return false;
+  }
+
+  // IPv6 checks
+  if (net.isIPv6(ip)) {
+    const norm = ip.toLowerCase();
+    if (norm === '::1' || norm === '0:0:0:0:0:0:0:1') return true;
+    if (norm === '::' || norm === '0:0:0:0:0:0:0:0') return true;
+    if (norm.startsWith('fe8') || norm.startsWith('fe9') || norm.startsWith('fea') || norm.startsWith('feb')) return true;
+    if (norm.startsWith('fc') || norm.startsWith('fd')) return true;
+    return false;
+  }
+
+  return true;
+}
+
+function isBlockedHostname(hostname) {
+  const lower = (hostname || '').toLowerCase();
+  if (BLOCKED_HOSTNAMES.includes(lower)) return true;
+  if (lower.endsWith('.localhost') || lower.endsWith('.local') || lower.endsWith('.internal') || lower.endsWith('.lan')) {
+    return true;
+  }
+  return false;
+}
+
+function isDomainAllowed(hostname, allowedList) {
+  if (allowedList.includes('*')) return true;
+  const lower = (hostname || '').toLowerCase();
+  return allowedList.some(pattern => {
+    if (pattern.startsWith('*.')) {
+      const suffix = pattern.slice(1); // .example.com
+      return lower.endsWith(suffix) || lower === pattern.slice(2);
+    }
+    return lower === pattern;
+  });
+}
 
 // Universal CORS Bypass Proxy
 app.all('/proxy', async (req, res) => {
@@ -680,10 +821,72 @@ app.all('/proxy', async (req, res) => {
     });
   }
 
+  let urlObj;
+  try {
+    urlObj = new URL(targetUrl);
+  } catch (err) {
+    return res.status(400).json({
+      error: 'Invalid target URL format',
+      message: err.message,
+    });
+  }
+
+  // 1. Enforce HTTP/HTTPS protocols only (prevent file://, gopher://, etc.)
+  if (!['http:', 'https:'].includes(urlObj.protocol)) {
+    return res.status(400).json({
+      error: 'Forbidden protocol. Only HTTP and HTTPS are permitted.',
+    });
+  }
+
+  // 2. Strict Domain Allowlist validation (SEC-001)
+  if (!isDomainAllowed(urlObj.hostname, ALLOWED_PROXY_DOMAINS)) {
+    return res.status(403).json({
+      error: 'Forbidden: Target domain is not permitted by proxy allowlist policy.',
+      domain: urlObj.hostname,
+      hint: 'Configure ALLOWED_PROXY_DOMAINS to permit this domain or use "*".',
+    });
+  }
+
+  // 3. SSRF Protection: Block loopback, internal hosts & cloud metadata
+  if (isBlockedHostname(urlObj.hostname)) {
+    return res.status(403).json({
+      error: 'Forbidden: Access to local, internal, or cloud metadata hosts is blocked (SSRF Protection).',
+      host: urlObj.hostname,
+    });
+  }
+
+  // 4. SSRF Protection: Block direct private / reserved IP addresses
+  if (net.isIP(urlObj.hostname) && isPrivateOrReservedIp(urlObj.hostname)) {
+    return res.status(403).json({
+      error: 'Forbidden: Direct access to private, loopback, or reserved IP addresses is blocked (SSRF Protection).',
+      ip: urlObj.hostname,
+    });
+  }
+
+  // 5. Port restriction: Block internal and sensitive management ports
+  if (urlObj.port && BLOCKED_PORTS.includes(Number(urlObj.port))) {
+    return res.status(403).json({
+      error: `Forbidden: Port ${urlObj.port} is restricted from proxy forwarding.`,
+    });
+  }
+
+  // 6. SSRF Protection: DNS resolution check to prevent DNS rebinding attacks
+  try {
+    const lookup = await dns.lookup(urlObj.hostname);
+    if (isPrivateOrReservedIp(lookup.address)) {
+      return res.status(403).json({
+        error: 'Forbidden: Resolved destination IP is private or restricted (SSRF Protection).',
+        domain: urlObj.hostname,
+        resolvedIp: lookup.address,
+      });
+    }
+  } catch (dnsErr) {
+    // If DNS resolution fails here, proceed to let fetch attempt or handle offline
+  }
+
   const startTime = Date.now();
 
   try {
-    const urlObj = new URL(targetUrl);
 
     // Filter headers to forward
     const forwardHeaders = {};
