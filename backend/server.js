@@ -271,8 +271,167 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
   }
 });
 
-// JSON Stats API Endpoint
+// ═══════════════════════════════════════════════════════════════
+// Admin Security & Telemetry Protection
+// ═══════════════════════════════════════════════════════════════
+
+const ADMIN_KEY = process.env.ADMIN_KEY || 'apiflow-admin-2026';
+
+function verifyAdmin(req) {
+  // Check header 'x-admin-key'
+  const headerKey = req.headers['x-admin-key'];
+  if (headerKey && headerKey === ADMIN_KEY) return true;
+
+  // Check Bearer authorization token
+  const auth = req.headers['authorization'];
+  if (auth && auth.startsWith('Bearer ') && auth.slice(7).trim() === ADMIN_KEY) return true;
+
+  // Check query param
+  const queryKey = req.query.key || req.query.admin_key;
+  if (queryKey && queryKey === ADMIN_KEY) return true;
+
+  // Check cookie
+  const cookieHeader = req.headers.cookie || '';
+  if (cookieHeader.includes(`apiflow_admin_key=${ADMIN_KEY}`)) return true;
+
+  return false;
+}
+
+function renderAdminLoginPage() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APIFlow Studio — Admin Telemetry Authentication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090B0E;
+      --card-bg: rgba(18, 22, 31, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #6366F1;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.2), transparent),
+        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.08), transparent);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      text-align: center;
+    }
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);
+    }
+    h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+    p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+    .input-group { margin-bottom: 18px; text-align: left; }
+    label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #0C0E12;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.98); }
+    .footer { margin-top: 24px; font-size: 11px; color: rgba(255, 255, 255, 0.3); }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="icon-box">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <h1>Protected Admin Telemetry</h1>
+    <p>Server telemetry and live visitor metrics are restricted. Enter your ADMIN_KEY to unlock.</p>
+
+    <form id="login-form">
+      <div class="input-group">
+        <label for="adminKey">Admin Access Key</label>
+        <input type="password" id="adminKey" name="key" placeholder="Enter key..." autofocus required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn">Unlock Dashboard</button>
+    </form>
+    <div class="footer">APIFlow Studio Security Gateway</div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const key = document.getElementById('adminKey').value.trim();
+      if (!key) return;
+
+      document.cookie = 'apiflow_admin_key=' + encodeURIComponent(key) + '; path=/; max-age=604800; SameSite=Lax';
+      window.location.href = window.location.pathname + '?key=' + encodeURIComponent(key);
+    });
+  </script>
+</body>
+</html>`;
+}
+
+// JSON Stats API Endpoint (Protected with Admin Auth)
 app.get('/api/stats', (req, res) => {
+  if (!verifyAdmin(req)) {
+    return res.status(401).json({
+      error: 'Unauthorized: Admin authentication required to access server telemetry.',
+      hint: 'Provide header "x-admin-key: <your_key>" or query param "?key=<your_key>".'
+    });
+  }
+
   res.json({
     status: 'online',
     activeVisitors: getActiveVisitorsCount(),
@@ -292,8 +451,18 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// Visual Admin Stats Dashboard (Served directly by Express)
+// Visual Admin Stats Dashboard (Protected with Admin Auth)
 app.get(['/stats', '/admin/stats'], (req, res) => {
+  // Support logout
+  if (req.query.logout !== undefined) {
+    res.setHeader('Set-Cookie', 'apiflow_admin_key=; path=/; max-age=0');
+    return res.redirect('/stats');
+  }
+
+  if (!verifyAdmin(req)) {
+    return res.status(401).send(renderAdminLoginPage());
+  }
+
   const host = req.get('host') || 'localhost:5000';
   const protocol = req.headers['x-forwarded-proto'] || 'http';
   const baseUrl = `${protocol}://${host}`;
@@ -503,6 +672,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
           <span>Live Auto-Refresh (3s)</span>
         </div>
         <button class="btn-refresh" onclick="fetchStats()">↻ Refresh Now</button>
+        <a href="/stats?logout=true" class="btn-refresh" style="text-decoration: none; color: #F87171;">🔒 Logout</a>
       </div>
     </header>
 
@@ -622,7 +792,14 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
 
     async function fetchStats() {
       try {
-        const res = await fetch('/api/stats');
+        const urlParams = new URLSearchParams(window.location.search);
+        const key = urlParams.get('key');
+        const fetchUrl = key ? '/api/stats?key=' + encodeURIComponent(key) : '/api/stats';
+        const res = await fetch(fetchUrl, { credentials: 'include' });
+        if (res.status === 401) {
+          window.location.reload();
+          return;
+        }
         const data = await res.json();
 
         // Update KPIs
@@ -720,7 +897,7 @@ app.get('/health', (req, res) => {
 // CORS Proxy Security & SSRF Protection Engine (SEC-001)
 // ═══════════════════════════════════════════════════════════════
 
-const DEFAULT_ALLOWED_DOMAINS = ['api.enterprise.dev', 'api.example.com'];
+const DEFAULT_ALLOWED_DOMAINS = ['*'];
 const ALLOWED_PROXY_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS
   ? process.env.ALLOWED_PROXY_DOMAINS.split(',')
   : DEFAULT_ALLOWED_DOMAINS

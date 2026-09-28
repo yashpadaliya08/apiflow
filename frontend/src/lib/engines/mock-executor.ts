@@ -165,7 +165,22 @@ export async function executeLive(
 ): Promise<MockResponse> {
   const start = performance.now();
 
-  const url = `${baseUrl}${endpoint.path}`;
+  // 1. Substitute path parameters (:id or {id})
+  let resolvedPath = endpoint.path;
+  (endpoint.pathParams || []).filter((p) => p.enabled && p.key).forEach((p) => {
+    resolvedPath = resolvedPath.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
+  });
+
+  // 2. Append query parameters
+  const enabledQueryParams = (endpoint.queryParams || []).filter((q) => q.enabled && q.key);
+  const queryString = enabledQueryParams.length > 0
+    ? (resolvedPath.includes('?') ? '&' : '?') + enabledQueryParams.map((q) => `${encodeURIComponent(q.key)}=${encodeURIComponent(q.value)}`).join('&')
+    : '';
+
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanPath = resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`;
+  const fullTargetUrl = `${cleanBase}${cleanPath}${queryString}`;
+
   const options: RequestInit = {
     method: endpoint.method,
     headers: { 'Content-Type': 'application/json', ...headers },
@@ -175,7 +190,26 @@ export async function executeLive(
     options.body = endpoint.requestBody;
   }
 
-  const res = await fetch(url, options);
+  // 3. Dispatch through CORS proxy
+  let res: Response;
+  const proxyUrl = `/proxy?url=${encodeURIComponent(fullTargetUrl)}`;
+
+  try {
+    res = await fetch(proxyUrl, options);
+    // If proxy returned a 404 or backend is not reachable, attempt direct request
+    if (res.status === 404 || res.status === 502) {
+      try {
+        const directRes = await fetch(fullTargetUrl, options);
+        res = directRes;
+      } catch {
+        // Keep original proxy response if direct fetch fails CORS
+      }
+    }
+  } catch {
+    // If proxy request errored out, try direct fetch
+    res = await fetch(fullTargetUrl, options);
+  }
+
   const latency = Math.round(performance.now() - start);
 
   let body: unknown;
@@ -185,7 +219,7 @@ export async function executeLive(
     body = await res.text();
   }
 
-  const bodyStr = JSON.stringify(body);
+  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
   const size = new Blob([bodyStr]).size;
 
   const resHeaders: Record<string, string> = {};
@@ -194,7 +228,7 @@ export async function executeLive(
   return {
     mode: 'mock', // reuse same shape
     status: res.status,
-    statusText: res.statusText,
+    statusText: res.statusText || (res.ok ? 'OK' : 'Error'),
     headers: resHeaders,
     body,
     latency,

@@ -61,6 +61,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
     setNewColName('');
     setIsCreatingCol(false);
     setColDropdownOpen(false);
+    // Reset filters so the new collection and endpoint are fully visible
+    useUIStore.getState().setMethodFilter('ALL');
+    useUIStore.getState().setSearchQuery('');
   };
 
   return (
@@ -99,73 +102,86 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           </button>
 
           {colDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-64 bg-[#141720] border border-[#2A2F45] rounded-lg shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-3 py-1 text-[11px] font-semibold text-white/40 uppercase tracking-wider">
-                Collections
-              </div>
+            <>
+              {/* Backdrop for closing dropdown on click outside */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => {
+                  setColDropdownOpen(false);
+                  setIsCreatingCol(false);
+                }}
+              />
 
-              <div className="max-h-56 overflow-y-auto py-1">
-                {collections.map((col) => (
-                  <div
-                    key={col.id}
-                    className={`flex items-center justify-between px-3 py-1.5 text-xs hover:bg-[#1C2030] cursor-pointer ${
-                      col.id === activeCollection?.id ? 'text-indigo-400 font-medium bg-[#1C2030]/60' : 'text-white/80'
-                    }`}
-                    onClick={() => {
-                      selectCollection(col.id);
-                      setColDropdownOpen(false);
-                    }}
-                  >
-                    <span className="truncate flex-1">{col.name}</span>
-                    {collections.length > 1 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Delete collection "${col.name}"?`)) {
-                            deleteCollection(col.id);
-                          }
-                        }}
-                        className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-0.5 rounded ml-2"
-                        title="Delete collection"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <div className="absolute top-full left-0 mt-1.5 w-64 bg-[#141720] border border-[#2A2F45] rounded-lg shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1 text-[11px] font-semibold text-white/40 uppercase tracking-wider">
+                  Collections
+                </div>
 
-              <div className="border-t border-[#2A2F45] my-1 pt-1 px-2">
-                {!isCreatingCol ? (
-                  <button
-                    onClick={() => setIsCreatingCol(true)}
-                    className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-indigo-400 hover:bg-indigo-500/10 font-medium transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Create New Collection</span>
-                  </button>
-                ) : (
-                  <form onSubmit={handleCreateCollection} className="p-1 space-y-1.5">
-                    <input
-                      type="text"
-                      placeholder="Collection Name..."
-                      value={newColName}
-                      onChange={(e) => setNewColName(e.target.value)}
-                      autoFocus
-                      className="w-full px-2 py-1 text-xs bg-[#0C0E12] border border-[#2A2F45] rounded text-white focus:outline-none focus:border-indigo-500"
-                    />
-                    <div className="flex gap-1 justify-end">
-                      <Button size="xs" variant="ghost" type="button" onClick={() => setIsCreatingCol(false)}>
-                        Cancel
-                      </Button>
-                      <Button size="xs" variant="primary" type="submit">
-                        Save
-                      </Button>
+                <div className="max-h-56 overflow-y-auto py-1">
+                  {collections.map((col) => (
+                    <div
+                      key={col.id}
+                      className={`group flex items-center justify-between px-3 py-1.5 text-xs hover:bg-[#1C2030] cursor-pointer ${
+                        col.id === activeCollection?.id ? 'text-indigo-400 font-medium bg-[#1C2030]/60' : 'text-white/80'
+                      }`}
+                      onClick={() => {
+                        selectCollection(col.id);
+                        setColDropdownOpen(false);
+                        useUIStore.getState().setMethodFilter('ALL');
+                        useUIStore.getState().setSearchQuery('');
+                      }}
+                    >
+                      <span className="truncate flex-1">{col.name}</span>
+                      {collections.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Delete collection "${col.name}"?`)) {
+                              deleteCollection(col.id);
+                            }
+                          }}
+                          className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-0.5 rounded ml-2 transition-opacity"
+                          title="Delete collection"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
-                  </form>
-                )}
+                  ))}
+                </div>
+
+                <div className="border-t border-[#2A2F45] my-1 pt-1 px-2">
+                  {!isCreatingCol ? (
+                    <button
+                      onClick={() => setIsCreatingCol(true)}
+                      className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-indigo-400 hover:bg-indigo-500/10 font-medium transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Create New Collection</span>
+                    </button>
+                  ) : (
+                    <form onSubmit={handleCreateCollection} className="p-1 space-y-1.5">
+                      <input
+                        type="text"
+                        placeholder="Collection Name..."
+                        value={newColName}
+                        onChange={(e) => setNewColName(e.target.value)}
+                        autoFocus
+                        className="w-full px-2 py-1 text-xs bg-[#0C0E12] border border-[#2A2F45] rounded text-white focus:outline-none focus:border-indigo-500"
+                      />
+                      <div className="flex gap-1 justify-end">
+                        <Button size="xs" variant="ghost" type="button" onClick={() => setIsCreatingCol(false)}>
+                          Cancel
+                        </Button>
+                        <Button size="xs" variant="primary" type="submit">
+                          Save
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
 

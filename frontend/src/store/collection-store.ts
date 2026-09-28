@@ -44,6 +44,12 @@ interface CollectionState {
   clearHistory: () => Promise<void>;
 }
 
+// Debounce timer for saving endpoint drafts
+let saveDraftTimer: ReturnType<typeof setTimeout> | null = null;
+
+const STORAGE_KEY_COL = 'apiflow_active_col';
+const STORAGE_KEY_EP = 'apiflow_active_ep';
+
 export const useCollectionStore = create<CollectionState>((set, get) => ({
   collections: [],
   endpoints: [],
@@ -62,11 +68,37 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
       const collections = await db.collections.toArray();
       set({ collections });
 
-      let currentCollection = collections[0] || null;
+      // Restore active collection from localStorage if possible
+      const savedColId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_COL) : null;
+      let currentCollection = collections.find((c) => c.id === savedColId) || collections[0] || null;
+
+      if (!currentCollection && collections.length === 0) {
+        // Fallback create default collection if DB was completely wiped
+        currentCollection = {
+          id: 'col-default',
+          name: 'My API Collection',
+          baseUrl: 'https://api.example.com',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await db.collections.put(currentCollection);
+        set({ collections: [currentCollection] });
+      }
+
       if (currentCollection) {
         set({ activeCollection: currentCollection });
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY_COL, currentCollection.id);
+        }
+
         const endpoints = await db.endpoints.where('collectionId').equals(currentCollection.id).toArray();
-        set({ endpoints, activeEndpoint: endpoints[0] || null });
+        const savedEpId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_EP) : null;
+        const currentEndpoint = endpoints.find((e) => e.id === savedEpId) || endpoints[0] || null;
+
+        set({ endpoints, activeEndpoint: currentEndpoint });
+        if (currentEndpoint && typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY_EP, currentEndpoint.id);
+        }
       }
 
       // Load environments
@@ -82,7 +114,7 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
             { id: 'v3', key: 'token', value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.t-ae9...', enabled: true },
           ],
         };
-        await db.environments.add(defaultEnv);
+        await db.environments.put(defaultEnv);
         set({ environments: [defaultEnv], activeEnvironmentId: defaultEnv.id });
       } else {
         const active = envs.find((e) => e.isActive) || envs[0];
@@ -108,24 +140,65 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
     const col = await db.collections.get(id);
     if (!col) return;
     const endpoints = await db.endpoints.where('collectionId').equals(id).toArray();
+    const activeEp = endpoints[0] || null;
+
     set({
       activeCollection: col,
       endpoints,
-      activeEndpoint: endpoints[0] || null,
+      activeEndpoint: activeEp,
     });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_COL, col.id);
+      if (activeEp) localStorage.setItem(STORAGE_KEY_EP, activeEp.id);
+    }
   },
 
   createCollection: async (name: string, baseUrl = 'https://api.example.com') => {
+    const uniqueSuffix = Math.random().toString(36).substring(2, 7);
     const newCol: Collection = {
-      id: `col-${Date.now()}`,
-      name,
-      baseUrl,
+      id: `col-${Date.now()}-${uniqueSuffix}`,
+      name: name.trim() || 'Untitled Collection',
+      baseUrl: baseUrl.trim() || 'https://api.example.com',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    await db.collections.add(newCol);
+
+    await db.collections.put(newCol);
+
+    // Auto-bootstrap an initial endpoint so the user never gets an empty/broken state
+    const starterEndpoint: Endpoint = {
+      id: `ep-${Date.now()}-${uniqueSuffix}-1`,
+      collectionId: newCol.id,
+      name: 'Get Resource',
+      method: 'GET',
+      path: '/api/v1/resource',
+      resource: 'General',
+      authRequired: false,
+      queryParams: [{ id: 'q1', key: 'page', value: '1', enabled: true }],
+      pathParams: [],
+      headers: [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
+      requestBody: '',
+      mockScenario: 200,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db.endpoints.put(starterEndpoint);
+
     const collections = await db.collections.toArray();
-    set({ collections, activeCollection: newCol, endpoints: [], activeEndpoint: null });
+    set({
+      collections,
+      activeCollection: newCol,
+      endpoints: [starterEndpoint],
+      activeEndpoint: starterEndpoint,
+    });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_COL, newCol.id);
+      localStorage.setItem(STORAGE_KEY_EP, starterEndpoint.id);
+    }
+
     return newCol;
   },
 
@@ -140,17 +213,36 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
     await db.collections.delete(id);
     await db.endpoints.where('collectionId').equals(id).delete();
     const collections = await db.collections.toArray();
-    const nextCol = collections[0] || null;
-    let nextEndpoints: Endpoint[] = [];
-    if (nextCol) {
-      nextEndpoints = await db.endpoints.where('collectionId').equals(nextCol.id).toArray();
+    let nextCol = collections[0] || null;
+
+    if (!nextCol) {
+      // Auto-create fallback if user deleted the last collection
+      const uniqueSuffix = Math.random().toString(36).substring(2, 7);
+      nextCol = {
+        id: `col-${Date.now()}-${uniqueSuffix}`,
+        name: 'My API Collection',
+        baseUrl: 'https://api.example.com',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await db.collections.put(nextCol);
+      collections.push(nextCol);
     }
+
+    const nextEndpoints = await db.endpoints.where('collectionId').equals(nextCol.id).toArray();
+    const nextEp = nextEndpoints[0] || null;
+
     set({
       collections,
       activeCollection: nextCol,
       endpoints: nextEndpoints,
-      activeEndpoint: nextEndpoints[0] || null,
+      activeEndpoint: nextEp,
     });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_COL, nextCol.id);
+      if (nextEp) localStorage.setItem(STORAGE_KEY_EP, nextEp.id);
+    }
   },
 
   loadEndpoints: async (collectionId: string) => {
@@ -164,30 +256,51 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
       return;
     }
     const ep = await db.endpoints.get(id);
-    if (ep) set({ activeEndpoint: ep });
+    if (!ep) return;
+
+    // If endpoint belongs to a different collection, synchronize active collection
+    const activeCol = get().activeCollection;
+    if (!activeCol || activeCol.id !== ep.collectionId) {
+      const col = await db.collections.get(ep.collectionId);
+      if (col) {
+        const endpoints = await db.endpoints.where('collectionId').equals(col.id).toArray();
+        set({ activeCollection: col, endpoints });
+        if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY_COL, col.id);
+      }
+    }
+
+    set({ activeEndpoint: ep });
+    if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY_EP, ep.id);
   },
 
   createEndpoint: async (collectionId: string, partial: Partial<Endpoint> = {}) => {
+    const uniqueSuffix = Math.random().toString(36).substring(2, 7);
     const newEndpoint: Endpoint = {
-      id: `ep-${Date.now()}`,
+      id: `ep-${Date.now()}-${uniqueSuffix}`,
       collectionId,
       name: partial.name || 'New Endpoint',
       method: partial.method || 'GET',
       path: partial.path || '/api/v1/resource',
       resource: partial.resource || 'General',
       authRequired: partial.authRequired ?? false,
-      queryParams: partial.queryParams || [],
-      pathParams: partial.pathParams || [],
-      headers: partial.headers || [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
+      queryParams: partial.queryParams ? [...partial.queryParams] : [],
+      pathParams: partial.pathParams ? [...partial.pathParams] : [],
+      headers: partial.headers ? [...partial.headers] : [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
       requestBody: partial.requestBody || '',
       mockScenario: partial.mockScenario || 200,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       ...partial,
     };
-    await db.endpoints.add(newEndpoint);
+
+    await db.endpoints.put(newEndpoint);
     const endpoints = await db.endpoints.where('collectionId').equals(collectionId).toArray();
     set({ endpoints, activeEndpoint: newEndpoint });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_EP, newEndpoint.id);
+    }
+
     return newEndpoint;
   },
 
@@ -216,7 +329,19 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   saveActiveEndpointDraft: async () => {
     const active = get().activeEndpoint;
     if (!active) return;
-    await db.endpoints.put({ ...active, updatedAt: new Date().toISOString() });
+
+    // Debounce IndexedDB writes to 250ms to prevent lock contention on rapid typing
+    if (saveDraftTimer) clearTimeout(saveDraftTimer);
+    saveDraftTimer = setTimeout(async () => {
+      try {
+        const latest = get().activeEndpoint;
+        if (latest) {
+          await db.endpoints.put({ ...latest, updatedAt: new Date().toISOString() });
+        }
+      } catch (err) {
+        console.error('[CollectionStore] Failed to save draft:', err);
+      }
+    }, 250);
   },
 
   deleteEndpoint: async (id: string) => {
@@ -227,6 +352,9 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
       const activeEp = get().activeEndpoint;
       const nextActive = activeEp?.id === id ? endpoints[0] || null : activeEp;
       set({ endpoints, activeEndpoint: nextActive });
+      if (nextActive && typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY_EP, nextActive.id);
+      }
     }
   },
 

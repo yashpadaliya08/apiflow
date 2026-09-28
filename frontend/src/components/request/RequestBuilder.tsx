@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Globe,
   Sliders,
+  Plus,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useExecutionStore } from '@/store/execution-store';
@@ -23,6 +24,7 @@ export const RequestBuilder: React.FC = () => {
   const {
     activeEndpoint,
     activeCollection,
+    createEndpoint,
     updateActiveEndpointDraft,
     saveActiveEndpointDraft,
     environments,
@@ -50,21 +52,44 @@ export const RequestBuilder: React.FC = () => {
   if (!activeEndpoint) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-white/40">
-        <div className="w-12 h-12 rounded-xl bg-[#141720] border border-[#2A2F45] flex items-center justify-center mb-3">
-          <Layers className="w-6 h-6 text-indigo-400" />
+        <div className="w-14 h-14 rounded-2xl bg-[#141720] border border-[#2A2F45] flex items-center justify-center mb-3 shadow-lg">
+          <Layers className="w-7 h-7 text-indigo-400" />
         </div>
-        <h3 className="text-sm font-semibold text-white/80">No Endpoint Selected</h3>
-        <p className="text-xs text-white/40 max-w-sm mt-1">
-          Select an existing endpoint from the sidebar or click '+' to create a new one.
+        <h3 className="text-base font-semibold text-white/90">No Endpoint Selected</h3>
+        <p className="text-xs text-white/40 max-w-sm mt-1.5 mb-4">
+          Select an existing endpoint from the sidebar or click below to build your first API request.
         </p>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={async () => {
+            let colId = activeCollection?.id;
+            if (!colId) {
+              const created = await useCollectionStore.getState().createCollection('My API Collection');
+              colId = created.id;
+            }
+            await createEndpoint(colId, {
+              name: 'New Endpoint',
+              method: 'GET',
+              path: '/api/v1/resource',
+              resource: 'General',
+            });
+          }}
+          leftIcon={<Plus className="w-3.5 h-3.5" />}
+        >
+          Create New Endpoint
+        </Button>
       </div>
     );
   }
 
-  // Calculate resolved URL with environment variables
+  // Calculate resolved URL with environment variables and path parameter substitution
   const rawBase = activeCollection?.baseUrl || 'https://api.enterprise.dev';
   const resolvedBase = activeEnv ? interpolateVariables(rawBase, activeEnv.variables) : rawBase;
-  const resolvedPath = activeEnv ? interpolateVariables(activeEndpoint.path, activeEnv.variables) : activeEndpoint.path;
+  let resolvedPath = activeEnv ? interpolateVariables(activeEndpoint.path, activeEnv.variables) : activeEndpoint.path;
+  (activeEndpoint.pathParams || []).filter((p) => p.enabled && p.key).forEach((p) => {
+    resolvedPath = resolvedPath.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
+  });
   const fullPreviewUrl = `${resolvedBase}${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
 
   const handleExecute = async () => {

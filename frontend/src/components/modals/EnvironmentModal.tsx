@@ -20,6 +20,8 @@ export const EnvironmentModal: React.FC = () => {
   const [selectedEnvId, setSelectedEnvId] = useState<string | null>(
     activeEnvironmentId || environments[0]?.id || null
   );
+  const [isCreatingEnv, setIsCreatingEnv] = useState(false);
+  const [newEnvName, setNewEnvName] = useState('');
 
   const selectedEnv = environments.find((e) => e.id === selectedEnvId) || environments[0];
 
@@ -29,13 +31,14 @@ export const EnvironmentModal: React.FC = () => {
     await saveEnvironment(updated);
   };
 
-  const handleCreateEnv = async () => {
-    const name = prompt('Enter new environment name (e.g. Staging):');
-    if (!name?.trim()) return;
+  const handleCreateEnv = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newEnvName.trim()) return;
 
+    const uniqueSuffix = Math.random().toString(36).substring(2, 7);
     const newEnv: Environment = {
-      id: `env-${Date.now()}`,
-      name: name.trim(),
+      id: `env-${Date.now()}-${uniqueSuffix}`,
+      name: newEnvName.trim(),
       isActive: false,
       variables: [
         { id: `v-${Date.now()}-1`, key: 'baseUrl', value: 'https://staging.api.enterprise.dev', enabled: true },
@@ -43,6 +46,8 @@ export const EnvironmentModal: React.FC = () => {
     };
     await saveEnvironment(newEnv);
     setSelectedEnvId(newEnv.id);
+    setNewEnvName('');
+    setIsCreatingEnv(false);
   };
 
   const handleDeleteEnv = async (id: string) => {
@@ -59,24 +64,48 @@ export const EnvironmentModal: React.FC = () => {
   return (
     <Modal
       isOpen={envOpen}
-      onClose={() => setEnvOpen(false)}
+      onClose={() => {
+        setEnvOpen(false);
+        setIsCreatingEnv(false);
+      }}
       title="Environment Variables"
       description="Define variable templates like {{baseUrl}} or {{token}} to dynamically resolve across paths and headers"
       maxWidth="2xl"
     >
-      <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 text-xs">
         {/* Left column: Environments list */}
-        <div className="space-y-1 border-r border-[#2A2F45] pr-3">
+        <div className="space-y-1.5 border-r border-[#2A2F45] pr-3">
           <div className="flex items-center justify-between pb-2 text-[11px] font-semibold text-white/50 uppercase">
             <span>Environments</span>
             <button
-              onClick={handleCreateEnv}
-              className="p-1 rounded text-indigo-400 hover:bg-indigo-500/10"
+              onClick={() => setIsCreatingEnv(true)}
+              className="p-1 rounded text-indigo-400 hover:bg-indigo-500/10 transition-colors"
               title="Add Environment"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          {isCreatingEnv && (
+            <form onSubmit={handleCreateEnv} className="p-1.5 bg-[#0C0E12] border border-[#2A2F45] rounded-md space-y-1.5">
+              <input
+                type="text"
+                value={newEnvName}
+                onChange={(e) => setNewEnvName(e.target.value)}
+                placeholder="Env name (e.g. Staging)..."
+                autoFocus
+                className="w-full px-2 py-1 bg-[#141720] border border-[#2A2F45] text-white rounded text-xs focus:outline-none focus:border-indigo-500"
+              />
+              <div className="flex gap-1 justify-end">
+                <Button size="xs" variant="ghost" type="button" onClick={() => setIsCreatingEnv(false)}>
+                  Cancel
+                </Button>
+                <Button size="xs" variant="primary" type="submit">
+                  Add
+                </Button>
+              </div>
+            </form>
+          )}
 
           <div className="space-y-1">
             {environments.map((env) => {

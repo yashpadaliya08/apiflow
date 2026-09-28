@@ -11,37 +11,40 @@ interface ParamTableProps {
 }
 
 export const ParamTable: React.FC<ParamTableProps> = ({
-  items,
+  items = [],
   onChange,
   keyPlaceholder = 'Key',
   valuePlaceholder = 'Value',
 }) => {
+  const safeItems = Array.isArray(items) ? items : [];
+
   const handleToggle = (id: string) => {
     onChange(
-      items.map((item) => (item.id === id ? { ...item, enabled: !item.enabled } : item))
+      safeItems.map((item) => (item.id === id ? { ...item, enabled: !item.enabled } : item))
     );
   };
 
   const handleChangeKey = (id: string, key: string) => {
-    onChange(items.map((item) => (item.id === id ? { ...item, key } : item)));
+    onChange(safeItems.map((item) => (item.id === id ? { ...item, key } : item)));
   };
 
   const handleChangeValue = (id: string, value: string) => {
-    onChange(items.map((item) => (item.id === id ? { ...item, value } : item)));
+    onChange(safeItems.map((item) => (item.id === id ? { ...item, value } : item)));
   };
 
   const handleDelete = (id: string) => {
-    onChange(items.filter((item) => item.id !== id));
+    onChange(safeItems.filter((item) => item.id !== id));
   };
 
   const handleAdd = () => {
+    const suffix = Math.random().toString(36).substring(2, 7);
     const newItem: KeyValue = {
-      id: `kv-${Date.now()}`,
+      id: `kv-${Date.now()}-${suffix}`,
       key: '',
       value: '',
       enabled: true,
     };
-    onChange([...items, newItem]);
+    onChange([...safeItems, newItem]);
   };
 
   return (

@@ -58,8 +58,16 @@ export const Sidebar: React.FC = () => {
   }, [filteredEndpoints]);
 
   const handleCreateNew = async () => {
-    if (!activeCollection) return;
-    await createEndpoint(activeCollection.id, {
+    let colId = activeCollection?.id;
+    if (!colId) {
+      const created = await useCollectionStore.getState().createCollection('My API Collection');
+      colId = created.id;
+    }
+    // Clear filters so new endpoint is immediately visible
+    setMethodFilter('ALL');
+    setSearchQuery('');
+
+    await createEndpoint(colId, {
       name: 'New Endpoint',
       method: 'GET',
       path: '/api/v1/resource',
@@ -70,6 +78,9 @@ export const Sidebar: React.FC = () => {
   const handleDuplicate = async (e: React.MouseEvent, ep: (typeof endpoints)[0]) => {
     e.stopPropagation();
     if (!activeCollection) return;
+    setMethodFilter('ALL');
+    setSearchQuery('');
+
     await createEndpoint(activeCollection.id, {
       ...ep,
       id: undefined,
@@ -107,10 +118,11 @@ export const Sidebar: React.FC = () => {
 
         <button
           onClick={handleCreateNew}
-          className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors"
+          className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
           title="Create New Endpoint"
         >
           <Plus className="w-3.5 h-3.5" />
+          <span>New</span>
         </button>
       </div>
 
@@ -156,8 +168,38 @@ export const Sidebar: React.FC = () => {
       {/* Endpoints List Grouped */}
       <div className="flex-1 overflow-y-auto p-2 space-y-3">
         {Object.keys(groupedEndpoints).length === 0 ? (
-          <div className="p-4 text-center text-white/40">
-            <p>No endpoints match filter</p>
+          <div className="p-6 text-center text-white/40 flex flex-col items-center justify-center space-y-2.5">
+            {endpoints.length === 0 ? (
+              <>
+                <div className="w-10 h-10 rounded-xl bg-[#1C2030] flex items-center justify-center border border-[#2A2F45]">
+                  <FolderOpen className="w-5 h-5 text-indigo-400 opacity-60" />
+                </div>
+                <div>
+                  <p className="text-white/80 font-medium text-xs">No endpoints in collection</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">Start testing by creating an endpoint</p>
+                </div>
+                <button
+                  onClick={handleCreateNew}
+                  className="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Endpoint</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-white/60">No endpoints match filter</p>
+                <button
+                  onClick={() => {
+                    setMethodFilter('ALL');
+                    setSearchQuery('');
+                  }}
+                  className="px-2.5 py-1 bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-white/80 hover:text-white rounded text-[11px] transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </>
+            )}
           </div>
         ) : (
           Object.entries(groupedEndpoints).map(([resource, eps]) => (
