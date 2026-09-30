@@ -1,0 +1,26 @@
+{
+  "name": "APIFlow Studio",
+  "short_name": "APIFlow",
+  "description": "Standalone Browser-First API Contract Testing, Synthetic Mock Engine & HTTP Client",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0C0E12",
+  "theme_color": "#141720",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Launch Studio",
+      "url": "/#studio",
+      "description": "Open APIFlow Studio Console"
+    }
+  ]
+}

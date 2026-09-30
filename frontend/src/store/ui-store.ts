@@ -22,13 +22,14 @@ interface UIState {
   runnerOpen: boolean;
   templatesOpen: boolean;
   shareOpen: boolean;
+  webhookOpen: boolean;
   // Execution
   executionMode: ExecutionMode;
   isExecuting: boolean;
   // Request panel active tab
-  requestTab: 'params' | 'headers' | 'body' | 'path';
+  requestTab: 'params' | 'headers' | 'body' | 'path' | 'tests';
   // Response panel active tab
-  responseTab: 'body' | 'headers' | 'cookies' | 'diff';
+  responseTab: 'body' | 'headers' | 'cookies' | 'diff' | 'tests';
 
   // Actions
   setActiveCollection: (id: string | null) => void;
@@ -45,6 +46,7 @@ interface UIState {
   setRunnerOpen: (v: boolean) => void;
   setTemplatesOpen: (v: boolean) => void;
   setShareOpen: (v: boolean) => void;
+  setWebhookOpen: (v: boolean) => void;
   setExecutionMode: (m: ExecutionMode) => void;
   setIsExecuting: (v: boolean) => void;
   setRequestTab: (t: UIState['requestTab']) => void;
@@ -69,6 +71,7 @@ export const useUIStore = create<UIState>()(
       runnerOpen: false,
       templatesOpen: false,
       shareOpen: false,
+      webhookOpen: false,
       executionMode: 'mock',
       isExecuting: false,
       requestTab: 'params',
@@ -88,6 +91,7 @@ export const useUIStore = create<UIState>()(
       setRunnerOpen: (v) => set({ runnerOpen: v }),
       setTemplatesOpen: (v) => set({ templatesOpen: v }),
       setShareOpen: (v) => set({ shareOpen: v }),
+      setWebhookOpen: (v) => set({ webhookOpen: v }),
       setExecutionMode: (m) => set({ executionMode: m }),
       setIsExecuting: (v) => set({ isExecuting: v }),
       setRequestTab: (t) => set({ requestTab: t }),

@@ -14,11 +14,12 @@ import { useExecutionStore } from '@/store/execution-store';
 import { useUIStore } from '@/store/ui-store';
 import { executeMock, executeLive } from '@/lib/engines/mock-executor';
 import { interpolateVariables } from '@/lib/engines/synthetic-engine';
-import { trackEvent } from '@/lib/analytics';
 import { ParamTable } from '@/components/request/ParamTable';
 import { BodyEditor } from '@/components/request/BodyEditor';
+import { AssertionBuilder } from '@/components/request/AssertionBuilder';
 import { MethodBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { trackEvent } from '@/lib/analytics';
 import type { HttpMethod, StatusCode } from '@/types';
 
 export const RequestBuilder: React.FC = () => {
@@ -362,6 +363,22 @@ export const RequestBuilder: React.FC = () => {
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
           )}
         </button>
+
+        <button
+          onClick={() => setRequestTab('tests')}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            requestTab === 'tests'
+              ? 'border-indigo-500 text-white font-semibold'
+              : 'border-transparent text-white/50 hover:text-white'
+          }`}
+        >
+          <span>Tests & Assertions</span>
+          {(activeEndpoint.assertions || []).filter((a) => a.enabled).length > 0 && (
+            <span className="px-1.5 py-0.2 text-[10px] bg-emerald-500/20 text-emerald-400 rounded-full font-mono">
+              {(activeEndpoint.assertions || []).filter((a) => a.enabled).length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Tab Panels */}
@@ -426,6 +443,16 @@ export const RequestBuilder: React.FC = () => {
             }}
             method={activeEndpoint.method}
             endpointPath={activeEndpoint.path}
+          />
+        )}
+
+        {requestTab === 'tests' && (
+          <AssertionBuilder
+            assertions={activeEndpoint.assertions || []}
+            onChange={(items) => {
+              updateActiveEndpointDraft({ assertions: items });
+              saveActiveEndpointDraft();
+            }}
           />
         )}
       </div>

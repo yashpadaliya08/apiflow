@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Zap,
   Play,
+  Pause,
   Layers,
   Sparkles,
-  Download,
-  Smartphone,
-  Server,
+  Laptop,
   Code2,
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
-  Terminal,
-  Cpu,
   Globe,
   Database,
-  ExternalLink,
+  Radio,
+  Check,
+  AlertCircle,
+  RefreshCw,
+  Sliders,
+  Terminal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -23,204 +25,650 @@ interface LandingPageProps {
   onLaunchStudio: () => void;
 }
 
+type DemoScene = 'mock' | 'assertions' | 'webhooks' | 'pwa';
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
+  // Demo player state
+  const [activeScene, setActiveScene] = useState<DemoScene>('mock');
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [progress, setProgress] = useState<number>(0);
   const [demoStatus, setDemoStatus] = useState<number>(200);
 
-  return (
-    <div className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30">
-      {/* Hero Section */}
-      <section className="relative px-6 pt-16 pb-20 max-w-6xl mx-auto text-center">
-        {/* Glow backdrop */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-indigo-600/20 via-purple-600/15 to-transparent blur-3xl rounded-full pointer-events-none" />
+  // Assertion simulation toggles
+  const [assertionFailScenario, setAssertionFailScenario] = useState<boolean>(false);
 
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1C2030] border border-[#2A2F45] text-xs text-indigo-300 mb-6 shadow-sm">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Standalone Browser-First API Testing & Synthetic Mock Engine</span>
+  // Webhook dispatch simulation state
+  const [webhookSent, setWebhookSent] = useState<boolean>(false);
+  const [webhookProvider, setWebhookProvider] = useState<'stripe' | 'github' | 'clerk'>('stripe');
+
+  // Auto-play timeline for the interactive video tour
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          // Advance to next scene
+          setActiveScene((current) => {
+            if (current === 'mock') return 'assertions';
+            if (current === 'assertions') return 'webhooks';
+            if (current === 'webhooks') return 'pwa';
+            return 'mock';
+          });
+          return 0;
+        }
+        return prev + 2.5; // ~4 seconds per scene
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const handleSceneSelect = (scene: DemoScene) => {
+    setActiveScene(scene);
+    setProgress(0);
+  };
+
+  const handleTriggerWebhook = () => {
+    setWebhookSent(true);
+    setTimeout(() => setWebhookSent(false), 2200);
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30 scroll-smooth">
+      {/* ══════════════════════════════════════════════════════════
+          HERO SECTION
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative px-4 sm:px-6 pt-14 pb-16 max-w-6xl mx-auto text-center">
+        {/* Ambient Glows */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[700px] h-[360px] bg-gradient-to-tr from-indigo-600/20 via-purple-600/15 to-cyan-500/10 blur-3xl rounded-full pointer-events-none -z-10" />
+
+        {/* Top Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1C2030] border border-[#2A2F45] text-xs text-indigo-300 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Standalone Browser-First API Studio & Test Engine</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
+            <Laptop className="w-3.5 h-3.5" />
+            <span>Installable Offline Desktop App</span>
+          </div>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight">
-          Test APIs Instantly.{' '}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.15]">
+          Design, Test & Validate APIs.{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-            Zero Backend Required.
+            100% Client-Side.
           </span>
         </h1>
 
-        <p className="mt-5 text-base sm:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-          APIFlow Studio simulates realistic REST APIs directly inside your browser. Generate schema-driven synthetic data, test 7 HTTP status codes, export OpenAPI 3.1 & Postman contracts, or dispatch live proxy requests.
+        <p className="mt-5 text-base sm:text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">
+          Simulate realistic REST APIs directly inside your browser. Build visual schema assertions with zero code, dispatch simulated webhooks to your local server, and install as an offline desktop PWA with zero memory bloat.
         </p>
 
-        {/* CTA Buttons */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        {/* Hero CTA Controls */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           <Button
             size="lg"
             variant="accent"
             onClick={onLaunchStudio}
             leftIcon={<Play className="w-4 h-4 fill-white" />}
-            className="text-sm px-6 py-3 shadow-lg shadow-indigo-500/25"
+            className="text-sm px-6 py-3 shadow-lg shadow-indigo-500/25 shrink-0"
           >
             Launch Studio Free
           </Button>
 
           <a
-            href="#features"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-[#141720] hover:bg-[#1C2030] border border-[#2A2F45] text-sm text-white/80 hover:text-white transition-colors"
+            href="#interactive-demo"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-[#141720] hover:bg-[#1C2030] border border-[#2A2F45] text-sm text-white/80 hover:text-white transition-colors shrink-0"
           >
-            <span>Explore Capabilities</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Watch Interactive Tour</span>
+            <ArrowRight className="w-4 h-4 text-indigo-400" />
           </a>
         </div>
 
-        {/* Live Interactive Hero Demo Card */}
-        <div className="mt-14 max-w-4xl mx-auto text-left rounded-xl border border-[#2A2F45] bg-[#141720]/90 backdrop-blur-md shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="px-4 py-3 bg-[#1C2030]/70 border-b border-[#2A2F45] flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        {/* ══════════════════════════════════════════════════════════
+            INTERACTIVE VIDEO TOUR / SIMULATED STUDIO SHOWCASE
+        ══════════════════════════════════════════════════════════ */}
+        <div
+          id="interactive-demo"
+          className="mt-14 max-w-5xl mx-auto text-left rounded-2xl border border-[#2A2F45] bg-[#141720]/95 backdrop-blur-xl shadow-2xl overflow-hidden scroll-mt-6"
+        >
+          {/* Showcase Control Bar */}
+          <div className="px-4 py-3 bg-[#1C2030]/80 border-b border-[#2A2F45] flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
               <span className="w-3 h-3 rounded-full bg-red-500/80" />
               <span className="w-3 h-3 rounded-full bg-amber-500/80" />
               <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-xs font-mono text-white/40">APIFlow Interactive Mock Sandbox</span>
+              <span className="ml-2 text-xs font-mono font-medium text-white/70">
+                APIFlow Live Studio Tour
+              </span>
             </div>
 
+            {/* Scrubber / Playback Controls */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-white/40 font-mono">Status Scenario:</span>
-              <select
-                value={demoStatus}
-                onChange={(e) => setDemoStatus(Number(e.target.value))}
-                className="bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded px-2 py-0.5 focus:outline-none"
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0C0E12] hover:bg-white/10 border border-[#2A2F45] text-xs text-white/80 transition-colors"
+                title={isPlaying ? 'Pause Auto Tour' : 'Play Auto Tour'}
               >
-                <option value={200}>200 OK</option>
-                <option value={201}>201 Created</option>
-                <option value={400}>400 Bad Request</option>
-                <option value={401}>401 Unauthorized</option>
-                <option value={404}>404 Not Found</option>
-                <option value={500}>500 Server Error</option>
-              </select>
+                {isPlaying ? (
+                  <>
+                    <Pause className="w-3 h-3 text-amber-400" />
+                    <span>Pause</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+                    <span>Play Tour</span>
+                  </>
+                )}
+              </button>
+
+              <Button size="xs" variant="primary" onClick={onLaunchStudio}>
+                Open Studio
+              </Button>
             </div>
           </div>
 
-          {/* Sandbox Body */}
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#2A2F45]">
-            {/* Left: Request preview */}
-            <div className="p-4 space-y-3 bg-[#0C0E12]/50">
-              <div className="flex items-center gap-2 font-mono text-xs">
-                <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  GET
+          {/* Timeline Tab Scrubber */}
+          <div className="grid grid-cols-2 md:grid-cols-4 bg-[#0C0E12] border-b border-[#2A2F45] text-xs select-none">
+            <button
+              onClick={() => handleSceneSelect('mock')}
+              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+                activeScene === 'mock'
+                  ? 'bg-indigo-600/10 text-indigo-300 font-semibold'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Zap className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="truncate">1. Instant Mock Engine</span>
+              </div>
+              <div className="text-[10px] text-white/40 truncate">Faker heuristics & status codes</div>
+              {activeScene === 'mock' && isPlaying && (
+                <div
+                  className="absolute bottom-0 left-0 h-0.5 bg-indigo-500 transition-all duration-100"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </button>
+
+            <button
+              onClick={() => handleSceneSelect('assertions')}
+              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+                activeScene === 'assertions'
+                  ? 'bg-emerald-600/10 text-emerald-300 font-semibold'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="truncate">2. Visual Test Builder</span>
+              </div>
+              <div className="text-[10px] text-white/40 truncate">No-code schema assertions</div>
+              {activeScene === 'assertions' && isPlaying && (
+                <div
+                  className="absolute bottom-0 left-0 h-0.5 bg-emerald-500 transition-all duration-100"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </button>
+
+            <button
+              onClick={() => handleSceneSelect('webhooks')}
+              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+                activeScene === 'webhooks'
+                  ? 'bg-rose-600/10 text-rose-300 font-semibold'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Radio className="w-3.5 h-3.5 text-rose-400" />
+                <span className="truncate">3. Webhook Dispatcher</span>
+              </div>
+              <div className="text-[10px] text-white/40 truncate">Stripe, GitHub, Clerk events</div>
+              {activeScene === 'webhooks' && isPlaying && (
+                <div
+                  className="absolute bottom-0 left-0 h-0.5 bg-rose-500 transition-all duration-100"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </button>
+
+            <button
+              onClick={() => handleSceneSelect('pwa')}
+              className={`p-2.5 text-left transition-all relative ${
+                activeScene === 'pwa'
+                  ? 'bg-purple-600/10 text-purple-300 font-semibold'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Laptop className="w-3.5 h-3.5 text-purple-400" />
+                <span className="truncate">4. Offline Desktop PWA</span>
+              </div>
+              <div className="text-[10px] text-white/40 truncate">Borderless offline window</div>
+              {activeScene === 'pwa' && isPlaying && (
+                <div
+                  className="absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-100"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </button>
+          </div>
+
+          {/* ── Scene 1: Instant Mock Engine ── */}
+          {activeScene === 'mock' && (
+            <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-[#2A2F45]">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider font-semibold">
+                    Simulated Request
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-white/40 font-mono">Status Scenario:</span>
+                    <select
+                      value={demoStatus}
+                      onChange={(e) => setDemoStatus(Number(e.target.value))}
+                      className="bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded px-2 py-0.5 focus:outline-none"
+                    >
+                      <option value={200}>200 OK</option>
+                      <option value={201}>201 Created</option>
+                      <option value={400}>400 Bad Request</option>
+                      <option value={401}>401 Unauthorized</option>
+                      <option value={404}>404 Not Found</option>
+                      <option value={500}>500 Server Error</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] space-y-2">
+                  <div className="flex items-center gap-2 font-mono text-xs">
+                    <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      GET
+                    </span>
+                    <span className="text-white font-medium">/api/v1/users/usr_982</span>
+                  </div>
+                  <div className="text-[11px] text-white/50 space-y-1 font-mono">
+                    <div>Host: <span className="text-white/80">api.enterprise.dev</span></div>
+                    <div>Authorization: <span className="text-indigo-400">Bearer eyJhbGciOi...</span></div>
+                    <div>Accept: <span className="text-white/80">application/json</span></div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-xs text-white/70 space-y-1">
+                  <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Realistic Synthetic Heuristics</span>
+                  </div>
+                  <p className="text-[11px] text-white/50">
+                    Generates realistic names, UUIDs, ISO timestamps, and nested objects using in-browser Faker algorithms without making a single external network request.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: Response Sandbox */}
+              <div className="md:pl-4 space-y-3 pt-3 md:pt-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                        demoStatus >= 200 && demoStatus < 300
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      }`}
+                    >
+                      {demoStatus} {demoStatus === 200 ? 'OK' : demoStatus === 201 ? 'Created' : 'Error'}
+                    </span>
+                    <span className="text-white/40 text-[11px] font-mono">⚡ 18ms • 1.2 KB</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded">
+                    Mock Engine Active
+                  </span>
+                </div>
+
+                <pre className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] text-white/80 text-xs font-mono leading-relaxed overflow-x-auto max-h-56">
+                  {demoStatus === 200 &&
+                    JSON.stringify(
+                      {
+                        id: 'usr_982',
+                        name: 'Elena Rostova',
+                        email: 'elena@enterprise.dev',
+                        role: 'Senior Architect',
+                        active: true,
+                        lastLogin: '2026-09-30T14:20:00Z',
+                      },
+                      null,
+                      2
+                    )}
+                  {demoStatus === 201 &&
+                    JSON.stringify(
+                      {
+                        id: 'usr_8491',
+                        status: 'created',
+                        message: 'Resource provisioned successfully',
+                        createdAt: new Date().toISOString(),
+                      },
+                      null,
+                      2
+                    )}
+                  {demoStatus === 400 &&
+                    JSON.stringify(
+                      {
+                        statusCode: 400,
+                        error: 'Bad Request',
+                        message: 'Invalid email parameter format',
+                      },
+                      null,
+                      2
+                    )}
+                  {demoStatus === 401 &&
+                    JSON.stringify(
+                      {
+                        statusCode: 401,
+                        error: 'Unauthorized',
+                        message: 'Missing or expired Bearer token in Authorization header',
+                      },
+                      null,
+                      2
+                    )}
+                  {demoStatus === 404 &&
+                    JSON.stringify(
+                      {
+                        statusCode: 404,
+                        error: 'Not Found',
+                        message: 'User with identifier usr_982 does not exist',
+                      },
+                      null,
+                      2
+                    )}
+                  {demoStatus === 500 &&
+                    JSON.stringify(
+                      {
+                        statusCode: 500,
+                        error: 'Internal Server Error',
+                        message: 'Simulated downstream upstream timeout',
+                      },
+                      null,
+                      2
+                    )}
+                </pre>
+              </div>
+            </div>
+          )}
+
+          {/* ── Scene 2: Visual Schema Assertions & Test Builder ── */}
+          {activeScene === 'assertions' && (
+            <div className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2A2F45]">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    {assertionFailScenario ? '3/4 Passed (1 Failed)' : '4/4 Passed (100%)'}
+                  </span>
+                  <span className="text-xs text-white/50">Zero-code Postman test replacement</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/60">Simulate scenario:</span>
+                  <button
+                    onClick={() => setAssertionFailScenario(!assertionFailScenario)}
+                    className={`px-2 py-0.5 rounded text-xs font-mono transition-colors ${
+                      assertionFailScenario
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    {assertionFailScenario ? 'Toggle Normal (All Pass)' : 'Toggle Latency Spike (Fail)'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Assertion Rows */}
+              <div className="space-y-2">
+                {/* Assertion 1 */}
+                <div className="p-2.5 rounded-lg bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                      ✓
+                    </span>
+                    <span className="text-white/80">Status Code equals 200</span>
+                  </div>
+                  <span className="text-emerald-400 font-mono text-[11px]">Pass • actual: 200</span>
+                </div>
+
+                {/* Assertion 2 */}
+                <div
+                  className={`p-2.5 rounded-lg border transition-colors flex items-center justify-between text-xs ${
+                    assertionFailScenario
+                      ? 'bg-red-950/20 border-red-500/40 text-red-200'
+                      : 'bg-[#0C0E12] border-[#2A2F45]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-mono">
+                    <span
+                      className={`w-5 h-5 rounded flex items-center justify-center font-bold ${
+                        assertionFailScenario
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {assertionFailScenario ? '✕' : '✓'}
+                    </span>
+                    <span className="text-white/80">Latency (ms) less than 250ms</span>
+                  </div>
+                  <span
+                    className={`font-mono text-[11px] ${
+                      assertionFailScenario ? 'text-red-400 font-semibold' : 'text-emerald-400'
+                    }`}
+                  >
+                    {assertionFailScenario
+                      ? 'Fail • actual: 412ms (> 250ms)'
+                      : 'Pass • actual: 24ms (< 250ms)'}
+                  </span>
+                </div>
+
+                {/* Assertion 3 */}
+                <div className="p-2.5 rounded-lg bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                      ✓
+                    </span>
+                    <span className="text-white/80">JSON body.data.id is valid UUID</span>
+                  </div>
+                  <span className="text-emerald-400 font-mono text-[11px]">Pass • valid format</span>
+                </div>
+
+                {/* Assertion 4 */}
+                <div className="p-2.5 rounded-lg bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                      ✓
+                    </span>
+                    <span className="text-white/80">Header Content-Type contains "application/json"</span>
+                  </div>
+                  <span className="text-emerald-400 font-mono text-[11px]">Pass • application/json; charset=utf-8</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-white/70 flex items-center justify-between">
+                <span>
+                  No <code className="text-emerald-300">pm.test()</code> JavaScript boilerplate needed. Build assertions visually in 1 click.
                 </span>
-                <span className="text-white/80">/api/v1/users/usr_982</span>
-              </div>
-
-              <div className="text-xs text-white/50 space-y-1 font-mono">
-                <div>Host: <span className="text-white/80">api.enterprise.dev</span></div>
-                <div>Authorization: <span className="text-indigo-400">Bearer eyJhbGci...</span></div>
-                <div>Accept: <span className="text-white/80">application/json</span></div>
-              </div>
-
-              <div className="pt-2">
-                <Button size="xs" variant="primary" onClick={onLaunchStudio} leftIcon={<Sparkles className="w-3 h-3" />}>
-                  Test In Full Studio
+                <Button size="xs" variant="primary" onClick={onLaunchStudio}>
+                  Try In Studio
                 </Button>
               </div>
             </div>
+          )}
 
-            {/* Right: Simulated response */}
-            <div className="p-4 bg-[#0C0E12] font-mono text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-[#2A2F45]/50 mb-2">
-                <span
-                  className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                    demoStatus >= 200 && demoStatus < 300
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}
+          {/* ── Scene 3: Simulated Webhook Dispatcher ── */}
+          {activeScene === 'webhooks' && (
+            <div className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/50">Provider preset:</span>
+                  {(['stripe', 'github', 'clerk'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setWebhookProvider(p)}
+                      className={`px-2.5 py-1 rounded text-xs font-mono capitalize transition-colors ${
+                        webhookProvider === p
+                          ? 'bg-rose-500 text-white font-semibold'
+                          : 'bg-[#0C0E12] border border-[#2A2F45] text-white/60 hover:text-white'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+
+                <Button
+                  size="sm"
+                  variant="accent"
+                  onClick={handleTriggerWebhook}
+                  leftIcon={<Radio className={`w-3.5 h-3.5 ${webhookSent ? 'animate-ping' : ''}`} />}
+                  className="bg-rose-600 hover:bg-rose-500 border-rose-500"
                 >
-                  {demoStatus} {demoStatus === 200 ? 'OK' : demoStatus === 201 ? 'Created' : 'Error'}
-                </span>
-                <span className="text-white/40 text-[11px]">⚡ 24ms • 1.2 KB</span>
+                  {webhookSent ? 'Dispatched!' : 'Dispatch Webhook'}
+                </Button>
               </div>
 
-              <pre className="text-white/80 text-[11px] leading-relaxed overflow-x-auto">
-                {demoStatus === 200 &&
-                  JSON.stringify(
-                    {
-                      id: 'usr_982',
-                      name: 'Elena Rostova',
-                      email: 'elena@enterprise.dev',
-                      role: 'Senior Architect',
-                      active: true,
-                      lastLogin: '2026-09-23T11:20:00Z',
-                    },
-                    null,
-                    2
-                  )}
-                {demoStatus === 201 &&
-                  JSON.stringify(
-                    {
-                      id: 'usr_' + Math.floor(Math.random() * 9000 + 1000),
-                      status: 'created',
-                      message: 'Resource provisioned successfully',
-                    },
-                    null,
-                    2
-                  )}
-                {demoStatus === 400 &&
-                  JSON.stringify(
-                    {
-                      statusCode: 400,
-                      error: 'Bad Request',
-                      message: 'Invalid email parameter format',
-                    },
-                    null,
-                    2
-                  )}
-                {demoStatus === 401 &&
-                  JSON.stringify(
-                    {
-                      statusCode: 401,
-                      error: 'Unauthorized',
-                      message: 'Missing or expired Bearer token in Authorization header',
-                    },
-                    null,
-                    2
-                  )}
-                {demoStatus === 404 &&
-                  JSON.stringify(
-                    {
-                      statusCode: 404,
-                      error: 'Not Found',
-                      message: 'User with identifier usr_982 does not exist',
-                    },
-                    null,
-                    2
-                  )}
-                {demoStatus === 500 &&
-                  JSON.stringify(
-                    {
-                      statusCode: 500,
-                      error: 'Internal Server Error',
-                      message: 'Simulated downstream upstream timeout',
-                    },
-                    null,
-                    2
-                  )}
-              </pre>
+              {/* Webhook Configuration Preview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] space-y-2">
+                  <div className="text-white/40 text-[11px]">TARGET HANDLER URL</div>
+                  <div className="text-white font-medium truncate">http://localhost:3000/api/webhooks</div>
+                  <div className="text-white/40 text-[11px] pt-1">SIMULATED HEADERS</div>
+                  <div className="text-rose-400 text-[11px] truncate">
+                    {webhookProvider === 'stripe' && 'Stripe-Signature: t=169548293,v1=9e8b...'}
+                    {webhookProvider === 'github' && 'X-Hub-Signature-256: sha256=4f8a...'}
+                    {webhookProvider === 'clerk' && 'svix-signature: v1,g0hM9+...'}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-white/40">SIMULATED PAYLOAD</span>
+                    <span className="text-emerald-400">
+                      {webhookSent ? '✓ Received (200 OK)' : 'Ready to Send'}
+                    </span>
+                  </div>
+                  <pre className="text-white/70 text-[11px] overflow-x-auto max-h-24">
+                    {webhookProvider === 'stripe' &&
+                      JSON.stringify(
+                        {
+                          id: 'evt_3MtwfyLkd5hx427S0Wx52Xbv',
+                          type: 'payment_intent.succeeded',
+                          data: { amount: 4900, currency: 'usd' },
+                        },
+                        null,
+                        2
+                      )}
+                    {webhookProvider === 'github' &&
+                      JSON.stringify(
+                        {
+                          event: 'push',
+                          ref: 'refs/heads/main',
+                          commits: [{ message: 'feat: add webhooks' }],
+                        },
+                        null,
+                        2
+                      )}
+                    {webhookProvider === 'clerk' &&
+                      JSON.stringify(
+                        {
+                          type: 'user.created',
+                          data: { id: 'user_2N9... ', email: 'dev@apiflow.dev' },
+                        },
+                        null,
+                        2
+                      )}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-white/70 flex items-center justify-between">
+                <span>
+                  No ngrok tunnels or 3rd-party webhook web services required. Test local webhook consumers immediately.
+                </span>
+                <Button size="xs" variant="primary" onClick={onLaunchStudio}>
+                  Open Webhook Studio
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* ── Scene 4: Installable Desktop PWA ── */}
+          {activeScene === 'pwa' && (
+            <div className="p-4 sm:p-6 space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#1C2030] to-[#0C0E12] border border-[#2A2F45] flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="space-y-2 max-w-xl">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono font-semibold">
+                    <Laptop className="w-3.5 h-3.5" />
+                    <span>Progressive Web App (PWA)</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white">
+                    Runs in its own borderless window. 100% offline.
+                  </h3>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    With an integrated Service Worker cache and Dexie IndexedDB, APIFlow launches in under 100ms on Windows, macOS, Linux, and Android with zero Electron memory bloat.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
+                  <Button
+                    size="md"
+                    variant="accent"
+                    onClick={() => {
+                      alert('To install APIFlow Studio as an app, click the Install icon in your browser address bar.');
+                    }}
+                    leftIcon={<Laptop className="w-4 h-4" />}
+                    className="bg-purple-600 hover:bg-purple-500 border-purple-500 whitespace-nowrap"
+                  >
+                    Install Desktop App
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={onLaunchStudio}>
+                    Open in Browser
+                  </Button>
+                </div>
+              </div>
+
+              {/* Specs Comparison */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center text-xs">
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
+                  <div className="text-xl font-bold text-emerald-400 font-mono">0 MB</div>
+                  <div className="text-white/50 text-[11px] mt-1">Download Size (Instant PWA)</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
+                  <div className="text-xl font-bold text-indigo-400 font-mono">100%</div>
+                  <div className="text-white/50 text-[11px] mt-1">Offline Capability (No Wi-Fi Needed)</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
+                  <div className="text-xl font-bold text-purple-400 font-mono">&lt; 80ms</div>
+                  <div className="text-white/50 text-[11px] mt-1">Cold Launch Speed</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
-
-      {/* Feature Grid */}
-      <section id="features" className="px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
+      {/* ══════════════════════════════════════════════════════════
+          FEATURE GRID (Replaced Self-Hosting with Offline PWA)
+      ══════════════════════════════════════════════════════════ */}
+      <section id="features" className="px-4 sm:px-6 py-20 max-w-6xl mx-auto scroll-mt-14">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Built for High-Speed Frontend & QA Workflows
+            Built for Modern High-Speed Engineering Workflows
           </h2>
-          <p className="mt-3 text-sm text-white/50">
-            Everything you need to test, mock, document, and generate client code with complete client-side autonomy.
+          <p className="mt-3 text-sm text-white/50 leading-relaxed">
+            Everything you need to test, mock, document, and validate client APIs with complete browser autonomy and zero vendor lock-in.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
             <div className="w-10 h-10 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
               <Zap className="w-5 h-5" />
             </div>
@@ -231,8 +679,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </div>
 
           {/* Card 2 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-emerald-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-white">Visual Schema Assertions</h3>
+            <p className="text-xs text-white/50 leading-relaxed">
+              1-click test builder for Status, Response Latency, Header verification, and nested JSON body types. Pass/fail badges appear live in your response viewer.
+            </p>
+          </div>
+
+          {/* Card 3 */}
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-rose-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+              <Radio className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-white">Simulated Webhook Dispatcher</h3>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Built-in event studio simulating Stripe, GitHub, Clerk, and Shopify webhooks with cryptographic HMAC headers directly to your local handler.
+            </p>
+          </div>
+
+          {/* Card 4 */}
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-cyan-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
               <Globe className="w-5 h-5" />
             </div>
             <h3 className="text-base font-semibold text-white">Dual Execution Mode</h3>
@@ -241,19 +711,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </p>
           </div>
 
-          {/* Card 3 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-              <Code2 className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-semibold text-white">1-Click Code Generation</h3>
-            <p className="text-xs text-white/50 leading-relaxed">
-              Instantly export ready-to-paste snippets in cURL, TypeScript Fetch, Axios, and Python <code className="text-purple-300">requests</code> with headers and body pre-formatted.
-            </p>
-          </div>
-
-          {/* Card 4 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
+          {/* Card 5 */}
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-orange-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
             <div className="w-10 h-10 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400">
               <Layers className="w-5 h-5" />
             </div>
@@ -263,32 +722,241 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </p>
           </div>
 
-          {/* Card 5 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-              <Database className="w-5 h-5" />
+          {/* Card 6: Offline Desktop PWA (Replaced Self-Hosting) */}
+          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-purple-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <Laptop className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Dexie.js IndexedDB</h3>
+            <h3 className="text-base font-semibold text-white">Offline Desktop PWA</h3>
             <p className="text-xs text-white/50 leading-relaxed">
-              Your collections, endpoints, environments, and execution history are persisted locally in the browser with zero cloud storage required.
-            </p>
-          </div>
-
-          {/* Card 6: Hosting & StackDoctor */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-colors space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-pink-500/15 border border-pink-500/30 flex items-center justify-center text-pink-400">
-              <Smartphone className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-semibold text-white">Spare Phone / PC Self-Hosting</h3>
-            <p className="text-xs text-white/50 leading-relaxed">
-              Ready for StackDoctor deployment! Host 24/7 on an old Android phone via Termux or on your local PC with Cloudflare Tunnels for zero-cost hosting.
+              Install in 1 click from Chrome, Edge, or Brave. Runs in its own standalone borderless window with 100% offline capability and zero Electron memory footprint.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Open Design Manifesto Section */}
-      <section id="open-design" className="px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
+      {/* ══════════════════════════════════════════════════════════
+          DEEP DIVE: VISUAL SCHEMA ASSERTIONS BUILDER
+      ══════════════════════════════════════════════════════════ */}
+      <section
+        id="assertions-preview"
+        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Automated QA Badges</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Visual Schema Assertions & Test Builder
+            </h2>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Postman forces developers to write boilerplate JavaScript tests like{' '}
+              <code className="text-indigo-300">pm.test("status is 200", ...)</code>. APIFlow introduces a 1-click visual assertion builder with zero syntax errors.
+            </p>
+
+            <ul className="space-y-2.5 text-xs text-white/70 font-mono">
+              <li className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                  ✓
+                </span>
+                <span>Status equals 200 / 201 / 204</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                  ✓
+                </span>
+                <span>Response Time &lt; 250ms</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                  ✓
+                </span>
+                <span>body.data.id is a valid UUID / String</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                  ✓
+                </span>
+                <span>body.items has length &gt; 0</span>
+              </li>
+            </ul>
+
+            <div className="pt-2">
+              <Button size="md" variant="accent" onClick={onLaunchStudio} leftIcon={<Play className="w-4 h-4" />}>
+                Build Visual Tests Now
+              </Button>
+            </div>
+          </div>
+
+          {/* Graphic Preview */}
+          <div className="p-5 rounded-2xl bg-[#141720] border border-emerald-500/30 shadow-xl space-y-3 font-mono text-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
+              <span className="text-white/60 text-[11px]">TEST SUITE BREAKDOWN</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">
+                100% PASS RATE (4/4)
+              </span>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">PASS</span>
+                  <span className="text-white/80">Status equals 200</span>
+                </div>
+                <span className="text-white/40">200 === 200</span>
+              </div>
+
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">PASS</span>
+                  <span className="text-white/80">Latency &lt; 250ms</span>
+                </div>
+                <span className="text-emerald-400 font-bold">18ms</span>
+              </div>
+
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">PASS</span>
+                  <span className="text-white/80">body.data.id is UUID</span>
+                </div>
+                <span className="text-white/40">RFC 4122 Compliant</span>
+              </div>
+
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">PASS</span>
+                  <span className="text-white/80">Header Content-Type contains JSON</span>
+                </div>
+                <span className="text-white/40">application/json</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          DEEP DIVE: SIMULATED WEBHOOK DISPATCHER
+      ══════════════════════════════════════════════════════════ */}
+      <section
+        id="webhooks-preview"
+        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          {/* Left Graphic */}
+          <div className="p-5 rounded-2xl bg-[#141720] border border-rose-500/30 shadow-xl space-y-3 font-mono text-xs order-2 lg:order-1">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
+              <span className="text-rose-400 text-[11px] font-bold">WEBHOOK STUDIO RUNNER</span>
+              <span className="text-white/40 text-[11px]">Provider: Stripe</span>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45]">
+                <div className="text-white/40 mb-1">EVENT TYPE</div>
+                <div className="text-emerald-400 font-bold">payment_intent.succeeded</div>
+              </div>
+
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45]">
+                <div className="text-white/40 mb-1">TARGET HANDLER</div>
+                <div className="text-white/90">POST http://localhost:3000/api/webhooks/stripe</div>
+              </div>
+
+              <div className="p-2.5 rounded bg-[#0C0E12] border border-[#2A2F45]">
+                <div className="text-white/40 mb-1">HMAC SIGNATURE</div>
+                <div className="text-rose-400 truncate">Stripe-Signature: t=169548293,v1=9e8bf0...</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Copy */}
+          <div className="space-y-4 order-1 lg:order-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-xs font-semibold text-rose-400">
+              <Radio className="w-3.5 h-3.5" />
+              <span>Event-Driven Architecture</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Simulated Webhook Dispatcher & Receiver
+            </h2>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Modern APIs like Stripe, GitHub, Clerk, and Shopify rely heavily on webhooks. Traditionally, developers have had to setup ngrok tunnels or fake webhook relays just to trigger events locally.
+            </p>
+            <p className="text-xs text-white/50 leading-relaxed">
+              With APIFlow Webhook Studio, select your event preset, customize the payload, and click "Dispatch Webhook" to send it straight to your backend listener with live latency and response status monitoring.
+            </p>
+
+            <div className="pt-2">
+              <Button size="md" variant="accent" onClick={onLaunchStudio} leftIcon={<Radio className="w-4 h-4" />}>
+                Launch Webhook Studio
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          DEEP DIVE: INSTALLABLE OFFLINE DESKTOP PWA
+      ══════════════════════════════════════════════════════════ */}
+      <section
+        id="offline-desktop"
+        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+      >
+        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#182030] via-[#141720] to-[#0C0E12] border border-purple-500/30 relative overflow-hidden">
+          <div className="max-w-2xl space-y-4">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
+              <Laptop className="w-4 h-4" />
+              <span>Installable Desktop Tool</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+              Installable PWA — 100% Offline Desktop Tool
+            </h2>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Matches the desktop feel of Postman without the 500MB download size or memory bloat. APIFlow runs in its own borderless window on Windows, Mac, Linux, and Android, working 100% offline without needing an active internet connection.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2">
+              <div className="flex items-center gap-2 text-white/80">
+                <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>Zero Electron memory bloat</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>Works on flights & offline setups</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>Service Worker static asset caching</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>IndexedDB browser-local persistence</span>
+              </div>
+            </div>
+
+            <div className="pt-4 flex flex-wrap items-center gap-3">
+              <Button
+                size="md"
+                variant="accent"
+                onClick={() => {
+                  alert('To install APIFlow Studio as an app, click the Install icon in your browser address bar (Chrome, Edge, Brave).');
+                }}
+                leftIcon={<Laptop className="w-4 h-4" />}
+                className="bg-purple-600 hover:bg-purple-500 border-purple-500"
+              >
+                Install Desktop PWA
+              </Button>
+              <Button size="md" variant="outline" onClick={onLaunchStudio}>
+                Open Web Studio
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          OPEN DESIGN MANIFESTO SECTION
+      ══════════════════════════════════════════════════════════ */}
+      <section id="open-design" className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400 mb-4">
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -393,7 +1061,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
 
             {/* Tenet 2 */}
-            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-emerald-500/40 transition-colors space-y-2">
               <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
                 <span className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-300 text-xs flex items-center justify-center font-mono">
                   2
@@ -434,33 +1102,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         </div>
       </section>
 
-      {/* StackDoctor Integration Section */}
-      <section id="edge-hosting" className="px-6 py-16 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
-        <div className="p-8 rounded-2xl bg-gradient-to-br from-[#141720] via-[#1C2030] to-[#0C0E12] border border-[#2A2F45] relative overflow-hidden">
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-pink-400 uppercase tracking-wider">
-              <Server className="w-4 h-4" />
-              <span>Zero-Cost Edge Infrastructure</span>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-bold text-white">
-              Host APIFlow Studio 24/7 on Your Spare Android Phone
-            </h3>
-            <p className="text-xs sm:text-sm text-white/60 leading-relaxed">
-              Configured with Express backend + pre-built Vite client static files. StackDoctor auto-detects this as a MERN Full-Stack project, compiles it, and launches on your phone via Termux and Cloudflare Tunnels with HTTPS.
-            </p>
-
-            <div className="pt-2 flex flex-wrap gap-3">
-              <Button size="md" variant="accent" onClick={onLaunchStudio} leftIcon={<Play className="w-4 h-4" />}>
-                Open Studio Console
-              </Button>
-            </div>
-          </div>
+      {/* ══════════════════════════════════════════════════════════
+          FOOTER
+      ══════════════════════════════════════════════════════════ */}
+      <footer className="px-4 sm:px-6 py-10 border-t border-[#2A2F45]/50 text-center text-xs text-white/40 space-y-3">
+        <div className="flex items-center justify-center gap-4 text-white/60">
+          <a href="#interactive-demo" className="hover:text-white transition-colors">
+            Interactive Tour
+          </a>
+          <span>•</span>
+          <a href="#features" className="hover:text-white transition-colors">
+            Features
+          </a>
+          <span>•</span>
+          <a href="#assertions-preview" className="hover:text-white transition-colors">
+            Test Builder
+          </a>
+          <span>•</span>
+          <a href="#webhooks-preview" className="hover:text-white transition-colors">
+            Webhooks
+          </a>
+          <span>•</span>
+          <a href="#offline-desktop" className="hover:text-white transition-colors">
+            Desktop PWA
+          </a>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="px-6 py-8 border-t border-[#2A2F45]/50 text-center text-xs text-white/40">
-        <p>© 2026 APIFlow Studio — Standalone API Testing, Contract Simulator & Mock Runner</p>
+        <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
       </footer>
     </div>
   );

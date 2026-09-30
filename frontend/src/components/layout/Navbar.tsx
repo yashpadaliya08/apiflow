@@ -17,6 +17,8 @@ import {
   Sparkles,
   Share2,
   ShieldCheck,
+  Radio,
+  Laptop,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -51,6 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
     setRunnerOpen,
     setTemplatesOpen,
     setShareOpen,
+    setWebhookOpen,
   } = useUIStore();
 
   const [colDropdownOpen, setColDropdownOpen] = useState(false);
@@ -58,6 +61,28 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
   const [isCreatingCol, setIsCreatingCol] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [isAdminActive, setIsAdminActive] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setInstallPrompt(null);
+      }
+    } else {
+      alert('To install APIFlow Studio as an app, click the Install icon in your browser address bar (Chrome, Edge, or Brave).');
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -115,12 +140,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         </div>
 
         {/* Center Quick Anchor Links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-white/60">
+        <nav className="hidden lg:flex items-center gap-5 text-xs font-medium text-white/60">
+          <a href="#interactive-demo" className="hover:text-white transition-colors">
+            Interactive Tour
+          </a>
           <a href="#features" className="hover:text-white transition-colors">
             Features
           </a>
-          <a href="#edge-hosting" className="hover:text-white transition-colors">
-            Self-Hosting
+          <a href="#assertions-preview" className="hover:text-white transition-colors">
+            Test Builder
+          </a>
+          <a href="#webhooks-preview" className="hover:text-white transition-colors">
+            Webhooks
+          </a>
+          <a href="#offline-desktop" className="hover:text-white transition-colors">
+            Offline PWA
+          </a>
+          <a href="#open-design" className="hover:text-white transition-colors">
+            Open Design
           </a>
         </nav>
 
@@ -138,6 +175,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
               Analytics
             </Button>
           )}
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleInstallPWA}
+            leftIcon={<Laptop className="w-3.5 h-3.5 text-indigo-400" />}
+            title="Install APIFlow Studio as desktop app (PWA)"
+            className="hidden sm:inline-flex"
+          >
+            Install App
+          </Button>
 
           <Button
             size="sm"
@@ -333,6 +381,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         <Button
           size="sm"
           variant="outline"
+          onClick={() => setWebhookOpen(true)}
+          leftIcon={<Radio className="w-3.5 h-3.5 text-rose-400" />}
+          title="Simulate and dispatch Stripe, GitHub, Clerk webhooks to local handlers"
+        >
+          Webhooks
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
           onClick={() => setRunnerOpen(true)}
           leftIcon={<Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/30" />}
           title="Run all endpoints in collection sequentially"
@@ -397,6 +455,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
             Analytics
           </Button>
         )}
+
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleInstallPWA}
+          leftIcon={<Laptop className="w-3.5 h-3.5 text-indigo-400" />}
+          title="Install APIFlow Studio as desktop app (PWA)"
+          className="text-white/70 hover:text-white"
+        >
+          Install App
+        </Button>
 
         <div className="h-5 w-px bg-[#2A2F45] mx-1" />
 

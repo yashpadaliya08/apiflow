@@ -11,6 +11,7 @@ import {
   GitCompare,
   CheckCircle2,
   AlertTriangle,
+  XCircle,
 } from 'lucide-react';
 import { useExecutionStore } from '@/store/execution-store';
 import { useCollectionStore } from '@/store/collection-store';
@@ -18,6 +19,7 @@ import { useUIStore } from '@/store/ui-store';
 import { StatusBadge } from '@/components/ui/Badge';
 import { formatBytes, formatLatency, copyToClipboard } from '@/lib/utils';
 import { computeJsonDiff } from '@/lib/utils/json-diff';
+import { evaluateAllAssertions } from '@/lib/assertions/evaluator';
 
 export const ResponseViewer: React.FC = () => {
   const { response, previousResponse, error, isExecuting } = useExecutionStore();
@@ -45,6 +47,14 @@ export const ResponseViewer: React.FC = () => {
     if (!previousJsonString || !jsonString) return [];
     return computeJsonDiff(previousJsonString, jsonString);
   }, [previousJsonString, jsonString]);
+
+  const assertionResults = useMemo(() => {
+    return evaluateAllAssertions(activeEndpoint?.assertions, response);
+  }, [activeEndpoint?.assertions, response]);
+
+  const passedTestsCount = useMemo(() => {
+    return assertionResults.filter((r) => r.passed).length;
+  }, [assertionResults]);
 
   const handleCopy = async () => {
     if (!response) return;
@@ -212,6 +222,29 @@ export const ResponseViewer: React.FC = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
             )}
           </button>
+
+          <button
+            onClick={() => setResponseTab('tests')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              responseTab === 'tests'
+                ? 'border-indigo-500 text-white font-semibold'
+                : 'border-transparent text-white/50 hover:text-white'
+            }`}
+            title="View automated contract assertions and validation results"
+          >
+            <span>Tests</span>
+            {assertionResults.length > 0 && (
+              <span
+                className={`px-1.5 py-0.2 text-[10px] rounded-full font-mono font-bold ${
+                  passedTestsCount === assertionResults.length
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                }`}
+              >
+                {passedTestsCount}/{assertionResults.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {responseTab === 'body' && (
@@ -302,6 +335,80 @@ export const ResponseViewer: React.FC = () => {
                         {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
                       </span>
                       <span className="whitespace-pre-wrap break-all flex-1">{line.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tests / Assertions Tab Panel */}
+        {responseTab === 'tests' && (
+          <div className="space-y-3">
+            {assertionResults.length === 0 ? (
+              <div className="p-8 text-center text-white/40 flex flex-col items-center justify-center space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-[#0C0E12] flex items-center justify-center border border-[#2A2F45]">
+                  <CheckCircle2 className="w-5 h-5 text-white/30" />
+                </div>
+                <p className="text-white/70 font-medium">No assertions configured</p>
+                <p className="text-[11px] text-white/40 max-w-xs">
+                  Switch to the <span className="text-indigo-400 font-medium">Tests & Assertions</span> tab in the Request panel to add automated checks.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="p-2.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg flex items-center justify-between">
+                  <span className="font-semibold text-white/90 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Contract Assertions Result</span>
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded font-mono text-xs font-bold border ${
+                      passedTestsCount === assertionResults.length
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        : 'bg-red-500/20 text-red-300 border-red-500/30'
+                    }`}
+                  >
+                    {passedTestsCount} / {assertionResults.length} PASSED
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {assertionResults.map((res) => (
+                    <div
+                      key={res.assertionId}
+                      className={`p-2.5 rounded-lg border flex items-start gap-2.5 text-xs transition-all ${
+                        res.passed
+                          ? 'bg-emerald-500/5 border-emerald-500/20'
+                          : 'bg-red-500/5 border-red-500/20'
+                      }`}
+                    >
+                      {res.passed ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-white/90 truncate">{res.message}</span>
+                          <span
+                            className={`font-mono text-[10px] uppercase font-bold px-1.5 py-0.2 rounded border ${
+                              res.passed
+                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                : 'bg-red-500/20 text-red-400 border-red-500/30'
+                            }`}
+                          >
+                            {res.passed ? 'PASS' : 'FAIL'}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-white/50 font-mono">
+                          <span>Target: <strong className="text-white/70">{res.target}</strong></span>
+                          {res.property && <span>Property: <strong className="text-white/70">{res.property}</strong></span>}
+                          <span>Actual: <strong className={res.passed ? 'text-emerald-400' : 'text-red-400'}>{res.actualValue}</strong></span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

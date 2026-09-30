@@ -9,6 +9,7 @@ import { HistoryDrawer } from '@/components/modals/HistoryDrawer';
 import { CollectionRunnerModal } from '@/components/modals/CollectionRunnerModal';
 import { TemplatesModal } from '@/components/modals/TemplatesModal';
 import { ShareModal } from '@/components/modals/ShareModal';
+import { WebhookModal } from '@/components/modals/WebhookModal';
 
 export const AppShell: React.FC = () => {
   return (
@@ -34,6 +35,7 @@ export const AppShell: React.FC = () => {
       <CollectionRunnerModal />
       <TemplatesModal />
       <ShareModal />
+      <WebhookModal />
     </main>
   );
 };

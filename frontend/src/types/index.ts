@@ -13,6 +13,37 @@ export interface KeyValue {
   enabled: boolean;
 }
 
+export type AssertionTarget = 'status' | 'responseTime' | 'header' | 'bodyPath';
+
+export type AssertionOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'less_than'
+  | 'greater_than'
+  | 'is_type'
+  | 'exists';
+
+export interface Assertion {
+  id: string;
+  target: AssertionTarget;
+  property?: string;
+  operator: AssertionOperator;
+  expectedValue: string;
+  enabled: boolean;
+}
+
+export interface AssertionResult {
+  assertionId: string;
+  passed: boolean;
+  target: AssertionTarget;
+  property?: string;
+  operator: AssertionOperator;
+  expectedValue: string;
+  actualValue: string;
+  message: string;
+}
+
 export interface Endpoint {
   id: string;
   collectionId: string;
@@ -27,6 +58,7 @@ export interface Endpoint {
   headers: KeyValue[];
   requestBody: string; // JSON string
   mockScenario: StatusCode;
+  assertions?: Assertion[];
   createdAt: string;
   updatedAt: string;
 }
