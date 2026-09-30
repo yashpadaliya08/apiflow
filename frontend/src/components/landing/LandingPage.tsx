@@ -287,8 +287,155 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         </div>
       </section>
 
+      {/* Open Design Manifesto Section */}
+      <section id="open-design" className="px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400 mb-4">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>The Open Design Manifesto</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+            Developer Tools Belong to Developers
+          </h2>
+          <p className="mt-4 text-sm sm:text-base text-white/60 leading-relaxed">
+            Open Design is the philosophy and practice of making the design of products, systems, and developer tools completely transparent, accessible, interoperable, and free from proprietary lock-in.
+          </p>
+          <p className="mt-2 text-xs sm:text-sm text-indigo-300/80">
+            Just as Open Source revolutionized code by rejecting closed binary executables, Open Design rejects closed user experiences, proprietary cloud silos, and artificial feature gating.
+          </p>
+        </div>
+
+        {/* Traditional Closed vs Open Design Comparison */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {/* Closed Design */}
+          <div className="p-6 rounded-2xl bg-[#141720]/80 border border-red-500/20 relative">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-[#2A2F45]">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+              <h3 className="font-mono text-xs font-bold text-red-400 uppercase tracking-wider">
+                Traditional "Closed" Design
+              </h3>
+            </div>
+            <ul className="mt-4 space-y-3 font-mono text-xs text-white/60">
+              <li className="flex items-start gap-2.5">
+                <span className="text-red-400 font-bold">✕</span>
+                <span>Proprietary file formats & cloud-only collections</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-red-400 font-bold">✕</span>
+                <span>Forced cloud login & mandatory account lock-in</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-red-400 font-bold">✕</span>
+                <span>Vendor hoards your API keys, headers, and payload telemetry</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-red-400 font-bold">✕</span>
+                <span>"Black box" mock server billing and artificial limits</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-red-400 font-bold">✕</span>
+                <span>Opaque closed design system</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Open Design */}
+          <div className="p-6 rounded-2xl bg-gradient-to-b from-[#182030] to-[#121622] border border-emerald-500/40 relative shadow-xl shadow-emerald-500/5">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-[#2A2F45]">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h3 className="font-mono text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                Open Design (APIFlow)
+              </h3>
+            </div>
+            <ul className="mt-4 space-y-3 font-mono text-xs text-white/90">
+              <li className="flex items-start gap-2.5">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Open standard specs (OpenAPI 3.1.0, Postman v2.1, cURL)</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Local-first, zero login or registration required</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>User owns 100% of data (persisted securely in IndexedDB)</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>In-browser client-side simulation (0–40ms latency, zero fees)</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Transparent tokens, open primitives, and full exportability</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* The 4 Core Tenets Grid */}
+        <div className="space-y-4">
+          <h3 className="text-center font-bold text-xl text-white mb-6">
+            The 4 Core Tenets of Open Design in APIFlow
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Tenet 1 */}
+            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+              <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+                <span className="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-300 text-xs flex items-center justify-center font-mono">
+                  1
+                </span>
+                <span>Zero Vendor Lock-in (Universal Interoperability)</span>
+              </div>
+              <p className="text-xs text-white/50 leading-relaxed">
+                In closed tools, your work is trapped behind proprietary cloud sync. In APIFlow, every artifact uses universally accepted open standards: export/import OpenAPI 3.1.0 and Postman v2.1.0 JSON, ingest cURL, or export clean TypeScript, Axios, and Python code.
+              </p>
+            </div>
+
+            {/* Tenet 2 */}
+            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+                <span className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-300 text-xs flex items-center justify-center font-mono">
+                  2
+                </span>
+                <span>Local-First & Data Sovereignty</span>
+              </div>
+              <p className="text-xs text-white/50 leading-relaxed">
+                You are the sovereign owner of your data. 100% of collections, drafts, environments, and execution history are stored on your machine in IndexedDB (Dexie.js). No enterprise API secrets or headers are ever uploaded to a remote cloud database.
+              </p>
+            </div>
+
+            {/* Tenet 3 */}
+            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+              <div className="flex items-center gap-2 text-cyan-400 font-semibold text-sm">
+                <span className="w-6 h-6 rounded-md bg-cyan-500/20 text-cyan-300 text-xs flex items-center justify-center font-mono">
+                  3
+                </span>
+                <span>Ephemeral, Frictionless Sharing</span>
+              </div>
+              <p className="text-xs text-white/50 leading-relaxed">
+                No sign-up walls. Using URL-safe UTF-8 base64 state (<code className="text-cyan-300">?mock=...</code>), an interactive mock is compressed directly into the URL query. When a teammate opens the link, the browser engine recreates the mock state immediately with zero login.
+              </p>
+            </div>
+
+            {/* Tenet 4 */}
+            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+              <div className="flex items-center gap-2 text-purple-400 font-semibold text-sm">
+                <span className="w-6 h-6 rounded-md bg-purple-500/20 text-purple-300 text-xs flex items-center justify-center font-mono">
+                  4
+                </span>
+                <span>Design Systems as Shared Public Infrastructure</span>
+              </div>
+              <p className="text-xs text-white/50 leading-relaxed">
+                UI components, tokens, and interactions are built as open, reusable building blocks (Tailwind, Radix primitives, Lucide icons). APIFlow is fully modular, transparent, accessible, and easily forkable or extensible by the developer community.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* StackDoctor Integration Section */}
-      <section className="px-6 py-16 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
+      <section id="edge-hosting" className="px-6 py-16 max-w-6xl mx-auto border-t border-[#2A2F45]/60">
         <div className="p-8 rounded-2xl bg-gradient-to-br from-[#141720] via-[#1C2030] to-[#0C0E12] border border-[#2A2F45] relative overflow-hidden">
           <div className="max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-pink-400 uppercase tracking-wider">

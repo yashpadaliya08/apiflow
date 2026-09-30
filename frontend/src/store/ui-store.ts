@@ -57,7 +57,7 @@ export const useUIStore = create<UIState>()(
       theme: 'dark',
       activeCollectionId: null,
       activeEndpointId: null,
-      sidebarWidth: 280,
+      sidebarWidth: 300,
       sidebarCollapsed: false,
       searchQuery: '',
       methodFilter: 'ALL',

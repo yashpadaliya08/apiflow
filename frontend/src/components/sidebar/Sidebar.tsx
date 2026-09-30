@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Search,
   Plus,
   Trash2,
   Copy,
   ChevronRight,
+  ChevronDown,
   FolderOpen,
   X,
   Play,
@@ -58,6 +59,15 @@ export const Sidebar: React.FC = () => {
     return groups;
   }, [filteredEndpoints]);
 
+  const [collapsedResources, setCollapsedResources] = useState<Record<string, boolean>>({});
+
+  const toggleResource = (resource: string) => {
+    setCollapsedResources((prev) => ({
+      ...prev,
+      [resource]: !prev[resource],
+    }));
+  };
+
   const handleCreateNew = async () => {
     let colId = activeCollection?.id;
     if (!colId) {
@@ -82,13 +92,16 @@ export const Sidebar: React.FC = () => {
     setMethodFilter('ALL');
     setSearchQuery('');
 
-    await createEndpoint(activeCollection.id, {
-      ...ep,
-      id: undefined,
+    const { id, ...rest } = ep;
+    const duplicated = await createEndpoint(activeCollection.id, {
+      ...rest,
       name: `${ep.name} (Copy)`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+    if (duplicated) {
+      await selectEndpoint(duplicated.id);
+    }
   };
 
   const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
@@ -106,18 +119,18 @@ export const Sidebar: React.FC = () => {
       className="h-full bg-[#0C0E12] border-r border-[#2A2F45] flex flex-col flex-shrink-0 select-none text-xs"
     >
       {/* Top Header: Collection name + Add Endpoint */}
-      <div className="p-3 border-b border-[#2A2F45]/80 flex items-center justify-between">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <div className="p-3 border-b border-[#2A2F45]/80 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1" title={activeCollection?.name || 'Endpoints'}>
           <FolderOpen className="w-4 h-4 text-indigo-400 flex-shrink-0" />
           <span className="font-semibold text-white/90 truncate">
             {activeCollection?.name || 'Endpoints'}
           </span>
-          <span className="text-[10px] px-1.5 py-0.2 bg-[#1C2030] text-white/50 rounded-full font-mono">
+          <span className="text-[10px] px-1.5 py-0.2 bg-[#1C2030] text-white/50 rounded-full font-mono flex-shrink-0">
             {endpoints.length}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={() => useUIStore.getState().setRunnerOpen(true)}
             className="p-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] text-indigo-400 hover:text-indigo-300 border border-[#2A2F45] transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
@@ -214,59 +227,79 @@ export const Sidebar: React.FC = () => {
             )}
           </div>
         ) : (
-          Object.entries(groupedEndpoints).map(([resource, eps]) => (
-            <div key={resource} className="space-y-1">
-              <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold text-white/40 uppercase tracking-wider">
-                <ChevronRight className="w-3 h-3" />
-                <span>{resource}</span>
-                <span className="text-[10px] font-mono opacity-60">({eps.length})</span>
-              </div>
-
-              <div className="space-y-0.5">
-                {eps.map((ep) => {
-                  const isActive = ep.id === activeEndpoint?.id;
-
-                  return (
-                    <div
-                      key={ep.id}
-                      onClick={() => selectEndpoint(ep.id)}
-                      className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer transition-all border ${
-                        isActive
-                          ? 'bg-[#1C2030] text-white border-indigo-500/50 shadow-sm'
-                          : 'text-white/80 border-transparent hover:bg-[#141720] hover:text-white'
+          Object.entries(groupedEndpoints).map(([resource, eps]) => {
+            const isCollapsed = !!collapsedResources[resource];
+            return (
+              <div key={resource} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleResource(resource)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-white/50 hover:text-white uppercase tracking-wider hover:bg-[#141720] rounded transition-colors group cursor-pointer"
+                  title={isCollapsed ? `Expand ${resource}` : `Collapse ${resource}`}
+                >
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0 ${
+                        isCollapsed ? '-rotate-90 text-white/30' : 'text-indigo-400'
                       }`}
-                    >
-                      <div className="flex items-center gap-2 overflow-hidden flex-1">
-                        <MethodBadge method={ep.method} size="sm" />
-                        <div className="overflow-hidden flex-1 min-w-0">
-                          <div className="truncate font-medium text-white/95 text-xs">{ep.name}</div>
-                          <div className="truncate font-mono text-[10px] text-white/45">{ep.path}</div>
-                        </div>
-                      </div>
+                    />
+                    <span className="truncate group-hover:text-white transition-colors">{resource}</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 bg-[#1C2030] text-white/40 rounded-full flex-shrink-0 ml-1">
+                    {eps.length}
+                  </span>
+                </button>
 
-                      {/* Action buttons on hover */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1.5">
-                        <button
-                          onClick={(e) => handleDuplicate(e, ep)}
-                          className="p-1 rounded text-white/40 hover:text-white hover:bg-white/10"
-                          title="Duplicate endpoint"
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    {eps.map((ep) => {
+                      const isActive = ep.id === activeEndpoint?.id;
+
+                      return (
+                        <div
+                          key={ep.id}
+                          onClick={() => selectEndpoint(ep.id)}
+                          className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer transition-all border ${
+                            isActive
+                              ? 'bg-[#1C2030] text-white border-indigo-500/50 shadow-sm'
+                              : 'text-white/80 border-transparent hover:bg-[#141720] hover:text-white'
+                          }`}
                         >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => handleDelete(e, ep.id, ep.name)}
-                          className="p-1 rounded text-white/40 hover:text-red-400 hover:bg-red-500/10"
-                          title="Delete endpoint"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                          <div className="flex items-center gap-2 overflow-hidden flex-1">
+                            <MethodBadge method={ep.method} size="sm" />
+                            <div className="overflow-hidden flex-1 min-w-0">
+                              <div className="truncate font-medium text-white/95 text-xs">{ep.name}</div>
+                              <div className="truncate font-mono text-[10px] text-white/45">{ep.path}</div>
+                            </div>
+                          </div>
+
+                          {/* Action buttons on hover */}
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleDuplicate(e, ep)}
+                              className="p-1 rounded text-white/40 hover:text-indigo-400 hover:bg-white/10 transition-colors"
+                              title="Duplicate endpoint"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDelete(e, ep.id, ep.name)}
+                              className="p-1 rounded text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              title="Delete endpoint"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

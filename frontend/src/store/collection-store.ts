@@ -321,23 +321,24 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   createEndpoint: async (collectionId: string, partial: Partial<Endpoint> = {}) => {
+    const { id: partialId, ...restPartial } = partial;
     const uniqueSuffix = Math.random().toString(36).substring(2, 7);
     const newEndpoint: Endpoint = {
-      id: `ep-${Date.now()}-${uniqueSuffix}`,
       collectionId,
-      name: partial.name || 'New Endpoint',
-      method: partial.method || 'GET',
-      path: partial.path || '/api/v1/resource',
-      resource: partial.resource || 'General',
-      authRequired: partial.authRequired ?? false,
-      queryParams: partial.queryParams ? [...partial.queryParams] : [],
-      pathParams: partial.pathParams ? [...partial.pathParams] : [],
-      headers: partial.headers ? [...partial.headers] : [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
-      requestBody: partial.requestBody || '',
-      mockScenario: partial.mockScenario || 200,
+      name: 'New Endpoint',
+      method: 'GET',
+      path: '/api/v1/resource',
+      resource: 'General',
+      authRequired: false,
+      queryParams: [],
+      pathParams: [],
+      headers: [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
+      requestBody: '',
+      mockScenario: 200,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      ...partial,
+      ...restPartial,
+      id: partialId || `ep-${Date.now()}-${uniqueSuffix}`,
     };
 
     await db.endpoints.put(newEndpoint);

@@ -10,7 +10,16 @@ const StatsDashboard = lazy(() => import('@/components/stats/StatsDashboard').th
 
 export const App: React.FC = () => {
   const { init, isLoading } = useCollectionStore();
-  const [view, setView] = useState<'studio' | 'landing'>('studio');
+  const [view, setView] = useState<'studio' | 'landing'>(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search;
+      const hash = window.location.hash;
+      if (search.includes('mock=') || search.includes('view=studio') || hash === '#studio') {
+        return 'studio';
+      }
+    }
+    return 'landing';
+  });
   const isStats = typeof window !== 'undefined' && (
     window.location.pathname.startsWith('/stats') || window.location.pathname.startsWith('/admin/stats')
   );

@@ -16,6 +16,7 @@ import {
   BarChart3,
   Sparkles,
   Share2,
+  ShieldCheck,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -91,10 +92,73 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
     useUIStore.getState().setSearchQuery('');
   };
 
+  if (currentView === 'landing') {
+    return (
+      <header className="h-14 bg-[#141720] border-b border-[#2A2F45] px-4 sm:px-6 flex items-center justify-between select-none z-30 shrink-0">
+        {/* Brand */}
+        <div
+          onClick={() => onToggleView('landing')}
+          className="flex items-center gap-2.5 cursor-pointer group"
+          title="APIFlow Studio"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+            <Zap className="w-4 h-4 text-white fill-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-sm text-white tracking-tight">APIFlow</span>
+              <span className="text-[10px] uppercase font-semibold px-1.5 py-0.2 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded">
+                STUDIO
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Quick Anchor Links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-white/60">
+          <a href="#features" className="hover:text-white transition-colors">
+            Features
+          </a>
+          <a href="#edge-hosting" className="hover:text-white transition-colors">
+            Self-Hosting
+          </a>
+        </nav>
+
+        {/* Right CTA */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {isAdminActive && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAnalyticsOpen(true)}
+              leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400" />}
+              title="Admin Telemetry (Ctrl+Shift+A)"
+              className="hidden sm:inline-flex"
+            >
+              Analytics
+            </Button>
+          )}
+
+          <Button
+            size="sm"
+            variant="accent"
+            onClick={() => onToggleView('studio')}
+            leftIcon={<Play className="w-3.5 h-3.5 fill-white" />}
+            className="shadow-md shadow-indigo-500/25 px-4"
+          >
+            Launch Studio
+          </Button>
+        </div>
+
+        <AnalyticsModal isOpen={analyticsOpen} onClose={() => setAnalyticsOpen(false)} />
+      </header>
+    );
+  }
+
   return (
-    <header className="h-14 bg-[#141720] border-b border-[#2A2F45] px-4 flex items-center justify-between select-none z-30">
+    <header className="h-14 min-h-[3.5rem] bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative">
       {/* Left: Brand + Collection Picker */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
         <div
           onClick={() => onToggleView('landing')}
           className="flex items-center gap-2.5 cursor-pointer group"
@@ -118,12 +182,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         {/* Collection Selector */}
         <div className="relative">
           <button
-            onClick={() => setColDropdownOpen(!colDropdownOpen)}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs font-medium text-white/90 transition-colors"
+            type="button"
+            onClick={() => setColDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs font-medium text-white/90 transition-colors cursor-pointer"
           >
-            <Layers className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="max-w-[160px] truncate">{activeCollection?.name || 'Select Collection'}</span>
-            <ChevronDown className="w-3 h-3 text-white/50" />
+            <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="max-w-[220px] sm:max-w-[280px] truncate">{activeCollection?.name || 'Select Collection'}</span>
+            <ChevronDown className="w-3 h-3 text-white/50 shrink-0" />
           </button>
 
           {colDropdownOpen && (
@@ -225,36 +290,36 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
       </div>
 
       {/* Center: Execution Mode Segmented Control */}
-      <div className="flex items-center bg-[#0C0E12] p-1 rounded-lg border border-[#2A2F45]">
+      <div className="flex items-center bg-[#0C0E12] p-1 rounded-lg border border-[#2A2F45] shrink-0 whitespace-nowrap">
         <button
           onClick={() => setExecutionMode('mock')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'mock'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-white/60 hover:text-white hover:bg-white/5'
           }`}
           title="Simulate responses client-side with 7 status codes & Faker heuristics"
         >
-          <Zap className="w-3.5 h-3.5" />
-          <span>Mock Engine</span>
+          <Zap className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap">Mock Engine</span>
         </button>
 
         <button
           onClick={() => setExecutionMode('live')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'live'
               ? 'bg-emerald-600 text-white shadow-sm'
               : 'text-white/60 hover:text-white hover:bg-white/5'
           }`}
           title="Send real HTTP requests via local backend CORS bypass proxy"
         >
-          <Globe className="w-3.5 h-3.5" />
-          <span>Live Proxy</span>
+          <Globe className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap">Live Proxy</span>
         </button>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
         <Button
           size="sm"
           variant="outline"
@@ -337,11 +402,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
 
         <Button
           size="sm"
-          variant={currentView === 'landing' ? 'primary' : 'ghost'}
-          onClick={() => onToggleView(currentView === 'landing' ? 'studio' : 'landing')}
-          leftIcon={currentView === 'landing' ? <Play className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5 text-purple-400" />}
+          variant="ghost"
+          onClick={() => onToggleView('landing')}
+          leftIcon={<BookOpen className="w-3.5 h-3.5 text-purple-400" />}
+          title="Return to Landing Page & Overview Docs"
         >
-          {currentView === 'landing' ? 'Launch Studio' : 'Overview & Docs'}
+          Overview & Docs
         </Button>
       </div>
 

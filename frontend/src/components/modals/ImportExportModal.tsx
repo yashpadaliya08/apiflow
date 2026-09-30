@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Upload, Check, AlertCircle, FileCode, Layers, Terminal } from 'lucide-react';
+import { Download, Upload, Check, AlertCircle, FileCode, Layers, Terminal, ShieldCheck, HardDrive } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/store/ui-store';
@@ -10,15 +10,16 @@ import {
   importCollection,
   downloadFile,
 } from '@/lib/generators/import-export';
+import { exportFullWorkspace, restoreWorkspaceBackup } from '@/lib/generators/workspace-backup';
 import { parseCurl } from '@/lib/parsers/curl-parser';
 import { copyToClipboard } from '@/lib/utils';
 import { db } from '@/lib/db/dexie-db';
 
 export const ImportExportModal: React.FC = () => {
   const { importOpen, setImportOpen } = useUIStore();
-  const { activeCollection, endpoints, loadCollections, selectCollection, createEndpoint, selectEndpoint } = useCollectionStore();
+  const { activeCollection, endpoints, loadCollections, selectCollection, createEndpoint, selectEndpoint, init } = useCollectionStore();
 
-  const [activeTab, setActiveTab] = useState<'export' | 'import' | 'curl'>('export');
+  const [activeTab, setActiveTab] = useState<'export' | 'import' | 'curl' | 'backup'>('export');
   const [importJson, setImportJson] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
@@ -27,6 +28,46 @@ export const ImportExportModal: React.FC = () => {
   const [curlInput, setCurlInput] = useState('');
   const [curlError, setCurlError] = useState<string | null>(null);
   const [curlSuccess, setCurlSuccess] = useState<string | null>(null);
+
+  const [backupSuccess, setBackupSuccess] = useState<string | null>(null);
+  const [backupError, setBackupError] = useState<string | null>(null);
+  const [isExportingBackup, setIsExportingBackup] = useState(false);
+
+  const handleExportBackup = async () => {
+    setIsExportingBackup(true);
+    try {
+      await exportFullWorkspace();
+    } finally {
+      setIsExportingBackup(false);
+    }
+  };
+
+  const handleBackupUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setBackupError(null);
+    setBackupSuccess(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        const res = await restoreWorkspaceBackup(content);
+        await init();
+        setBackupSuccess(
+          `Restored ${res.collectionCount} collections, ${res.endpointCount} endpoints, and ${res.environmentCount} environments successfully!`
+        );
+        setTimeout(() => {
+          setImportOpen(false);
+          setBackupSuccess(null);
+        }, 1500);
+      } catch (err: any) {
+        setBackupError(err.message || 'Failed to restore workspace backup.');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   if (!activeCollection) return null;
 
@@ -174,6 +215,18 @@ export const ImportExportModal: React.FC = () => {
             >
               <Terminal className="w-3.5 h-3.5" />
               <span>Paste cURL</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('backup')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+                activeTab === 'backup'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <HardDrive className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Workspace Backup</span>
             </button>
           </div>
         </div>
@@ -349,7 +402,7 @@ export const ImportExportModal: React.FC = () => {
 
             <div className="flex items-center justify-between pt-1">
               <span className="text-[11px] text-white/40">
-                Auto-extracts method, path, headers, query params & JSON body.
+                 Auto-extracts method, path, headers, query params & JSON body.
               </span>
               <Button
                 variant="accent"
@@ -360,6 +413,79 @@ export const ImportExportModal: React.FC = () => {
                 Parse & Add to Collection
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Tab 4: Workspace Backup & Restore */}
+        {activeTab === 'backup' && (
+          <div className="space-y-4">
+            <div className="p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-xl space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+                <ShieldCheck className="w-4 h-4" />
+                <span>100% Local Data Sovereignty & Portability</span>
+              </div>
+              <p className="text-[11px] text-white/60 leading-relaxed">
+                Export all collections, mock endpoints, and environment variables into a single, clean JSON file. No proprietary binary locks, no cloud synchronization requirements.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Export Full Workspace */}
+              <div className="p-4 bg-[#0C0E12] border border-[#2A2F45] rounded-lg flex flex-col justify-between space-y-3">
+                <div>
+                  <h4 className="font-semibold text-white">Full Workspace Backup</h4>
+                  <p className="text-[11px] text-white/50 mt-1">
+                    Download complete snapshot of all collections, endpoints, environments & history.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleExportBackup}
+                  disabled={isExportingBackup}
+                  leftIcon={<Download className="w-3.5 h-3.5" />}
+                  className="w-full"
+                >
+                  Export All (.json)
+                </Button>
+              </div>
+
+              {/* Restore Workspace */}
+              <div className="p-4 bg-[#0C0E12] border border-[#2A2F45] rounded-lg flex flex-col justify-between space-y-3">
+                <div>
+                  <h4 className="font-semibold text-white">Restore from Backup</h4>
+                  <p className="text-[11px] text-white/50 mt-1">
+                    Upload an APIFlow JSON backup to restore your collections and variables.
+                  </p>
+                </div>
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleBackupUpload}
+                    className="hidden"
+                  />
+                  <span className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#1C2030] hover:bg-[#2A2F48] text-white/90 border border-[#2A2F45] transition-colors">
+                    <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Upload & Restore Backup</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {backupSuccess && (
+              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-md text-emerald-300 flex items-center gap-2">
+                <Check className="w-4 h-4 flex-shrink-0" />
+                <span>{backupSuccess}</span>
+              </div>
+            )}
+
+            {backupError && (
+              <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-md text-red-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{backupError}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
