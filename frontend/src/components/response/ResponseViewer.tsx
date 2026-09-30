@@ -26,6 +26,26 @@ export const ResponseViewer: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [rawView, setRawView] = useState(false);
 
+  // MUST be called unconditionally at top of component before any early returns (React Rules of Hooks)
+  const jsonString = useMemo(() => {
+    if (!response?.body) return '';
+    return typeof response.body === 'string'
+      ? response.body
+      : JSON.stringify(response.body, null, 2);
+  }, [response]);
+
+  const previousJsonString = useMemo(() => {
+    if (!previousResponse?.body) return '';
+    return typeof previousResponse.body === 'string'
+      ? previousResponse.body
+      : JSON.stringify(previousResponse.body, null, 2);
+  }, [previousResponse]);
+
+  const diffLines = useMemo(() => {
+    if (!previousJsonString || !jsonString) return [];
+    return computeJsonDiff(previousJsonString, jsonString);
+  }, [previousJsonString, jsonString]);
+
   const handleCopy = async () => {
     if (!response) return;
     const text = typeof response.body === 'string' ? response.body : JSON.stringify(response.body, null, 2);
@@ -76,23 +96,6 @@ export const ResponseViewer: React.FC = () => {
       </div>
     );
   }
-
-  const jsonString =
-    typeof response.body === 'string'
-      ? response.body
-      : JSON.stringify(response.body, null, 2);
-
-  const previousJsonString = useMemo(() => {
-    if (!previousResponse?.body) return '';
-    return typeof previousResponse.body === 'string'
-      ? previousResponse.body
-      : JSON.stringify(previousResponse.body, null, 2);
-  }, [previousResponse]);
-
-  const diffLines = useMemo(() => {
-    if (!previousJsonString) return [];
-    return computeJsonDiff(previousJsonString, jsonString);
-  }, [previousJsonString, jsonString]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] overflow-hidden">
