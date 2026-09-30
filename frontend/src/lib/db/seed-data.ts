@@ -224,12 +224,20 @@ const SEED_ENDPOINTS: Omit<Endpoint, 'collectionId'>[] = [
 // Seed function — runs once on first launch
 // ═══════════════════════════════════════════════════
 export async function seedDatabase(): Promise<void> {
+  if (typeof window !== 'undefined' && localStorage.getItem('apiflow_seeded_v1')) {
+    return; // Fast-path: already seeded in this browser
+  }
+
   const existingCollections = await db.collections.count();
-  if (existingCollections > 0) return; // Already seeded
+  if (existingCollections > 0) {
+    if (typeof window !== 'undefined') localStorage.setItem('apiflow_seeded_v1', 'true');
+    return;
+  }
 
   await db.collections.add(SEED_COLLECTION);
   await db.endpoints.bulkAdd(
     SEED_ENDPOINTS.map(ep => ({ ...ep, collectionId: SEED_COLLECTION.id }))
   );
+  if (typeof window !== 'undefined') localStorage.setItem('apiflow_seeded_v1', 'true');
   console.log('[APIFlow] Database seeded with Enterprise Storefront API');
 }

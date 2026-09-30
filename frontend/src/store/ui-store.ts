@@ -19,13 +19,14 @@ interface UIState {
   exportOpen: boolean;
   historyOpen: boolean;
   envOpen: boolean;
+  runnerOpen: boolean;
   // Execution
   executionMode: ExecutionMode;
   isExecuting: boolean;
   // Request panel active tab
   requestTab: 'params' | 'headers' | 'body' | 'path';
   // Response panel active tab
-  responseTab: 'body' | 'headers' | 'cookies';
+  responseTab: 'body' | 'headers' | 'cookies' | 'diff';
 
   // Actions
   setActiveCollection: (id: string | null) => void;
@@ -39,6 +40,7 @@ interface UIState {
   setExportOpen: (v: boolean) => void;
   setHistoryOpen: (v: boolean) => void;
   setEnvOpen: (v: boolean) => void;
+  setRunnerOpen: (v: boolean) => void;
   setExecutionMode: (m: ExecutionMode) => void;
   setIsExecuting: (v: boolean) => void;
   setRequestTab: (t: UIState['requestTab']) => void;
@@ -60,6 +62,7 @@ export const useUIStore = create<UIState>()(
       exportOpen: false,
       historyOpen: false,
       envOpen: false,
+      runnerOpen: false,
       executionMode: 'mock',
       isExecuting: false,
       requestTab: 'params',
@@ -76,6 +79,7 @@ export const useUIStore = create<UIState>()(
       setExportOpen: (v) => set({ exportOpen: v }),
       setHistoryOpen: (v) => set({ historyOpen: v }),
       setEnvOpen: (v) => set({ envOpen: v }),
+      setRunnerOpen: (v) => set({ runnerOpen: v }),
       setExecutionMode: (m) => set({ executionMode: m }),
       setIsExecuting: (v) => set({ isExecuting: v }),
       setRequestTab: (t) => set({ requestTab: t }),

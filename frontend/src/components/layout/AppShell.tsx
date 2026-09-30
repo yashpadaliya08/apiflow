@@ -6,6 +6,7 @@ import { SnippetModal } from '@/components/modals/SnippetModal';
 import { ImportExportModal } from '@/components/modals/ImportExportModal';
 import { EnvironmentModal } from '@/components/modals/EnvironmentModal';
 import { HistoryDrawer } from '@/components/modals/HistoryDrawer';
+import { CollectionRunnerModal } from '@/components/modals/CollectionRunnerModal';
 
 export const AppShell: React.FC = () => {
   return (
@@ -28,6 +29,7 @@ export const AppShell: React.FC = () => {
       <ImportExportModal />
       <EnvironmentModal />
       <HistoryDrawer />
+      <CollectionRunnerModal />
     </main>
   );
 };

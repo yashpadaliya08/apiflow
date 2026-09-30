@@ -27,4 +27,27 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/@faker-js/faker')) {
+            return 'vendor-faker';
+          }
+          if (id.includes('node_modules/@codemirror') || id.includes('node_modules/@lezer')) {
+            return 'vendor-codemirror';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-lucide';
+          }
+          if (id.includes('node_modules/dexie')) {
+            return 'vendor-dexie';
+          }
+        },
+      },
+    },
+  },
 });

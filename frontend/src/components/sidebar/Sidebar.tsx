@@ -7,6 +7,7 @@ import {
   ChevronRight,
   FolderOpen,
   X,
+  Play,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -116,14 +117,25 @@ export const Sidebar: React.FC = () => {
           </span>
         </div>
 
-        <button
-          onClick={handleCreateNew}
-          className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
-          title="Create New Endpoint"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>New</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => useUIStore.getState().setRunnerOpen(true)}
+            className="p-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] text-indigo-400 hover:text-indigo-300 border border-[#2A2F45] transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
+            title="Run All Endpoints in Collection"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span>Run</span>
+          </button>
+
+          <button
+            onClick={handleCreateNew}
+            className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
+            title="Create New Endpoint"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Input */}

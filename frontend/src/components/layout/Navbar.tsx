@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Layers,
   ChevronDown,
@@ -45,12 +45,33 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
     setImportOpen,
     setEnvOpen,
     setHistoryOpen,
+    setRunnerOpen,
   } = useUIStore();
 
   const [colDropdownOpen, setColDropdownOpen] = useState(false);
   const [newColName, setNewColName] = useState('');
   const [isCreatingCol, setIsCreatingCol] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [isAdminActive, setIsAdminActive] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasAdminQuery = window.location.search.includes('admin=');
+      const hasAdminCookie = document.cookie.includes('apiflow_admin_key');
+      setIsAdminActive(hasAdminQuery || hasAdminCookie);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // Ctrl+Shift+A or Cmd+Shift+A toggles Analytics
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+          e.preventDefault();
+          setAnalyticsOpen((prev) => !prev);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
 
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
 
@@ -243,6 +264,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         <Button
           size="sm"
           variant="outline"
+          onClick={() => setRunnerOpen(true)}
+          leftIcon={<Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/30" />}
+          title="Run all endpoints in collection sequentially"
+        >
+          Runner
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
           onClick={() => setImportOpen(true)}
           leftIcon={<Download className="w-3.5 h-3.5 text-emerald-400" />}
           title="Import / Export OpenAPI 3.1 & Postman 2.1 collections"
@@ -266,15 +297,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           )}
         </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setAnalyticsOpen(true)}
-          leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400" />}
-          title="View simulation metrics & server telemetry"
-        >
-          Analytics
-        </Button>
+        {isAdminActive && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAnalyticsOpen(true)}
+            leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400" />}
+            title="Admin Telemetry (Ctrl+Shift+A)"
+          >
+            Analytics
+          </Button>
+        )}
 
         <div className="h-5 w-px bg-[#2A2F45] mx-1" />
 

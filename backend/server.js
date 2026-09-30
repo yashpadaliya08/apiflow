@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
@@ -8,6 +9,9 @@ const net = require('net');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Enable response compression (Gzip / Deflate)
+app.use(compression());
 
 // Enable CORS
 app.use(cors({
@@ -1158,9 +1162,20 @@ const distPath = path.resolve(__dirname, '../frontend/dist');
 
 if (fs.existsSync(distPath)) {
   console.log(`[APIFlow] Serving static production frontend from ${distPath}`);
-  app.use(express.static(distPath));
+
+  // 1-year immutable caching for fingerprinted assets, no-cache for HTML
+  app.use(express.static(distPath, {
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    },
+  }));
 
   app.use((req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }

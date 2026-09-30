@@ -65,15 +65,18 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
       set({ isLoading: true });
       await seedDatabase();
 
-      const collections = await db.collections.toArray();
-      set({ collections });
+      // Parallelize collections, environments, and history queries
+      const [allCollections, envs, history] = await Promise.all([
+        db.collections.toArray(),
+        db.environments.toArray(),
+        db.history.orderBy('id').reverse().limit(50).toArray(),
+      ]);
 
-      // Restore active collection from localStorage if possible
+      let collections = allCollections;
       const savedColId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_COL) : null;
       let currentCollection = collections.find((c) => c.id === savedColId) || collections[0] || null;
 
       if (!currentCollection && collections.length === 0) {
-        // Fallback create default collection if DB was completely wiped
         currentCollection = {
           id: 'col-default',
           name: 'My API Collection',
@@ -82,27 +85,29 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
           updatedAt: new Date().toISOString(),
         };
         await db.collections.put(currentCollection);
-        set({ collections: [currentCollection] });
+        collections = [currentCollection];
       }
 
+      let endpoints: Endpoint[] = [];
+      let currentEndpoint: Endpoint | null = null;
+
       if (currentCollection) {
-        set({ activeCollection: currentCollection });
         if (typeof window !== 'undefined') {
           localStorage.setItem(STORAGE_KEY_COL, currentCollection.id);
         }
 
-        const endpoints = await db.endpoints.where('collectionId').equals(currentCollection.id).toArray();
+        endpoints = await db.endpoints.where('collectionId').equals(currentCollection.id).toArray();
         const savedEpId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_EP) : null;
-        const currentEndpoint = endpoints.find((e) => e.id === savedEpId) || endpoints[0] || null;
+        currentEndpoint = endpoints.find((e) => e.id === savedEpId) || endpoints[0] || null;
 
-        set({ endpoints, activeEndpoint: currentEndpoint });
         if (currentEndpoint && typeof window !== 'undefined') {
           localStorage.setItem(STORAGE_KEY_EP, currentEndpoint.id);
         }
       }
 
-      // Load environments
-      const envs = await db.environments.toArray();
+      // Handle environments
+      let activeEnvId: string | null = null;
+      let finalEnvs = envs;
       if (envs.length === 0) {
         const defaultEnv: Environment = {
           id: 'env-default',
@@ -115,15 +120,22 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
           ],
         };
         await db.environments.put(defaultEnv);
-        set({ environments: [defaultEnv], activeEnvironmentId: defaultEnv.id });
+        finalEnvs = [defaultEnv];
+        activeEnvId = defaultEnv.id;
       } else {
         const active = envs.find((e) => e.isActive) || envs[0];
-        set({ environments: envs, activeEnvironmentId: active?.id || null });
+        activeEnvId = active?.id || null;
       }
 
-      // Load history
-      const history = await db.history.orderBy('id').reverse().limit(50).toArray();
-      set({ history });
+      set({
+        collections,
+        activeCollection: currentCollection,
+        endpoints,
+        activeEndpoint: currentEndpoint,
+        environments: finalEnvs,
+        activeEnvironmentId: activeEnvId,
+        history,
+      });
     } catch (err) {
       console.error('[CollectionStore] Init error:', err);
     } finally {

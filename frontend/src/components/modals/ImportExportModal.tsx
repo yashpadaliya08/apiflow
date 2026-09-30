@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Upload, Check, AlertCircle, FileCode, Layers } from 'lucide-react';
+import { Download, Upload, Check, AlertCircle, FileCode, Layers, Terminal } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/store/ui-store';
@@ -10,18 +10,23 @@ import {
   importCollection,
   downloadFile,
 } from '@/lib/generators/import-export';
+import { parseCurl } from '@/lib/parsers/curl-parser';
 import { copyToClipboard } from '@/lib/utils';
 import { db } from '@/lib/db/dexie-db';
 
 export const ImportExportModal: React.FC = () => {
   const { importOpen, setImportOpen } = useUIStore();
-  const { activeCollection, endpoints, loadCollections, selectCollection } = useCollectionStore();
+  const { activeCollection, endpoints, loadCollections, selectCollection, createEndpoint, selectEndpoint } = useCollectionStore();
 
-  const [activeTab, setActiveTab] = useState<'export' | 'import'>('export');
+  const [activeTab, setActiveTab] = useState<'export' | 'import' | 'curl'>('export');
   const [importJson, setImportJson] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [copiedFormat, setCopiedFormat] = useState<'openapi' | 'postman' | null>(null);
+
+  const [curlInput, setCurlInput] = useState('');
+  const [curlError, setCurlError] = useState<string | null>(null);
+  const [curlSuccess, setCurlSuccess] = useState<string | null>(null);
 
   if (!activeCollection) return null;
 
@@ -90,6 +95,39 @@ export const ImportExportModal: React.FC = () => {
     }
   };
 
+  const handleDoCurlImport = async () => {
+    setCurlError(null);
+    setCurlSuccess(null);
+
+    if (!curlInput.trim()) {
+      setCurlError('Please paste a valid cURL command.');
+      return;
+    }
+
+    try {
+      const parsed = parseCurl(curlInput);
+      const newEp = await createEndpoint(activeCollection.id, {
+        name: parsed.name,
+        method: parsed.method,
+        path: parsed.path,
+        queryParams: parsed.queryParams,
+        headers: parsed.headers,
+        requestBody: parsed.requestBody,
+        summary: `Imported via cURL from ${parsed.url}`,
+      });
+
+      await selectEndpoint(newEp.id);
+      setCurlSuccess(`Imported "${parsed.name}" (${parsed.method} ${parsed.path}) successfully!`);
+      setCurlInput('');
+      setTimeout(() => {
+        setImportOpen(false);
+        setCurlSuccess(null);
+      }, 1200);
+    } catch (err: any) {
+      setCurlError(err.message || 'Failed to parse cURL command.');
+    }
+  };
+
   return (
     <Modal
       isOpen={importOpen}
@@ -124,6 +162,18 @@ export const ImportExportModal: React.FC = () => {
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Import Specs</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('curl')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+                activeTab === 'curl'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Paste cURL</span>
             </button>
           </div>
         </div>
@@ -246,6 +296,68 @@ export const ImportExportModal: React.FC = () => {
                 leftIcon={<Upload className="w-4 h-4" />}
               >
                 Import Collection
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Paste cURL */}
+        {activeTab === 'curl' && (
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-white/70 font-semibold">
+                  Paste cURL Command
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurlInput(
+                      `curl -X POST https://api.enterprise.dev/api/v1/orders \\\n  -H "Authorization: Bearer my-secret-jwt" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "item": "Mechanical Keyboard",\n    "quantity": 1,\n    "price": 129.99\n  }'`
+                    )
+                  }
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Load Example cURL
+                </button>
+              </div>
+              <textarea
+                rows={9}
+                value={curlInput}
+                onChange={(e) => setCurlInput(e.target.value)}
+                placeholder="curl -X POST https://api.example.com/v1/users \
+  -H 'Authorization: Bearer token' \
+  -H 'Content-Type: application/json' \
+  -d '{ &quot;name&quot;: &quot;Alice&quot; }'"
+                className="w-full bg-[#0C0E12] border border-[#2A2F45] rounded-md p-3 font-mono text-xs text-white/90 focus:outline-none focus:border-indigo-500 placeholder-white/30 resize-none"
+              />
+            </div>
+
+            {curlError && (
+              <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-md text-red-300 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{curlError}</span>
+              </div>
+            )}
+
+            {curlSuccess && (
+              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-md text-emerald-300 flex items-center gap-2">
+                <Check className="w-4 h-4 flex-shrink-0" />
+                <span>{curlSuccess}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] text-white/40">
+                Auto-extracts method, path, headers, query params & JSON body.
+              </span>
+              <Button
+                variant="accent"
+                size="md"
+                onClick={handleDoCurlImport}
+                leftIcon={<Terminal className="w-4 h-4" />}
+              >
+                Parse & Add to Collection
               </Button>
             </div>
           </div>

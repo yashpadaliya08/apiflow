@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Clock,
   HardDrive,
@@ -8,14 +8,20 @@ import {
   Globe,
   Layers,
   Terminal,
+  GitCompare,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useExecutionStore } from '@/store/execution-store';
+import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
 import { StatusBadge } from '@/components/ui/Badge';
 import { formatBytes, formatLatency, copyToClipboard } from '@/lib/utils';
+import { computeJsonDiff } from '@/lib/utils/json-diff';
 
 export const ResponseViewer: React.FC = () => {
-  const { response, error, isExecuting } = useExecutionStore();
+  const { response, previousResponse, error, isExecuting } = useExecutionStore();
+  const { activeEndpoint } = useCollectionStore();
   const { responseTab, setResponseTab } = useUIStore();
   const [copied, setCopied] = useState(false);
   const [rawView, setRawView] = useState(false);
@@ -76,12 +82,47 @@ export const ResponseViewer: React.FC = () => {
       ? response.body
       : JSON.stringify(response.body, null, 2);
 
+  const previousJsonString = useMemo(() => {
+    if (!previousResponse?.body) return '';
+    return typeof previousResponse.body === 'string'
+      ? previousResponse.body
+      : JSON.stringify(previousResponse.body, null, 2);
+  }, [previousResponse]);
+
+  const diffLines = useMemo(() => {
+    if (!previousJsonString) return [];
+    return computeJsonDiff(previousJsonString, jsonString);
+  }, [previousJsonString, jsonString]);
+
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] overflow-hidden">
       {/* Top Response Meta Header */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#141720] flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <StatusBadge status={response.status} statusText={response.statusText} size="md" />
+
+          {activeEndpoint && (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded border ${
+                response.status === (activeEndpoint.mockScenario || 200)
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+              }`}
+              title={`Contract assertion: Expected status ${activeEndpoint.mockScenario || 200}`}
+            >
+              {response.status === (activeEndpoint.mockScenario || 200) ? (
+                <>
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>Contract Match</span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-3 h-3 text-amber-400" />
+                  <span>Deviates ({activeEndpoint.mockScenario || 200})</span>
+                </>
+              )}
+            </span>
+          )}
 
           <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded bg-[#1C2030] text-emerald-400 border border-[#2A2F45]">
             <Clock className="w-3 h-3 text-emerald-400" />
@@ -125,7 +166,7 @@ export const ResponseViewer: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs: Body / Headers */}
+      {/* Tabs: Body / Headers / Diff */}
       <div className="flex items-center justify-between border-b border-[#2A2F45] bg-[#141720] px-3">
         <div className="flex items-center gap-1">
           <button
@@ -151,6 +192,22 @@ export const ResponseViewer: React.FC = () => {
             <span className="px-1.5 py-0.2 text-[10px] bg-[#1C2030] text-white/60 rounded-full font-mono">
               {Object.keys(response.headers || {}).length}
             </span>
+          </button>
+
+          <button
+            onClick={() => setResponseTab('diff')}
+            className={`flex items-center gap-1 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              responseTab === 'diff'
+                ? 'border-indigo-500 text-white font-semibold'
+                : 'border-transparent text-white/50 hover:text-white'
+            }`}
+            title="Compare with previous run or mock response"
+          >
+            <GitCompare className="w-3 h-3" />
+            <span>Diff / Compare</span>
+            {previousResponse && (
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            )}
           </button>
         </div>
 
@@ -198,6 +255,55 @@ export const ResponseViewer: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {responseTab === 'diff' && (
+          <div>
+            {!previousResponse ? (
+              <div className="text-center py-12 text-white/40">
+                <GitCompare className="w-8 h-8 mx-auto mb-2 text-white/20" />
+                <p className="font-semibold text-white/70">No Previous Execution to Compare</p>
+                <p className="text-[11px] mt-1 text-white/40 max-w-sm mx-auto">
+                  Click <span className="text-indigo-400 font-medium">Simulate</span> again or toggle between Mock &amp; Live Proxy to see line-by-line visual differences!
+                </p>
+              </div>
+            ) : (
+              <div className="border border-[#2A2F45] rounded-md overflow-hidden bg-[#0C0E12] font-mono text-xs">
+                <div className="p-2.5 bg-[#141720] border-b border-[#2A2F45] flex items-center justify-between text-[11px] text-white/60">
+                  <div className="flex items-center gap-4">
+                    <span className="text-rose-400">
+                      - Previous ({previousResponse.status} {previousResponse.statusText})
+                    </span>
+                    <span className="text-emerald-400">
+                      + Current ({response.status} {response.statusText})
+                    </span>
+                  </div>
+                  <span className="text-white/40">
+                    {diffLines.filter((l) => l.type !== 'same').length} lines altered
+                  </span>
+                </div>
+                <div className="overflow-x-auto p-2 leading-relaxed max-h-[500px]">
+                  {diffLines.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-start px-2 py-0.5 rounded text-[11px] ${
+                        line.type === 'added'
+                          ? 'bg-emerald-500/15 text-emerald-300'
+                          : line.type === 'removed'
+                          ? 'bg-rose-500/15 text-rose-300'
+                          : 'text-white/60'
+                      }`}
+                    >
+                      <span className="w-5 flex-shrink-0 select-none text-[10px] text-white/30 font-bold">
+                        {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
+                      </span>
+                      <span className="whitespace-pre-wrap break-all flex-1">{line.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
