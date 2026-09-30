@@ -7,6 +7,8 @@ import { ImportExportModal } from '@/components/modals/ImportExportModal';
 import { EnvironmentModal } from '@/components/modals/EnvironmentModal';
 import { HistoryDrawer } from '@/components/modals/HistoryDrawer';
 import { CollectionRunnerModal } from '@/components/modals/CollectionRunnerModal';
+import { TemplatesModal } from '@/components/modals/TemplatesModal';
+import { ShareModal } from '@/components/modals/ShareModal';
 
 export const AppShell: React.FC = () => {
   return (
@@ -30,6 +32,8 @@ export const AppShell: React.FC = () => {
       <EnvironmentModal />
       <HistoryDrawer />
       <CollectionRunnerModal />
+      <TemplatesModal />
+      <ShareModal />
     </main>
   );
 };

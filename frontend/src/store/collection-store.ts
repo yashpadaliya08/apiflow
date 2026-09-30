@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db } from '@/lib/db/dexie-db';
 import { seedDatabase } from '@/lib/db/seed-data';
+import { decodeEndpointFromUrl } from '@/lib/utils/share-encoder';
 import type { Collection, Endpoint, Environment, HistoryEntry, KeyValue } from '@/types';
 
 interface CollectionState {
@@ -102,6 +103,40 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
 
         if (currentEndpoint && typeof window !== 'undefined') {
           localStorage.setItem(STORAGE_KEY_EP, currentEndpoint.id);
+        }
+
+        // Check if URL has ?mock= payload from an interactive shared link
+        if (typeof window !== 'undefined' && window.location.search.includes('mock=')) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const mockParam = urlParams.get('mock');
+          if (mockParam) {
+            const decoded = decodeEndpointFromUrl(mockParam);
+            if (decoded) {
+              const sharedEp: Endpoint = {
+                id: `ep-shared-${Date.now()}`,
+                collectionId: currentCollection.id,
+                name: decoded.name || 'Shared Mock Endpoint',
+                method: decoded.method || 'GET',
+                path: decoded.path || '/api/shared',
+                summary: decoded.summary || 'Imported from interactive share link',
+                resource: 'Shared',
+                authRequired: false,
+                queryParams: decoded.queryParams || [],
+                pathParams: decoded.pathParams || [],
+                headers: decoded.headers || [],
+                requestBody: decoded.requestBody || '',
+                mockScenario: decoded.mockScenario || 200,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+              await db.endpoints.put(sharedEp);
+              endpoints.unshift(sharedEp);
+              currentEndpoint = sharedEp;
+              localStorage.setItem(STORAGE_KEY_EP, sharedEp.id);
+              // Clean URL query without page reload
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          }
         }
       }
 

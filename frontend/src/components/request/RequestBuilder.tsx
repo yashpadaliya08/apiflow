@@ -7,6 +7,7 @@ import {
   Globe,
   Sliders,
   Plus,
+  Share2,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useExecutionStore } from '@/store/execution-store';
@@ -271,6 +272,16 @@ export const RequestBuilder: React.FC = () => {
             title="Execute request (Ctrl+Enter)"
           >
             {executionMode === 'mock' ? 'Simulate' : 'Send'}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => useUIStore.getState().setShareOpen(true)}
+            className="flex-shrink-0 px-2.5 text-cyan-400 border-[#2A2F45] hover:border-cyan-500/50 hover:bg-cyan-500/10"
+            title="Share interactive mock URL"
+          >
+            <Share2 className="w-3.5 h-3.5" />
           </Button>
         </div>
 

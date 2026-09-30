@@ -14,6 +14,8 @@ import {
   BookOpen,
   MonitorPlay,
   BarChart3,
+  Sparkles,
+  Share2,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -46,6 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
     setEnvOpen,
     setHistoryOpen,
     setRunnerOpen,
+    setTemplatesOpen,
+    setShareOpen,
   } = useUIStore();
 
   const [colDropdownOpen, setColDropdownOpen] = useState(false);
@@ -254,11 +258,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setCodeSnippetOpen(true)}
-          leftIcon={<Code2 className="w-3.5 h-3.5 text-indigo-400" />}
-          title="Generate cURL, TypeScript, Axios, and Python code"
+          onClick={() => setTemplatesOpen(true)}
+          leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-400" />}
+          title="Browse industry API starter templates (Stripe, OpenAI, SaaS Auth)"
         >
-          Code
+          Templates
         </Button>
 
         <Button
@@ -269,6 +273,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           title="Run all endpoints in collection sequentially"
         >
           Runner
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCodeSnippetOpen(true)}
+          leftIcon={<Code2 className="w-3.5 h-3.5 text-indigo-400" />}
+          title="Generate cURL, TypeScript, Axios, and Python code"
+        >
+          Code
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShareOpen(true)}
+          leftIcon={<Share2 className="w-3.5 h-3.5 text-cyan-400" />}
+          title="Generate 1-click shareable interactive mock link"
+        >
+          Share
         </Button>
 
         <Button

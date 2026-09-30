@@ -20,6 +20,8 @@ interface UIState {
   historyOpen: boolean;
   envOpen: boolean;
   runnerOpen: boolean;
+  templatesOpen: boolean;
+  shareOpen: boolean;
   // Execution
   executionMode: ExecutionMode;
   isExecuting: boolean;
@@ -41,6 +43,8 @@ interface UIState {
   setHistoryOpen: (v: boolean) => void;
   setEnvOpen: (v: boolean) => void;
   setRunnerOpen: (v: boolean) => void;
+  setTemplatesOpen: (v: boolean) => void;
+  setShareOpen: (v: boolean) => void;
   setExecutionMode: (m: ExecutionMode) => void;
   setIsExecuting: (v: boolean) => void;
   setRequestTab: (t: UIState['requestTab']) => void;
@@ -63,6 +67,8 @@ export const useUIStore = create<UIState>()(
       historyOpen: false,
       envOpen: false,
       runnerOpen: false,
+      templatesOpen: false,
+      shareOpen: false,
       executionMode: 'mock',
       isExecuting: false,
       requestTab: 'params',
@@ -80,6 +86,8 @@ export const useUIStore = create<UIState>()(
       setHistoryOpen: (v) => set({ historyOpen: v }),
       setEnvOpen: (v) => set({ envOpen: v }),
       setRunnerOpen: (v) => set({ runnerOpen: v }),
+      setTemplatesOpen: (v) => set({ templatesOpen: v }),
+      setShareOpen: (v) => set({ shareOpen: v }),
       setExecutionMode: (m) => set({ executionMode: m }),
       setIsExecuting: (v) => set({ isExecuting: v }),
       setRequestTab: (t) => set({ requestTab: t }),
