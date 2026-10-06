@@ -8,13 +8,6 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
-  "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "~6.0.2",
-    "vite": "^6.2.0"
-  },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/state": "^6.7.6",
@@ -31,6 +24,9 @@
     "@radix-ui/react-tooltip": "^1.2.16",
     "@tailwindcss/vite": "^4.3.3",
     "@types/file-saver": "^2.0.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "clsx": "^2.1.1",
     "dexie": "^4.4.6",
     "file-saver": "^2.0.5",
@@ -41,6 +37,8 @@
     "react-router-dom": "^7.18.4",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^6.2.0",
     "zod": "^4.6.5",
     "zustand": "^5.0.15"
   }

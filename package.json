@@ -8,7 +8,7 @@
     "start": "node backend/server.js",
     "dev:backend": "node backend/server.js",
     "dev:frontend": "npm --prefix frontend run dev",
-    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
+    "install:all": "npm install && npm --prefix frontend install --include=dev && npm --prefix backend install"
   },
   "keywords": ["api", "testing", "mock", "faker", "synthetic", "openapi", "postman"],
   "author": "Yash Padaliya",
