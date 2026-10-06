@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Radio,
   Laptop,
+  HelpCircle,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -490,6 +491,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
             <span className="hidden xl:inline">Analytics</span>
           </Button>
         )}
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            localStorage.removeItem('apiflow-onboarding-v1');
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
+          }}
+          leftIcon={<HelpCircle className="w-3.5 h-3.5 text-yellow-400 shrink-0" />}
+          title="Open Quick Tour (press ? anytime)"
+          className="border-[#2A2F45] hover:border-yellow-500/40 text-yellow-200 px-2"
+        >
+          <span className="hidden xl:inline">Tour</span>
+        </Button>
 
         <Button
           size="sm"

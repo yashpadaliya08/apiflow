@@ -342,11 +342,11 @@ export const WebhookModal: React.FC = () => {
         </div>
 
         {/* Dispatch Button & Result Display */}
-        <div className="pt-1 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-white/40">
-              Dispatches POST request with computed signature headers to verify local consumer handlers.
-            </span>
+        <div className="pt-2 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-[#0C0E12] border border-[#2A2F45]/80 rounded-lg">
+            <p className="text-[11px] text-white/50 leading-relaxed flex-1 min-w-0 pr-2">
+              Dispatches a signed POST request with computed signature headers to verify local consumer handlers.
+            </p>
 
             <Button
               variant="accent"
@@ -354,7 +354,7 @@ export const WebhookModal: React.FC = () => {
               onClick={handleDispatch}
               isLoading={isDispatching}
               leftIcon={<Send className="w-3.5 h-3.5" />}
-              className="px-5 font-semibold"
+              className="px-5 font-semibold shrink-0 self-end sm:self-auto"
             >
               Dispatch Webhook
             </Button>

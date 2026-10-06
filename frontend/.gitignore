@@ -8,6 +8,10 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.vite/
+.vite-temp/
+*.timestamp-*.mjs
+*.timestamp-*.js
 # dist (tracked for zero-build phone hosting)
 dist-ssr
 *.local

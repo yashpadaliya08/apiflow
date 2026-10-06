@@ -1,18 +1,25 @@
-# Dependencies
+# Dependencies & Caches
 node_modules/
 */node_modules/
+.pnp
+.pnp.js
+.vite/
+.vite-temp/
+*.timestamp-*.mjs
+*.timestamp-*.js
+
+# Package Manager Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Production build outputs (allow frontend/dist for zero-build phone hosting)
 /dist/
 /build/
 !frontend/dist
 !frontend/dist/**
-
-
 
 # Marketing & Internal drafts (excluded from public repo)
 marketing/
@@ -22,19 +29,28 @@ docs/APIFLOW_STUDIO_DEEP_AUDIT_REPORT.md
 .env
 .env.local
 .env.*.local
+!.env.example
 *.pem
 *.key
 
 # Editor & OS files
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+.eslintcache/
 
 # Logs
 *.log
@@ -44,3 +60,4 @@ logs/
 *.zip
 *.tar.gz
 scratch/
+

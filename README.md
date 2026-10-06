@@ -1,12 +1,15 @@
 # 🚀 APIFlow Studio
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Offline First](https://img.shields.io/badge/Offline--First-100%25-10B981)](#-offline-first-by-design)
-[![Zero Cloud](https://img.shields.io/badge/Zero--Cloud-Pure_IndexedDB-6366F1)](#-why-apiflow-studio)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-apiflowstudio.onrender.com-10B981?style=flat-square&logo=render&logoColor=white)](https://apiflowstudio.onrender.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](./docker-compose.yml)
+[![Offline First](https://img.shields.io/badge/Offline--First-100%25-10B981?style=flat-square)](#-offline-first-by-design)
+[![Zero Cloud](https://img.shields.io/badge/Zero--Cloud-Pure_IndexedDB-6366F1?style=flat-square)](#-why-apiflow-studio)
 
 > **The Offline-First, Zero-Cloud API Testing Studio, Contract Simulator & Mock Runner.**  
-> *Private by Design • In-Browser Synthetic Mocking • Pure IndexedDB Storage • Docker & Homelab Ready • OpenAPI 3.1 & Postman 2.1 Portability • 100% Free & Open Source (MIT)*
+> *Private by Design • In-Browser Synthetic Mocking • Pure IndexedDB Storage • Built-in CORS Proxy • Docker & Homelab Ready • OpenAPI 3.1 & Postman 2.1 Portability • 100% Free & Open Source (MIT)*
+
+👉 **Try it Live in your browser without install:** [**https://apiflowstudio.onrender.com**](https://apiflowstudio.onrender.com)
 
 ---
 
@@ -76,6 +79,11 @@ node backend/server.js
 * **Dual Execution Mode:**
   * **Simulation Mode:** Fast, zero-backend synthetic contract testing.
   * **Live Mode:** Real network calls executed through an integrated lightweight CORS proxy gateway.
+* **Interactive First-Launch Tour:** Onboarding walkthrough explaining the 3 panes, shortcuts, and dual modes (press `?` anytime to re-open).
+* **Keyboard Productivity:**
+  * <kbd>Ctrl</kbd> + <kbd>Enter</kbd> — Execute request immediately
+  * <kbd>/</kbd> — Focus endpoint search bar
+  * <kbd>?</kbd> — Open quick onboarding tour
 * **Offline Persistence:** Pure browser storage using Dexie.js (IndexedDB) with automatic state recovery, collection grouping, and zero cloud lock-in.
 * **Multi-Format Code Generator:** Export requests to production-ready `cURL`, `TypeScript Fetch`, `Axios`, and `Python requests` snippets in 1 click.
 * **Specification Interoperability:** Seamlessly import and export official **OpenAPI 3.1.0** and **Postman Collection v2.1** formats.

@@ -10,6 +10,7 @@ import { CollectionRunnerModal } from '@/components/modals/CollectionRunnerModal
 import { TemplatesModal } from '@/components/modals/TemplatesModal';
 import { ShareModal } from '@/components/modals/ShareModal';
 import { WebhookModal } from '@/components/modals/WebhookModal';
+import { OnboardingTour } from '@/components/ui/OnboardingTour';
 
 export const AppShell: React.FC = () => {
   return (
@@ -36,6 +37,7 @@ export const AppShell: React.FC = () => {
       <TemplatesModal />
       <ShareModal />
       <WebhookModal />
+      <OnboardingTour />
     </main>
   );
 };

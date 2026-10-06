@@ -9,6 +9,9 @@ import {
   FolderOpen,
   X,
   Play,
+  Zap,
+  Sparkles,
+  BookOpen,
 } from 'lucide-react';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
@@ -202,20 +205,57 @@ export const Sidebar: React.FC = () => {
           <div className="p-6 text-center text-white/40 flex flex-col items-center justify-center space-y-2.5">
             {endpoints.length === 0 ? (
               <>
-                <div className="w-10 h-10 rounded-xl bg-[#1C2030] flex items-center justify-center border border-[#2A2F45]">
-                  <FolderOpen className="w-5 h-5 text-indigo-400 opacity-60" />
+                {/* Quick Start Guide */}
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-1">
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <p className="text-white/80 font-medium text-xs">No endpoints in collection</p>
-                  <p className="text-[11px] text-white/40 mt-0.5">Start testing by creating an endpoint</p>
+                <div className="text-center mb-1">
+                  <p className="text-white/90 font-semibold text-sm">Quick Start</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">No endpoints yet — let's build one</p>
                 </div>
-                <button
-                  onClick={handleCreateNew}
-                  className="mt-1 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create Endpoint</span>
-                </button>
+
+                {/* Steps */}
+                <div className="w-full space-y-2 mt-1 text-left">
+                  <div className="flex items-start gap-2.5 bg-[#141720] border border-[#2A2F45] rounded-xl px-3 py-2.5">
+                    <span className="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                    <div>
+                      <p className="text-white/80 text-xs font-medium">Create an endpoint</p>
+                      <p className="text-white/40 text-[10px] mt-0.5">Click &quot;+ New&quot; above to define a method &amp; URL</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 bg-[#141720] border border-[#2A2F45] rounded-xl px-3 py-2.5">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                    <div>
+                      <p className="text-white/80 text-xs font-medium">Choose Mock or Live mode</p>
+                      <p className="text-white/40 text-[10px] mt-0.5">Simulate responses or call real APIs</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 bg-[#141720] border border-[#2A2F45] rounded-xl px-3 py-2.5">
+                    <span className="w-5 h-5 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                    <div>
+                      <p className="text-white/80 text-xs font-medium">Press Send &amp; inspect</p>
+                      <p className="text-white/40 text-[10px] mt-0.5">View body, headers, latency, and code snippets</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col gap-2 w-full mt-2">
+                  <button
+                    onClick={handleCreateNew}
+                    className="w-full px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Create First Endpoint
+                  </button>
+                  <button
+                    onClick={() => useUIStore.getState().setTemplatesOpen(true)}
+                    className="w-full px-3 py-2 bg-[#1C2030] hover:bg-[#242840] border border-[#2A2F45] hover:border-indigo-500/40 text-white/70 hover:text-white rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    Browse Templates
+                  </button>
+                </div>
               </>
             ) : (
               <>
