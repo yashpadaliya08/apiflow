@@ -4,4 +4,4 @@ Disallow: /stats
 Disallow: /admin
 Disallow: /api/stats
 
-Sitemap: /sitemap.xml
+Sitemap: https://apiflowstudio.onrender.com/sitemap.xml

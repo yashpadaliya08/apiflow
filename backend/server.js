@@ -1157,6 +1157,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Explicit SEO Crawler Endpoints (RFC 9309 & Googlebot compliant)
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(`User-agent: *\nAllow: /\nDisallow: /stats\nDisallow: /admin\nDisallow: /api/stats\n\nSitemap: https://apiflowstudio.onrender.com/sitemap.xml\n`);
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  const sitemapFile = path.resolve(__dirname, '../frontend/dist/sitemap.xml');
+  if (fs.existsSync(sitemapFile)) {
+    return res.sendFile(sitemapFile);
+  }
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://apiflowstudio.onrender.com/</loc>\n    <lastmod>2026-10-06</lastmod>\n    <priority>1.0</priority>\n  </url>\n</urlset>`);
+});
+
 // Serve frontend build if dist directory exists (Fullstack phone/PC hosting)
 const distPath = path.resolve(__dirname, '../frontend/dist');
 
