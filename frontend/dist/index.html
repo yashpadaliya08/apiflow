@@ -89,8 +89,29 @@
     <link rel="stylesheet" crossorigin href="/assets/index-BYe-AZKA.css">
   </head>
   <body class="bg-[#0C0E12] text-white/90 antialiased min-h-screen">
-    <!-- Root Container: React mounts here. Prerendered semantic HTML ensures 100% crawlability for SEO bots -->
+    <!-- Root Container: React mounts here. High-performance dark splash loader displays during bundle initialization -->
     <div id="root">
+      <div style="min-height: 100vh; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0C0E12; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; user-select: none;">
+        <div style="position: relative; margin-bottom: 18px;">
+          <div style="width: 58px; height: 58px; border-radius: 18px; background: linear-gradient(135deg, #6366F1 0%, #9333EA 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 30px rgba(99, 102, 241, 0.35); animation: pulse-glow 1.8s infinite ease-in-out;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+        </div>
+        <div style="font-size: 1.125rem; font-weight: 700; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 6px;">APIFlow Studio</div>
+        <div style="font-size: 0.8125rem; color: #64748b; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">Loading offline workspace...</div>
+      </div>
+      <style>
+        @keyframes pulse-glow {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.88; }
+        }
+      </style>
+    </div>
+
+    <!-- Semantic Content for Search Engines & Non-JS Crawlers (100% crawlable by Google & Semrush) -->
+    <noscript>
       <header style="padding: 1.5rem 1rem; border-bottom: 1px solid #2A2F45;">
         <nav aria-label="Main Navigation" style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
           <a href="/" style="font-weight: 700; font-size: 1.25rem; color: #ffffff; text-decoration: none;">APIFlow Studio</a>
@@ -104,7 +125,6 @@
 
       <main style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem; line-height: 1.7;">
         <article>
-          <!-- H1 Heading: 53 characters (Target: 10-70 characters) -->
           <h1 style="font-size: 2.5rem; font-weight: 800; color: #ffffff; margin-bottom: 1rem; line-height: 1.2;">
             APIFlow Studio — Free Browser API Testing Platform
           </h1>
@@ -112,7 +132,6 @@
             APIFlow Studio is an ultra-fast, client-side API testing studio, contract simulator, and synthetic data engine designed for high-velocity software engineering teams. Simulate complex HTTP status codes, export OpenAPI 3.1 and Postman collections, and run live proxy requests directly inside your browser with zero installation.
           </p>
 
-          <!-- Section 1 -->
           <h2 style="font-size: 1.5rem; font-weight: 700; color: #ffffff; margin-top: 2rem; margin-bottom: 0.75rem;">
             Zero-Configuration REST API Client & Live Testing
           </h2>
@@ -120,7 +139,6 @@
             Execute live HTTP requests to any external endpoint, microservice, or webhook without browser CORS restrictions. Using our secure local proxy relay, APIFlow handles headers, query parameters, multipart payloads, and authentication methods seamlessly. Developers can test endpoints securely without worrying about third-party cloud data leaks or CORS preflight failures.
           </p>
 
-          <!-- Section 2 -->
           <h2 style="font-size: 1.5rem; font-weight: 700; color: #ffffff; margin-top: 2rem; margin-bottom: 0.75rem;">
             Client-Side Synthetic Mocking & Dynamic Faker Engine
           </h2>
@@ -128,7 +146,6 @@
             Generate realistic mock responses on the fly without running an external server or registering for third-party mock services. Leverage built-in Faker heuristics to produce synthetic user profiles, dates, UUIDs, ecommerce transactions, and relational mock schemas in milliseconds. Build frontend features against realistic API contracts before backend engineers even finish building endpoints.
           </p>
 
-          <!-- Section 3 -->
           <h2 style="font-size: 1.5rem; font-weight: 700; color: #ffffff; margin-top: 2rem; margin-bottom: 0.75rem;">
             Visual Schema Assertions & Quality Verification
           </h2>
@@ -136,7 +153,6 @@
             Build enterprise-grade API test suites using our no-code visual assertion engine. Verify HTTP status codes, measure response latency against strict SLAs, assert deep JSON paths, and validate response headers to ensure production stability before deployment. Receive instant pass/fail scorecards and automated regression summaries without having to write tedious testing scripts.
           </p>
 
-          <!-- Section 4 -->
           <h2 style="font-size: 1.5rem; font-weight: 700; color: #ffffff; margin-top: 2rem; margin-bottom: 0.75rem;">
             OpenAPI 3.1 & Postman Collection Interoperability
           </h2>
@@ -144,7 +160,6 @@
             Easily import and export existing API collections. APIFlow Studio provides seamless two-way portability with OpenAPI 3.0, OpenAPI 3.1, Swagger, Postman Collection v2.1, and raw cURL commands, guaranteeing zero vendor lock-in for your development team. Move your entire existing workspace over in a single click and share mock scenarios with your teammates instantly.
           </p>
 
-          <!-- Section 5 -->
           <h2 style="font-size: 1.5rem; font-weight: 700; color: #ffffff; margin-top: 2rem; margin-bottom: 0.75rem;">
             Local-First Data Sovereignty & Offline Desktop PWA
           </h2>
@@ -154,7 +169,6 @@
         </article>
       </main>
 
-      <!-- Footer with Social Media & Community Links -->
       <footer style="padding: 2.5rem 1rem; border-top: 1px solid #2A2F45; text-align: center; font-size: 0.875rem; color: #64748b;">
         <nav aria-label="Social Media and Community" style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
           <a href="https://x.com/apiflowstudio" target="_blank" rel="noopener noreferrer" style="color: #818cf8; text-decoration: none;">X (Twitter)</a>
@@ -166,7 +180,7 @@
         </nav>
         <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
       </footer>
-    </div>
+    </noscript>
 
     <!-- Main Client-Side React SPA Bundle -->
   </body>
