@@ -220,10 +220,11 @@ export async function executeLive(
   const latency = Math.round(performance.now() - start);
 
   let body: unknown;
+  const rawText = await res.text();
   try {
-    body = await res.json();
+    body = JSON.parse(rawText);
   } catch {
-    body = await res.text();
+    body = rawText;
   }
 
   const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
