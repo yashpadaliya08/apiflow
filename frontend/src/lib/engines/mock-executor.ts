@@ -177,9 +177,16 @@ export async function executeLive(
     ? (resolvedPath.includes('?') ? '&' : '?') + enabledQueryParams.map((q) => `${encodeURIComponent(q.key)}=${encodeURIComponent(q.value)}`).join('&')
     : '';
 
-  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const cleanPath = resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`;
-  const fullTargetUrl = `${cleanBase}${cleanPath}${queryString}`;
+  const isAbsolute = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
+  let fullTargetUrl: string;
+
+  if (isAbsolute) {
+    fullTargetUrl = `${resolvedPath}${queryString}`;
+  } else {
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanPath = resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`;
+    fullTargetUrl = `${cleanBase}${cleanPath}${queryString}`;
+  }
 
   const options: RequestInit = {
     method: endpoint.method,

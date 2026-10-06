@@ -92,7 +92,10 @@ export const RequestBuilder: React.FC = () => {
   (activeEndpoint.pathParams || []).filter((p) => p.enabled && p.key).forEach((p) => {
     resolvedPath = resolvedPath.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
   });
-  const fullPreviewUrl = `${resolvedBase}${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
+  const isAbsolute = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
+  const fullPreviewUrl = isAbsolute
+    ? `${resolvedPath}`
+    : `${resolvedBase}${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
 
   const handleExecute = async () => {
     if (!activeEndpoint || isExecuting) return;
