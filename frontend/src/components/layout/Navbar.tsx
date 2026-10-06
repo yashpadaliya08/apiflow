@@ -204,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
   }
 
   return (
-    <header className="h-14 min-h-[3.5rem] w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-hidden">
+    <header className="h-14 min-h-[3.5rem] w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-visible">
       {/* Left: Brand + Collection Picker */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div
@@ -231,6 +231,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         <div className="relative">
           <button
             type="button"
+            id="collection-selector-btn"
+            aria-haspopup="listbox"
+            aria-expanded={colDropdownOpen}
+            aria-label="Select active API collection"
             onClick={() => setColDropdownOpen((prev) => !prev)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs font-medium text-white/90 transition-colors cursor-pointer"
           >
@@ -250,7 +254,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
                 }}
               />
 
-              <div className="absolute top-full left-0 mt-1.5 w-64 bg-[#141720] border border-[#2A2F45] rounded-lg shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div
+                role="listbox"
+                aria-label="API Collections"
+                className="absolute top-full left-0 mt-1.5 w-64 bg-[#141720] border border-[#2A2F45] rounded-lg shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 ring-1 ring-white/10"
+              >
                 <div className="px-3 py-1 text-[11px] font-semibold text-white/40 uppercase tracking-wider">
                   Collections
                 </div>

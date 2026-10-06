@@ -7,26 +7,32 @@
     
     <!-- SEO & Metadata -->
     <meta name="description" content="APIFlow Studio is an ultra-fast, client-side API testing studio, contract simulator, and synthetic data engine with zero backend requirement. Simulate HTTP status codes, export OpenAPI 3.1 & Postman collections, and run live proxy requests." />
-    <meta name="keywords" content="API testing, mock server, fake API, synthetic data generator, OpenAPI 3.1, Postman alternative, REST client, client-side mock runner" />
+    <meta name="keywords" content="API testing, mock server, fake API, synthetic data generator, OpenAPI 3.1, Postman alternative, REST client, client-side mock runner, API testing studio, free API tester" />
+    <meta name="author" content="APIFlow Studio" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#0C0E12" />
+    <link rel="canonical" href="https://apiflowstudio.onrender.com/" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="APIFlow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://apiflow.studio/" />
+    <meta property="og:url" content="https://apiflowstudio.onrender.com/" />
+    <meta property="og:site_name" content="APIFlow Studio" />
     <meta property="og:title" content="APIFlow Studio — Schema-Driven API Mocking & Testing" />
     <meta property="og:description" content="Instant browser-first API testing and synthetic mock generation. No cloud server or backend needed. Zero setup." />
-    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image" content="/favicon.svg" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://apiflow.studio/" />
+    <meta property="twitter:url" content="https://apiflowstudio.onrender.com/" />
     <meta property="twitter:title" content="APIFlow Studio — Standalone API Testing Studio" />
     <meta property="twitter:description" content="Ultra-fast browser-first API testing, realistic faker synthetic data, OpenAPI 3.1 & Postman export, and live proxy execution." />
+    <meta property="twitter:image" content="/favicon.svg" />
 
     <!-- Google Fonts: Inter & JetBrains Mono (Non-blocking) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,20 +43,37 @@
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
     </noscript>
 
-    <!-- Schema.org SoftwareApplication JSON-LD -->
+    <!-- Schema.org SoftwareApplication & WebSite JSON-LD -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "APIFlow Studio",
-      "operatingSystem": "All",
-      "applicationCategory": "DeveloperApplication",
-      "description": "Standalone schema-driven API testing studio, synthetic mock engine, and contract runner.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "APIFlow Studio",
+          "operatingSystem": "All (Web, Windows, macOS, Linux)",
+          "applicationCategory": "DeveloperApplication",
+          "description": "Standalone schema-driven API testing studio, synthetic mock engine, and contract runner with zero cloud setup.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Universal CORS Bypass Proxy",
+            "Offline Synthetic Mock Generator",
+            "Visual Schema Assertions",
+            "OpenAPI 3.1 & Postman 2.1 Import/Export",
+            "Collection Batch Test Runner",
+            "Multi-language code generator"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "name": "APIFlow Studio",
+          "url": "https://apiflowstudio.onrender.com/"
+        }
+      ]
     }
     </script>
   </head>
