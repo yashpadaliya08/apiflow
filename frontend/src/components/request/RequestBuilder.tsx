@@ -186,7 +186,7 @@ export const RequestBuilder: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] border-r border-[#2A2F45] overflow-hidden">
       {/* Top Header: Endpoint Name & Resource */}
-      <div className="p-3 border-b border-[#2A2F45] bg-[#141720] flex items-center justify-between gap-3">
+      <div className="p-3 border-b border-[#2A2F45] bg-[#141720]/80 flex items-center justify-between gap-3 backdrop-blur-sm">
         <div className="flex-1 min-w-0">
           <input
             type="text"
@@ -194,7 +194,7 @@ export const RequestBuilder: React.FC = () => {
             onChange={(e) => updateActiveEndpointDraft({ name: e.target.value })}
             onBlur={saveActiveEndpointDraft}
             placeholder="Endpoint Name..."
-            className="w-full bg-transparent text-sm font-semibold text-white/95 focus:outline-none focus:bg-[#1C2030] px-1.5 py-0.5 rounded transition-colors"
+            className="w-full bg-transparent text-sm font-semibold text-white/95 focus:outline-none focus:bg-[#1C2030] px-2 py-1 rounded-lg transition-colors border border-transparent focus:border-[#2A2F45]"
           />
         </div>
 
@@ -206,25 +206,35 @@ export const RequestBuilder: React.FC = () => {
             onChange={(e) => updateActiveEndpointDraft({ resource: e.target.value })}
             onBlur={saveActiveEndpointDraft}
             placeholder="Resource Tag (e.g. Users)"
-            className="w-36 bg-[#0C0E12] border border-[#2A2F45] px-2 py-1 text-xs text-white/70 rounded focus:outline-none focus:border-indigo-500"
+            className="w-36 bg-[#0C0E12] border border-[#2A2F45] px-2.5 py-1 text-xs text-white/70 rounded-lg focus:outline-none focus:border-indigo-500 font-mono transition-colors"
           />
         </div>
       </div>
 
-      {/* Main Request Control Bar: Method + Path + Scenario + Send Button */}
-      <div className="p-3 border-b border-[#2A2F45] bg-[#0C0E12]/60 space-y-2">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Method selector */}
+      {/* Main Request Command Bar: Floating Elevated Container */}
+      <div className="p-3 border-b border-[#2A2F45] bg-[#0C0E12]/80 space-y-2">
+        <div className="p-1.5 rounded-xl bg-[#141720] border border-[#2A2F45] shadow-lg shadow-black/20 flex items-center gap-2">
+          {/* Method selector with glowing method pill styling */}
           <select
             value={activeEndpoint.method}
             onChange={(e) => {
               updateActiveEndpointDraft({ method: e.target.value as HttpMethod });
               saveActiveEndpointDraft();
             }}
-            className="flex-shrink-0 h-9 px-2 sm:px-2.5 bg-[#1C2030] border border-[#2A2F45] text-white font-mono font-bold text-xs rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer"
+            className={`flex-shrink-0 h-9 px-2.5 font-mono font-bold text-xs rounded-lg border focus:outline-none cursor-pointer transition-all ${
+              activeEndpoint.method === 'GET'
+                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                : activeEndpoint.method === 'POST'
+                ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                : activeEndpoint.method === 'PUT'
+                ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                : activeEndpoint.method === 'PATCH'
+                ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                : 'bg-red-500/15 text-red-400 border-red-500/30'
+            }`}
           >
             {methods.map((m) => (
-              <option key={m} value={m}>
+              <option key={m} value={m} className="bg-[#0C0E12] text-white">
                 {m}
               </option>
             ))}
@@ -238,7 +248,7 @@ export const RequestBuilder: React.FC = () => {
               onChange={(e) => updateActiveEndpointDraft({ path: e.target.value })}
               onBlur={saveActiveEndpointDraft}
               placeholder="/api/v1/resource"
-              className="w-full h-9 px-3 bg-[#1C2030] border border-[#2A2F45] rounded-md font-mono text-xs text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full h-9 px-3 bg-[#0C0E12] border border-[#2A2F45] rounded-lg font-mono text-xs text-white placeholder-white/40 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all"
             />
           </div>
 
@@ -251,24 +261,28 @@ export const RequestBuilder: React.FC = () => {
                 updateActiveEndpointDraft({ mockScenario: sc });
                 saveActiveEndpointDraft();
               }}
-              className="flex-shrink-0 h-9 px-2 bg-[#1C2030] border border-[#2A2F45] text-xs font-mono text-white/90 rounded-md focus:outline-none focus:border-indigo-500 cursor-pointer max-w-[110px]"
+              className="flex-shrink-0 h-9 px-2.5 bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded-lg focus:outline-none focus:border-indigo-500 cursor-pointer max-w-[110px]"
               title="Select simulated HTTP status response scenario"
             >
               {scenarios.map((s) => (
-                <option key={s.code} value={s.code}>
+                <option key={s.code} value={s.code} className="bg-[#0C0E12] text-white">
                   {s.label}
                 </option>
               ))}
             </select>
           )}
 
-          {/* Send / Simulate Button - Guaranteed flex-shrink-0 & visible */}
+          {/* Send / Simulate Button with Signature First Page Gradient */}
           <Button
             variant={executionMode === 'mock' ? 'accent' : 'primary'}
             size="md"
             isLoading={isExecuting}
             onClick={handleExecute}
-            className="flex-shrink-0 whitespace-nowrap font-semibold px-3 sm:px-4 shadow-md shadow-indigo-500/25"
+            className={`flex-shrink-0 whitespace-nowrap font-semibold px-4 rounded-lg shadow-md transition-all active:scale-95 ${
+              executionMode === 'mock'
+                ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-indigo-500/25 border-0'
+                : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/25'
+            }`}
             leftIcon={executionMode === 'mock' ? <Sparkles className="w-3.5 h-3.5 flex-shrink-0" /> : <Send className="w-3.5 h-3.5 flex-shrink-0" />}
             title="Execute request (Ctrl+Enter)"
           >
@@ -279,7 +293,7 @@ export const RequestBuilder: React.FC = () => {
             variant="outline"
             size="md"
             onClick={() => useUIStore.getState().setShareOpen(true)}
-            className="flex-shrink-0 px-2.5 text-cyan-400 border-[#2A2F45] hover:border-cyan-500/50 hover:bg-cyan-500/10"
+            className="flex-shrink-0 px-2.5 text-cyan-400 border-[#2A2F45] hover:border-cyan-500/50 hover:bg-cyan-500/10 rounded-lg"
             title="Share interactive mock URL"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -287,9 +301,9 @@ export const RequestBuilder: React.FC = () => {
         </div>
 
         {/* Resolved URL preview */}
-        <div className="flex items-center justify-between text-[11px] text-white/40 px-1">
+        <div className="flex items-center justify-between text-[11px] text-white/40 px-1 pt-0.5">
           <div className="flex items-center gap-1.5 truncate">
-            <span className="font-semibold text-white/50">Target:</span>
+            <span className="font-semibold text-white/50 text-[10px] uppercase font-mono">TARGET:</span>
             <span className="font-mono text-indigo-400/90 truncate">{fullPreviewUrl}</span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 text-[10px]">
@@ -300,85 +314,88 @@ export const RequestBuilder: React.FC = () => {
         </div>
       </div>
 
-      {/* Request Tabs Header */}
-      <div className="flex items-center border-b border-[#2A2F45] bg-[#141720] px-3 gap-1">
-        <button
-          onClick={() => setRequestTab('params')}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-            requestTab === 'params'
-              ? 'border-indigo-500 text-white font-semibold'
-              : 'border-transparent text-white/50 hover:text-white'
-          }`}
-        >
-          <span>Query Params</span>
-          {activeEndpoint.queryParams.filter((q) => q.enabled && q.key).length > 0 && (
-            <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
-              {activeEndpoint.queryParams.filter((q) => q.enabled && q.key).length}
-            </span>
-          )}
-        </button>
+      {/* Request Segmented Pill Tabs Header */}
+      <div className="px-3 py-2 bg-[#141720] border-b border-[#2A2F45]">
+        <div className="flex items-center gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setRequestTab('params')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+              requestTab === 'params'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>Query Params</span>
+            {activeEndpoint.queryParams.filter((q) => q.enabled && q.key).length > 0 && (
+              <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
+                {activeEndpoint.queryParams.filter((q) => q.enabled && q.key).length}
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setRequestTab('path')}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-            requestTab === 'path'
-              ? 'border-indigo-500 text-white font-semibold'
-              : 'border-transparent text-white/50 hover:text-white'
-          }`}
-        >
-          <span>Path Params</span>
-          {activeEndpoint.pathParams.filter((p) => p.enabled && p.key).length > 0 && (
-            <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
-              {activeEndpoint.pathParams.filter((p) => p.enabled && p.key).length}
-            </span>
-          )}
-        </button>
+          <button
+            onClick={() => setRequestTab('path')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+              requestTab === 'path'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>Path Params</span>
+            {activeEndpoint.pathParams.filter((p) => p.enabled && p.key).length > 0 && (
+              <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
+                {activeEndpoint.pathParams.filter((p) => p.enabled && p.key).length}
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setRequestTab('headers')}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-            requestTab === 'headers'
-              ? 'border-indigo-500 text-white font-semibold'
-              : 'border-transparent text-white/50 hover:text-white'
-          }`}
-        >
-          <span>Headers</span>
-          {activeEndpoint.headers.filter((h) => h.enabled && h.key).length > 0 && (
-            <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
-              {activeEndpoint.headers.filter((h) => h.enabled && h.key).length}
-            </span>
-          )}
-        </button>
+          <button
+            onClick={() => setRequestTab('headers')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+              requestTab === 'headers'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>Headers</span>
+            {activeEndpoint.headers.filter((h) => h.enabled && h.key).length > 0 && (
+              <span className="px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-400 rounded-full font-mono">
+                {activeEndpoint.headers.filter((h) => h.enabled && h.key).length}
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setRequestTab('body')}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-            requestTab === 'body'
-              ? 'border-indigo-500 text-white font-semibold'
-              : 'border-transparent text-white/50 hover:text-white'
-          }`}
-        >
-          <span>Body</span>
-          {activeEndpoint.requestBody.trim() && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-          )}
-        </button>
+          <button
+            onClick={() => setRequestTab('body')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+              requestTab === 'body'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>Body</span>
+            {activeEndpoint.requestBody.trim() && (
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            )}
+          </button>
 
-        <button
-          onClick={() => setRequestTab('tests')}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-            requestTab === 'tests'
-              ? 'border-indigo-500 text-white font-semibold'
-              : 'border-transparent text-white/50 hover:text-white'
-          }`}
-        >
-          <span>Tests & Assertions</span>
-          {(activeEndpoint.assertions || []).filter((a) => a.enabled).length > 0 && (
-            <span className="px-1.5 py-0.2 text-[10px] bg-emerald-500/20 text-emerald-400 rounded-full font-mono">
-              {(activeEndpoint.assertions || []).filter((a) => a.enabled).length}
-            </span>
-          )}
-        </button>
+          <button
+            onClick={() => setRequestTab('tests')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+              requestTab === 'tests'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Sparkles className="w-3 h-3 text-emerald-400" />
+            <span>Tests & Assertions</span>
+            {(activeEndpoint.assertions || []).filter((a) => a.enabled).length > 0 && (
+              <span className="px-1.5 py-0.2 text-[10px] bg-emerald-500/20 text-emerald-400 rounded-full font-mono font-bold">
+                {(activeEndpoint.assertions || []).filter((a) => a.enabled).length}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Tab Panels */}

@@ -132,14 +132,96 @@ code, pre, .font-mono {
 
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
 }
 
-.animate-fade-in     { animation: fadeIn 0.2s ease-out; }
-.animate-slide-left  { animation: slideInLeft 0.2s ease-out; }
-.animate-pulse-glow  { animation: pulse-glow 2s infinite; }
+@keyframes orbFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -25px) scale(1.1); }
+}
+
+@keyframes orbFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-30px, 20px) scale(0.92); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.animate-fade-in     { animation: fadeIn 0.3s ease-out; }
+.animate-slide-left  { animation: slideInLeft 0.3s ease-out; }
+.animate-pulse-glow  { animation: pulseGlow 4s ease-in-out infinite; }
 .animate-shimmer     { animation: shimmer 2.5s infinite; }
-.animate-float       { animation: floatSlow 4s ease-in-out infinite; }
+.animate-float       { animation: floatSlow 5s ease-in-out infinite; }
+.animate-orb-1       { animation: orbFloat1 10s ease-in-out infinite; }
+.animate-orb-2       { animation: orbFloat2 14s ease-in-out infinite; }
+
+@keyframes gradientText {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradientText 6s ease infinite;
+}
+
+@keyframes beamSweep {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.animate-beam {
+  animation: beamSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glow-card {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(99, 102, 241, 0.2);
+}
+
+.glow-card-emerald:hover {
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(16, 185, 129, 0.2);
+}
+
+.glow-card-rose:hover {
+  transform: translateY(-4px);
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(244, 63, 94, 0.2);
+}
+
+.glow-card-cyan:hover {
+  transform: translateY(-4px);
+  border-color: rgba(6, 182, 212, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(6, 182, 212, 0.2);
+}
+
+.glow-card-purple:hover {
+  transform: translateY(-4px);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(168, 85, 247, 0.2);
+}
+
+.glow-card-orange:hover {
+  transform: translateY(-4px);
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 16px 36px -12px rgba(249, 115, 22, 0.2);
+}
 
 /* ═══════════════════════════════════════
    METHOD BADGE COLORS

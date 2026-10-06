@@ -204,9 +204,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
   }
 
   return (
-    <header className="h-14 min-h-[3.5rem] bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative">
+    <header className="h-14 min-h-[3.5rem] w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-hidden">
       {/* Left: Brand + Collection Picker */}
-      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div
           onClick={() => onToggleView('landing')}
           className="flex items-center gap-2.5 cursor-pointer group"
@@ -232,10 +232,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           <button
             type="button"
             onClick={() => setColDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs font-medium text-white/90 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs font-medium text-white/90 transition-colors cursor-pointer"
           >
             <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="max-w-[220px] sm:max-w-[280px] truncate">{activeCollection?.name || 'Select Collection'}</span>
+            <span className="max-w-[120px] md:max-w-[160px] xl:max-w-[220px] truncate">{activeCollection?.name || 'Select Collection'}</span>
             <ChevronDown className="w-3 h-3 text-white/50 shrink-0" />
           </button>
 
@@ -330,18 +330,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
             className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-white/80 hover:text-white transition-colors"
             title="Manage environment variables"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="max-w-[100px] truncate">{activeEnv?.name || 'No Environment'}</span>
-            <Settings className="w-3 h-3 text-white/40 ml-0.5" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <span className="max-w-[65px] md:max-w-[85px] xl:max-w-[110px] truncate">{activeEnv?.name || 'No Env'}</span>
+            <Settings className="w-3 h-3 text-white/40 ml-0.5 shrink-0" />
           </button>
         </div>
       </div>
 
       {/* Center: Execution Mode Segmented Control */}
-      <div className="flex items-center bg-[#0C0E12] p-1 rounded-lg border border-[#2A2F45] shrink-0 whitespace-nowrap">
+      <div className="flex items-center bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] shrink-0 whitespace-nowrap">
         <button
           onClick={() => setExecutionMode('mock')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'mock'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -349,12 +349,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           title="Simulate responses client-side with 7 status codes & Faker heuristics"
         >
           <Zap className="w-3.5 h-3.5 shrink-0" />
-          <span className="whitespace-nowrap">Mock Engine</span>
+          <span className="whitespace-nowrap">Mock <span className="hidden xl:inline">Engine</span></span>
         </button>
 
         <button
           onClick={() => setExecutionMode('live')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'live'
               ? 'bg-emerald-600 text-white shadow-sm'
               : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -362,121 +362,136 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           title="Send real HTTP requests via local backend CORS bypass proxy"
         >
           <Globe className="w-3.5 h-3.5 shrink-0" />
-          <span className="whitespace-nowrap">Live Proxy</span>
+          <span className="whitespace-nowrap">Live <span className="hidden xl:inline">Proxy</span></span>
         </button>
       </div>
 
-      {/* Right: Actions */}
+      {/* Right: Grouped Studio Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setTemplatesOpen(true)}
-          leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-400" />}
-          title="Browse industry API starter templates (Stripe, OpenAI, SaaS Auth)"
-        >
-          Templates
-        </Button>
+        {/* Group 1: Execution Tools */}
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setWebhookOpen(true)}
+            leftIcon={<Radio className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+            title="Simulate and dispatch Stripe, GitHub, Clerk webhooks to local handlers"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span>Webhooks</span>
+          </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setWebhookOpen(true)}
-          leftIcon={<Radio className="w-3.5 h-3.5 text-rose-400" />}
-          title="Simulate and dispatch Stripe, GitHub, Clerk webhooks to local handlers"
-        >
-          Webhooks
-        </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setRunnerOpen(true)}
+            leftIcon={<Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/30 shrink-0" />}
+            title="Run all endpoints in collection sequentially"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span>Runner</span>
+          </Button>
+        </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setRunnerOpen(true)}
-          leftIcon={<Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/30" />}
-          title="Run all endpoints in collection sequentially"
-        >
-          Runner
-        </Button>
+        {/* Group 2: Workflows & Export */}
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setTemplatesOpen(true)}
+            leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+            title="Browse industry API starter templates (Stripe, OpenAI, SaaS Auth)"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span>Templates</span>
+          </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setCodeSnippetOpen(true)}
-          leftIcon={<Code2 className="w-3.5 h-3.5 text-indigo-400" />}
-          title="Generate cURL, TypeScript, Axios, and Python code"
-        >
-          Code
-        </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setCodeSnippetOpen(true)}
+            leftIcon={<Code2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+            title="Generate cURL, TypeScript, Axios, and Python code"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span className="hidden lg:inline">Code</span>
+          </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShareOpen(true)}
-          leftIcon={<Share2 className="w-3.5 h-3.5 text-cyan-400" />}
-          title="Generate 1-click shareable interactive mock link"
-        >
-          Share
-        </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShareOpen(true)}
+            leftIcon={<Share2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+            title="Generate 1-click shareable interactive mock link"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span className="hidden xl:inline">Share</span>
+          </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setImportOpen(true)}
-          leftIcon={<Download className="w-3.5 h-3.5 text-emerald-400" />}
-          title="Import / Export OpenAPI 3.1 & Postman 2.1 collections"
-        >
-          Portability
-        </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setImportOpen(true)}
+            leftIcon={<Download className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+            title="Import / Export OpenAPI 3.1 & Postman 2.1 collections"
+            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span className="hidden xl:inline">Portability</span>
+          </Button>
+        </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setHistoryOpen(true)}
-          leftIcon={<History className="w-3.5 h-3.5 text-amber-400" />}
-          className="relative"
-          title="View recent execution history"
-        >
-          <span>History</span>
-          {history.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-indigo-500/30 text-indigo-300 rounded-full font-mono">
-              {history.length}
-            </span>
-          )}
-        </Button>
+        {/* Group 3: History & App */}
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setHistoryOpen(true)}
+            leftIcon={<History className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+            className="relative text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            title="View recent execution history"
+          >
+            <span className="hidden lg:inline">History</span>
+            {history.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-indigo-500/30 text-indigo-300 rounded-full font-mono">
+                {history.length}
+              </span>
+            )}
+          </Button>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleInstallPWA}
+            leftIcon={<Laptop className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+            title="Install APIFlow Studio as desktop app (PWA)"
+            className="text-white/70 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+          >
+            <span className="hidden 2xl:inline">Install</span>
+          </Button>
+        </div>
 
         {isAdminActive && (
           <Button
             size="sm"
             variant="outline"
             onClick={() => setAnalyticsOpen(true)}
-            leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400" />}
+            leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
             title="Admin Telemetry (Ctrl+Shift+A)"
+            className="px-2"
           >
-            Analytics
+            <span className="hidden xl:inline">Analytics</span>
           </Button>
         )}
 
         <Button
           size="sm"
-          variant="ghost"
-          onClick={handleInstallPWA}
-          leftIcon={<Laptop className="w-3.5 h-3.5 text-indigo-400" />}
-          title="Install APIFlow Studio as desktop app (PWA)"
-          className="text-white/70 hover:text-white"
-        >
-          Install App
-        </Button>
-
-        <div className="h-5 w-px bg-[#2A2F45] mx-1" />
-
-        <Button
-          size="sm"
-          variant="ghost"
+          variant="outline"
           onClick={() => onToggleView('landing')}
-          leftIcon={<BookOpen className="w-3.5 h-3.5 text-purple-400" />}
+          leftIcon={<BookOpen className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
           title="Return to Landing Page & Overview Docs"
+          className="border-[#2A2F45] hover:border-purple-500/40 text-purple-200 px-2 sm:px-2.5"
         >
-          Overview & Docs
+          <span>Docs</span>
         </Button>
       </div>
 

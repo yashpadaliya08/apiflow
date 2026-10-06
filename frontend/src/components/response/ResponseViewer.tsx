@@ -12,19 +12,40 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useExecutionStore } from '@/store/execution-store';
 import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
 import { StatusBadge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { formatBytes, formatLatency, copyToClipboard } from '@/lib/utils';
 import { computeJsonDiff } from '@/lib/utils/json-diff';
 import { evaluateAllAssertions } from '@/lib/assertions/evaluator';
+import { executeMock, executeLive } from '@/lib/engines/mock-executor';
+import { interpolateVariables } from '@/lib/engines/synthetic-engine';
+import { trackEvent } from '@/lib/analytics';
 
 export const ResponseViewer: React.FC = () => {
-  const { response, previousResponse, error, isExecuting } = useExecutionStore();
-  const { activeEndpoint } = useCollectionStore();
-  const { responseTab, setResponseTab } = useUIStore();
+  const {
+    response,
+    previousResponse,
+    error,
+    isExecuting,
+    setResponse,
+    setError,
+    setIsExecuting,
+  } = useExecutionStore();
+
+  const {
+    activeEndpoint,
+    activeCollection,
+    environments,
+    activeEnvironmentId,
+    addHistoryEntry,
+  } = useCollectionStore();
+
+  const { responseTab, setResponseTab, executionMode } = useUIStore();
   const [copied, setCopied] = useState(false);
   const [rawView, setRawView] = useState(false);
 
@@ -64,45 +85,170 @@ export const ResponseViewer: React.FC = () => {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const handleExecuteFromEmpty = async () => {
+    if (!activeEndpoint) return;
+    setIsExecuting(true);
+    try {
+      if (executionMode === 'mock') {
+        const res = await executeMock(activeEndpoint);
+        setResponse(res);
+        trackEvent('request_simulated', {
+          mode: 'mock',
+          status: res.status,
+          latency: res.latency,
+          method: activeEndpoint.method,
+          path: activeEndpoint.path,
+        });
+
+        await addHistoryEntry({
+          endpointId: activeEndpoint.id,
+          endpointName: activeEndpoint.name,
+          method: activeEndpoint.method,
+          path: activeEndpoint.path,
+          status: res.status,
+          latency: res.latency,
+          timestamp: new Date().toISOString(),
+          response: res,
+          requestBody: activeEndpoint.requestBody,
+          queryParams: activeEndpoint.queryParams,
+          headers: activeEndpoint.headers,
+        });
+      } else {
+        const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
+        const resolvedBase = activeEnv
+          ? interpolateVariables(activeCollection?.baseUrl || '', activeEnv.variables)
+          : activeCollection?.baseUrl || '';
+
+        const headerMap: Record<string, string> = {};
+        activeEndpoint.headers
+          .filter((h) => h.enabled && h.key)
+          .forEach((h) => {
+            headerMap[h.key] = activeEnv ? interpolateVariables(h.value, activeEnv.variables) : h.value;
+          });
+
+        const res = await executeLive(activeEndpoint, resolvedBase, headerMap);
+        setResponse(res);
+
+        trackEvent('request_simulated', {
+          mode: 'live',
+          status: res.status,
+          latency: res.latency,
+          method: activeEndpoint.method,
+          path: activeEndpoint.path,
+        });
+
+        await addHistoryEntry({
+          endpointId: activeEndpoint.id,
+          endpointName: activeEndpoint.name,
+          method: activeEndpoint.method,
+          path: activeEndpoint.path,
+          status: res.status,
+          latency: res.latency,
+          timestamp: new Date().toISOString(),
+          response: res,
+          requestBody: activeEndpoint.requestBody,
+          queryParams: activeEndpoint.queryParams,
+          headers: activeEndpoint.headers,
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Execution failed');
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
   if (isExecuting) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] select-none">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] select-none relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
         <div className="relative mb-4">
-          <div className="w-12 h-12 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-          <Zap className="w-5 h-5 text-indigo-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <div className="w-14 h-14 rounded-2xl border-2 border-indigo-500/20 border-t-indigo-500 animate-spin bg-[#141720]/80 backdrop-blur-md flex items-center justify-center shadow-xl shadow-indigo-500/10" />
+          <Zap className="w-6 h-6 text-indigo-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
         </div>
-        <h3 className="text-sm font-semibold text-white/90">Executing Request</h3>
-        <p className="text-xs text-white/40 mt-1">Generating synthetic schema & simulating latency...</p>
+        <h3 className="text-sm font-bold text-white tracking-tight">Executing Simulation</h3>
+        <p className="text-xs text-white/40 mt-1 max-w-xs font-mono">
+          Generating synthetic Faker schema & evaluating schema assertions...
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-red-400 select-none">
-        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 mb-3">
-          <Terminal className="w-6 h-6 text-red-400" />
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-red-400 select-none relative overflow-hidden">
+        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 mb-3 shadow-xl shadow-red-500/5">
+          <Terminal className="w-7 h-7 text-red-400" />
         </div>
-        <h3 className="text-sm font-semibold text-red-300">Execution Failed</h3>
-        <p className="text-xs text-red-400/80 max-w-sm mt-1">{error}</p>
+        <h3 className="text-sm font-bold text-red-300">Execution Failed</h3>
+        <p className="text-xs text-red-400/80 max-w-sm mt-1 font-mono leading-relaxed">{error}</p>
+        <button
+          onClick={handleExecuteFromEmpty}
+          className="mt-4 px-3 py-1.5 rounded-lg bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs text-white/80 hover:text-white transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
 
   if (!response) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-white/40 select-none">
-        <div className="w-12 h-12 rounded-xl bg-[#141720] border border-[#2A2F45] flex items-center justify-center mb-3">
-          <Zap className="w-6 h-6 text-white/30" />
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-[#0C0E12] select-none relative overflow-hidden">
+        {/* Ambient Glow Backdrop */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent blur-3xl rounded-full pointer-events-none" />
+
+        {/* First-Page Styled Interactive Card */}
+        <div className="relative max-w-sm w-full p-5 rounded-2xl bg-[#141720]/80 border border-[#2A2F45] shadow-2xl backdrop-blur-xl space-y-4">
+          {/* Traffic lights header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-semibold flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-indigo-400" />
+              <span>Studio Sandbox</span>
+            </span>
+          </div>
+
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/15 to-purple-600/10 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md shadow-indigo-500/10">
+            <Zap className="w-5 h-5 text-indigo-400 fill-indigo-400/20" />
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight">No Active Response</h3>
+            <p className="text-xs text-white/50 mt-1 leading-relaxed">
+              Click simulate to generate synthetic Faker payloads, evaluate schema assertions, and inspect headers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-left text-[11px] font-mono pt-1">
+            <div className="p-2 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
+              <div className="text-white/40 text-[9px] uppercase">Engine Latency</div>
+              <div className="text-emerald-400 font-bold mt-0.5">&lt; 30ms (Local)</div>
+            </div>
+            <div className="p-2 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
+              <div className="text-white/40 text-[9px] uppercase">Test Suite</div>
+              <div className="text-indigo-400 font-bold mt-0.5 truncate">
+                {(activeEndpoint?.assertions || []).length} Active Assertions
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-1">
+            <Button
+              size="sm"
+              variant="accent"
+              onClick={handleExecuteFromEmpty}
+              leftIcon={<Sparkles className="w-3.5 h-3.5" />}
+              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md shadow-indigo-500/25 border-0 font-semibold py-2.5 rounded-lg"
+            >
+              Simulate Request (Ctrl + Enter)
+            </Button>
+          </div>
         </div>
-        <h3 className="text-sm font-semibold text-white/70">No Response Yet</h3>
-        <p className="text-xs text-white/40 max-w-xs mt-1">
-          Click <span className="text-indigo-400 font-semibold">Simulate</span> or press{' '}
-          <kbd className="px-1.5 py-0.5 bg-[#1C2030] rounded border border-[#2A2F45] font-mono text-[11px] text-white/70">
-            Ctrl+Enter
-          </kbd>{' '}
-          to execute request.
-        </p>
       </div>
     );
   }
@@ -110,13 +256,13 @@ export const ResponseViewer: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] overflow-hidden">
       {/* Top Response Meta Header */}
-      <div className="p-3 border-b border-[#2A2F45] bg-[#141720] flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
+      <div className="p-3 border-b border-[#2A2F45] bg-[#141720]/80 backdrop-blur-sm flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <StatusBadge status={response.status} statusText={response.statusText} size="md" />
 
           {activeEndpoint && (
             <span
-              className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded border ${
+              className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border ${
                 response.status === (activeEndpoint.mockScenario || 200)
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
@@ -137,12 +283,12 @@ export const ResponseViewer: React.FC = () => {
             </span>
           )}
 
-          <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded bg-[#1C2030] text-emerald-400 border border-[#2A2F45]">
+          <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-md bg-[#1C2030] text-emerald-400 border border-[#2A2F45]">
             <Clock className="w-3 h-3 text-emerald-400" />
             <span>{formatLatency(response.latency)}</span>
           </span>
 
-          <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded bg-[#1C2030] text-white/70 border border-[#2A2F45]">
+          <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-md bg-[#1C2030] text-white/70 border border-[#2A2F45]">
             <HardDrive className="w-3 h-3 text-white/40" />
             <span>{formatBytes(response.size)}</span>
           </span>
@@ -150,18 +296,18 @@ export const ResponseViewer: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {response.mode === 'mock' ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold">
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold shadow-sm shadow-indigo-500/10">
               <Zap className="w-3 h-3 text-indigo-400" /> Mock Engine
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold">
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold shadow-sm shadow-emerald-500/10">
               <Globe className="w-3 h-3 text-emerald-400" /> Live Proxy
             </span>
           )}
 
           <button
             onClick={handleCopy}
-            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-white/80 hover:text-white transition-colors"
             title="Copy response body"
           >
             {copied ? (
@@ -179,15 +325,15 @@ export const ResponseViewer: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs: Body / Headers / Diff */}
-      <div className="flex items-center justify-between border-b border-[#2A2F45] bg-[#141720] px-3">
-        <div className="flex items-center gap-1">
+      {/* Segmented Pill Tabs: Body / Headers / Diff / Tests */}
+      <div className="px-3 py-2 bg-[#141720] border-b border-[#2A2F45] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] overflow-x-auto no-scrollbar">
           <button
             onClick={() => setResponseTab('body')}
-            className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
               responseTab === 'body'
-                ? 'border-indigo-500 text-white font-semibold'
-                : 'border-transparent text-white/50 hover:text-white'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             Response Body
@@ -195,28 +341,28 @@ export const ResponseViewer: React.FC = () => {
 
           <button
             onClick={() => setResponseTab('headers')}
-            className={`flex items-center gap-1 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
               responseTab === 'headers'
-                ? 'border-indigo-500 text-white font-semibold'
-                : 'border-transparent text-white/50 hover:text-white'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             <span>Headers</span>
-            <span className="px-1.5 py-0.2 text-[10px] bg-[#1C2030] text-white/60 rounded-full font-mono">
+            <span className="px-1.5 py-0.2 text-[10px] bg-[#1C2030] border border-[#2A2F45] text-white/60 rounded-full font-mono">
               {Object.keys(response.headers || {}).length}
             </span>
           </button>
 
           <button
             onClick={() => setResponseTab('diff')}
-            className={`flex items-center gap-1 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
               responseTab === 'diff'
-                ? 'border-indigo-500 text-white font-semibold'
-                : 'border-transparent text-white/50 hover:text-white'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
             title="Compare with previous run or mock response"
           >
-            <GitCompare className="w-3 h-3" />
+            <GitCompare className="w-3 h-3 text-indigo-400" />
             <span>Diff / Compare</span>
             {previousResponse && (
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
@@ -225,13 +371,14 @@ export const ResponseViewer: React.FC = () => {
 
           <button
             onClick={() => setResponseTab('tests')}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
               responseTab === 'tests'
-                ? 'border-indigo-500 text-white font-semibold'
-                : 'border-transparent text-white/50 hover:text-white'
+                ? 'bg-[#1C2030] text-white shadow-sm border border-[#2A2F45] font-semibold'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
             title="View automated contract assertions and validation results"
           >
+            <Sparkles className="w-3 h-3 text-emerald-400" />
             <span>Tests</span>
             {assertionResults.length > 0 && (
               <span
@@ -248,13 +395,13 @@ export const ResponseViewer: React.FC = () => {
         </div>
 
         {responseTab === 'body' && (
-          <div className="flex items-center gap-1 py-1">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setRawView(!rawView)}
-              className={`text-[11px] px-2 py-0.5 rounded border transition-colors ${
+              className={`text-[11px] px-2.5 py-1 rounded-lg border font-mono transition-colors ${
                 rawView
                   ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/40'
-                  : 'bg-transparent text-white/50 border-[#2A2F45] hover:text-white'
+                  : 'bg-[#0C0E12] text-white/50 border-[#2A2F45] hover:text-white'
               }`}
             >
               {rawView ? 'Raw JSON' : 'Pretty'}

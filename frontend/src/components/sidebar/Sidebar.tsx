@@ -118,14 +118,16 @@ export const Sidebar: React.FC = () => {
       style={{ width: sidebarWidth }}
       className="h-full bg-[#0C0E12] border-r border-[#2A2F45] flex flex-col flex-shrink-0 select-none text-xs"
     >
-      {/* Top Header: Collection name + Add Endpoint */}
-      <div className="p-3 border-b border-[#2A2F45]/80 flex items-center justify-between gap-2">
+      {/* Top Header: Collection name + Run + New */}
+      <div className="p-3 border-b border-[#2A2F45]/80 bg-[#141720]/60 flex items-center justify-between gap-2 backdrop-blur-sm">
         <div className="flex items-center gap-2 min-w-0 flex-1" title={activeCollection?.name || 'Endpoints'}>
-          <FolderOpen className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-          <span className="font-semibold text-white/90 truncate">
+          <div className="w-6 h-6 rounded-md bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+            <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
+          </div>
+          <span className="font-semibold text-white/95 truncate tracking-tight">
             {activeCollection?.name || 'Endpoints'}
           </span>
-          <span className="text-[10px] px-1.5 py-0.2 bg-[#1C2030] text-white/50 rounded-full font-mono flex-shrink-0">
+          <span className="text-[10px] px-2 py-0.5 bg-[#1C2030] border border-[#2A2F45] text-indigo-300 rounded-full font-mono flex-shrink-0 font-medium">
             {endpoints.length}
           </span>
         </div>
@@ -133,16 +135,16 @@ export const Sidebar: React.FC = () => {
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={() => useUIStore.getState().setRunnerOpen(true)}
-            className="p-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] text-indigo-400 hover:text-indigo-300 border border-[#2A2F45] transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
+            className="p-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] text-indigo-300 hover:text-white border border-[#2A2F45] hover:border-indigo-500/40 transition-colors flex items-center gap-1 text-[11px] px-2 font-medium shadow-sm"
             title="Run All Endpoints in Collection"
           >
-            <Play className="w-3 h-3 fill-current" />
+            <Play className="w-3 h-3 fill-indigo-400 text-indigo-400" />
             <span>Run</span>
           </button>
 
           <button
             onClick={handleCreateNew}
-            className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors flex items-center gap-1 text-[11px] px-2 font-medium"
+            className="p-1 rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md shadow-indigo-500/20 transition-all flex items-center gap-1 text-[11px] px-2 font-semibold"
             title="Create New Endpoint"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -151,24 +153,28 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Search Input */}
+      {/* Search Input with Keyboard Cue */}
       <div className="px-3 pt-2.5 pb-1.5">
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
           <input
             type="text"
-            placeholder="Search path, name, or tag..."
+            placeholder="Search endpoints..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-7 py-1.5 bg-[#141720] border border-[#2A2F45] rounded-md text-white/90 placeholder-white/40 focus:outline-none focus:border-indigo-500 text-xs transition-colors"
+            className="w-full pl-8 pr-12 py-1.5 bg-[#141720] border border-[#2A2F45] rounded-lg text-white/90 placeholder-white/40 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 text-xs transition-all font-mono"
           />
-          {searchQuery && (
+          {searchQuery ? (
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
             >
               <X className="w-3 h-3" />
             </button>
+          ) : (
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.2 bg-[#1C2030] border border-[#2A2F45] text-white/30 rounded text-[9px] font-mono pointer-events-none">
+              /
+            </kbd>
           )}
         </div>
       </div>
@@ -181,8 +187,8 @@ export const Sidebar: React.FC = () => {
             onClick={() => setMethodFilter(m)}
             className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-all uppercase ${
               methodFilter === m
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-[#141720] text-white/60 hover:text-white hover:bg-[#1C2030]'
+                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/20 border border-indigo-400/40'
+                : 'bg-[#141720] text-white/50 hover:text-white hover:bg-[#1C2030] border border-[#2A2F45]/50'
             }`}
           >
             {m}
@@ -205,7 +211,7 @@ export const Sidebar: React.FC = () => {
                 </div>
                 <button
                   onClick={handleCreateNew}
-                  className="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors"
+                  className="mt-1 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Create Endpoint</span>
@@ -234,7 +240,7 @@ export const Sidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggleResource(resource)}
-                  className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-white/50 hover:text-white uppercase tracking-wider hover:bg-[#141720] rounded transition-colors group cursor-pointer"
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-white/50 hover:text-white uppercase tracking-wider hover:bg-[#141720]/80 rounded transition-colors group cursor-pointer"
                   title={isCollapsed ? `Expand ${resource}` : `Collapse ${resource}`}
                 >
                   <div className="flex items-center gap-1.5 overflow-hidden">
@@ -245,7 +251,7 @@ export const Sidebar: React.FC = () => {
                     />
                     <span className="truncate group-hover:text-white transition-colors">{resource}</span>
                   </div>
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 bg-[#1C2030] text-white/40 rounded-full flex-shrink-0 ml-1">
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 bg-[#1C2030] border border-[#2A2F45] text-white/40 rounded-full flex-shrink-0 ml-1">
                     {eps.length}
                   </span>
                 </button>
@@ -259,17 +265,19 @@ export const Sidebar: React.FC = () => {
                         <div
                           key={ep.id}
                           onClick={() => selectEndpoint(ep.id)}
-                          className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer transition-all border ${
+                          className={`group relative flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all border ${
                             isActive
-                              ? 'bg-[#1C2030] text-white border-indigo-500/50 shadow-sm'
-                              : 'text-white/80 border-transparent hover:bg-[#141720] hover:text-white'
+                              ? 'bg-gradient-to-r from-indigo-500/15 via-purple-500/10 to-transparent text-white border-indigo-500/40 shadow-sm shadow-indigo-500/10 border-l-2 border-l-indigo-400'
+                              : 'text-white/70 border-transparent hover:bg-[#141720]/80 hover:text-white hover:border-[#2A2F45]/50'
                           }`}
                         >
                           <div className="flex items-center gap-2 overflow-hidden flex-1">
                             <MethodBadge method={ep.method} size="sm" />
                             <div className="overflow-hidden flex-1 min-w-0">
                               <div className="truncate font-medium text-white/95 text-xs">{ep.name}</div>
-                              <div className="truncate font-mono text-[10px] text-white/45">{ep.path}</div>
+                              <div className="truncate font-mono text-[10px] text-white/40 group-hover:text-white/60 transition-colors">
+                                {ep.path}
+                              </div>
                             </div>
                           </div>
 
@@ -278,7 +286,7 @@ export const Sidebar: React.FC = () => {
                             <button
                               type="button"
                               onClick={(e) => handleDuplicate(e, ep)}
-                              className="p-1 rounded text-white/40 hover:text-indigo-400 hover:bg-white/10 transition-colors"
+                              className="p-1 rounded text-white/40 hover:text-indigo-300 hover:bg-white/10 transition-colors"
                               title="Duplicate endpoint"
                             >
                               <Copy className="w-3 h-3" />
@@ -304,11 +312,11 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Info */}
-      <div className="p-2.5 border-t border-[#2A2F45]/70 text-[11px] text-white/40 flex items-center justify-between bg-[#141720]/40">
-        <span>Dexie.js IndexedDB</span>
-        <span className="flex items-center gap-1 text-emerald-400">
+      <div className="p-2.5 border-t border-[#2A2F45]/70 text-[11px] text-white/40 flex items-center justify-between bg-[#141720]/50 backdrop-blur-sm">
+        <span className="font-mono text-[10px]">Dexie.js IndexedDB</span>
+        <span className="flex items-center gap-1.5 text-emerald-400 font-medium text-[11px]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Persistent
+          Local Storage Ready
         </span>
       </div>
     </aside>

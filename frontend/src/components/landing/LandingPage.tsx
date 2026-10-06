@@ -75,21 +75,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30 scroll-smooth">
+    <div className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30 scroll-smooth relative bg-grid-pattern">
       {/* ══════════════════════════════════════════════════════════
           HERO SECTION
       ══════════════════════════════════════════════════════════ */}
       <section className="relative px-4 sm:px-6 pt-14 pb-16 max-w-6xl mx-auto text-center">
-        {/* Ambient Glows */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[700px] h-[360px] bg-gradient-to-tr from-indigo-600/20 via-purple-600/15 to-cyan-500/10 blur-3xl rounded-full pointer-events-none -z-10" />
+        {/* Ambient Animated Glow Orbs */}
+        <div className="absolute top-8 left-1/3 -translate-x-1/2 w-[550px] h-[360px] bg-gradient-to-tr from-indigo-600/25 via-purple-600/20 to-cyan-500/15 blur-[120px] rounded-full pointer-events-none -z-10 animate-orb-1" />
+        <div className="absolute top-16 right-1/4 w-[450px] h-[320px] bg-gradient-to-bl from-cyan-500/20 via-indigo-500/20 to-pink-500/15 blur-[110px] rounded-full pointer-events-none -z-10 animate-orb-2" />
 
         {/* Top Badges */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1C2030] border border-[#2A2F45] text-xs text-indigo-300 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="relative overflow-hidden inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1C2030]/90 border border-[#2A2F45] text-xs text-indigo-300 shadow-lg shadow-indigo-950/40 backdrop-blur-md">
+            <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-beam pointer-events-none" />
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
             <span>Standalone Browser-First API Studio & Test Engine</span>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 shadow-sm backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
             <Laptop className="w-3.5 h-3.5" />
             <span>Installable Offline Desktop App</span>
           </div>
@@ -97,7 +103,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.15]">
           Design, Test & Validate APIs.{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 animate-gradient-text font-black">
             100% Client-Side.
           </span>
         </h1>
@@ -113,14 +119,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             variant="accent"
             onClick={onLaunchStudio}
             leftIcon={<Play className="w-4 h-4 fill-white" />}
-            className="text-sm px-6 py-3 shadow-lg shadow-indigo-500/25 shrink-0"
+            className="text-sm px-6 py-3 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.03] transition-all duration-300 shrink-0"
           >
             Launch Studio Free
           </Button>
 
           <a
             href="#interactive-demo"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-[#141720] hover:bg-[#1C2030] border border-[#2A2F45] text-sm text-white/80 hover:text-white transition-colors shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-[#141720]/90 hover:bg-[#1C2030] border border-[#2A2F45] hover:border-indigo-500/40 text-sm text-white/80 hover:text-white transition-all duration-300 hover:scale-[1.02] shrink-0"
           >
             <span>Watch Interactive Tour</span>
             <ArrowRight className="w-4 h-4 text-indigo-400" />
@@ -132,7 +138,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         ══════════════════════════════════════════════════════════ */}
         <div
           id="interactive-demo"
-          className="mt-14 max-w-5xl mx-auto text-left rounded-2xl border border-[#2A2F45] bg-[#141720]/95 backdrop-blur-xl shadow-2xl overflow-hidden scroll-mt-6"
+          className="mt-14 max-w-5xl mx-auto text-left rounded-2xl border border-[#2A2F45] hover:border-indigo-500/40 bg-[#141720]/95 backdrop-blur-xl shadow-2xl shadow-indigo-950/30 overflow-hidden scroll-mt-6 transition-all duration-300"
         >
           {/* Showcase Control Bar */}
           <div className="px-4 py-3 bg-[#1C2030]/80 border-b border-[#2A2F45] flex flex-wrap items-center justify-between gap-3">
@@ -260,7 +266,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
           {/* ── Scene 1: Instant Mock Engine ── */}
           {activeScene === 'mock' && (
-            <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-[#2A2F45]">
+            <div key="mock" className="animate-fade-in p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-[#2A2F45]">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider font-semibold">
@@ -400,7 +406,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
           {/* ── Scene 2: Visual Schema Assertions & Test Builder ── */}
           {activeScene === 'assertions' && (
-            <div className="p-4 sm:p-6 space-y-4">
+            <div key="assertions" className="animate-fade-in p-4 sm:p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2A2F45]">
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -504,7 +510,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
           {/* ── Scene 3: Simulated Webhook Dispatcher ── */}
           {activeScene === 'webhooks' && (
-            <div className="p-4 sm:p-6 space-y-4">
+            <div key="webhooks" className="animate-fade-in p-4 sm:p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-white/50">Provider preset:</span>
@@ -601,7 +607,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
           {/* ── Scene 4: Installable Desktop PWA ── */}
           {activeScene === 'pwa' && (
-            <div className="p-4 sm:p-6 space-y-4">
+            <div key="pwa" className="animate-fade-in p-4 sm:p-6 space-y-4">
               <div className="p-4 rounded-xl bg-gradient-to-br from-[#1C2030] to-[#0C0E12] border border-[#2A2F45] flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="space-y-2 max-w-xl">
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono font-semibold">
@@ -656,8 +662,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
       {/* ══════════════════════════════════════════════════════════
           FEATURE GRID (Replaced Self-Hosting with Offline PWA)
       ══════════════════════════════════════════════════════════ */}
-      <section id="features" className="px-4 sm:px-6 py-20 max-w-6xl mx-auto scroll-mt-14">
+      <section id="features" className="relative px-4 sm:px-6 py-20 max-w-6xl mx-auto scroll-mt-14">
+        {/* Subtle Ambient Section Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-indigo-600/10 blur-[130px] rounded-full pointer-events-none -z-10 animate-orb-1" />
+
         <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-xs font-semibold text-indigo-400 mb-3">
+            <Zap className="w-3.5 h-3.5" />
+            <span>High-Velocity Engineering</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Built for Modern High-Speed Engineering Workflows
           </h2>
@@ -668,66 +681,66 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+          <div className="glow-card group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Schema Synthetic Engine</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-indigo-300 transition-colors">Schema Synthetic Engine</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               Powered by <code className="text-indigo-300">@faker-js/faker</code> with field heuristics. Automatically populates UUIDs, emails, avatars, timestamps, and realistic enterprise mock payloads.
             </p>
           </div>
 
           {/* Card 2 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-emerald-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <div className="glow-card glow-card-emerald group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <CheckCircle2 className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Visual Schema Assertions</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-emerald-300 transition-colors">Visual Schema Assertions</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               1-click test builder for Status, Response Latency, Header verification, and nested JSON body types. Pass/fail badges appear live in your response viewer.
             </p>
           </div>
 
           {/* Card 3 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-rose-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+          <div className="glow-card glow-card-rose group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <Radio className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Simulated Webhook Dispatcher</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-rose-300 transition-colors">Simulated Webhook Dispatcher</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               Built-in event studio simulating Stripe, GitHub, Clerk, and Shopify webhooks with cryptographic HMAC headers directly to your local handler.
             </p>
           </div>
 
           {/* Card 4 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-cyan-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+          <div className="glow-card glow-card-cyan group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <Globe className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Dual Execution Mode</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">Dual Execution Mode</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               Switch effortlessly between instant client-side mock simulation (15–40ms latency) and live network execution via the built-in CORS bypass proxy.
             </p>
           </div>
 
           {/* Card 5 */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-orange-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400">
+          <div className="glow-card glow-card-orange group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <Layers className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Contract Portability</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-orange-300 transition-colors">Contract Portability</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               Full import and export support for official OpenAPI 3.1.0 specifications and Postman Collection v2.1. Zero vendor lock-in.
             </p>
           </div>
 
-          {/* Card 6: Offline Desktop PWA (Replaced Self-Hosting) */}
-          <div className="p-6 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-purple-500/50 transition-all hover:-translate-y-1 duration-300 space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+          {/* Card 6: Offline Desktop PWA */}
+          <div className="glow-card glow-card-purple group p-6 rounded-xl bg-[#141720]/90 border border-[#2A2F45] backdrop-blur-sm space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <Laptop className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Offline Desktop PWA</h3>
+            <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors">Offline Desktop PWA</h3>
             <p className="text-xs text-white/50 leading-relaxed">
               Install in 1 click from Chrome, Edge, or Brave. Runs in its own standalone borderless window with 100% offline capability and zero Electron memory footprint.
             </p>
@@ -740,8 +753,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
       ══════════════════════════════════════════════════════════ */}
       <section
         id="assertions-preview"
-        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+        className="relative px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
       >
+        {/* Subtle Ambient Section Glow */}
+        <div className="absolute top-1/2 right-10 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none -z-10 animate-orb-2" />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400">
@@ -791,9 +807,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </div>
 
           {/* Graphic Preview */}
-          <div className="p-5 rounded-2xl bg-[#141720] border border-emerald-500/30 shadow-xl space-y-3 font-mono text-xs">
+          <div className="glow-card glow-card-emerald p-5 rounded-2xl bg-[#141720]/95 backdrop-blur-md border border-emerald-500/30 shadow-xl space-y-3 font-mono text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
-              <span className="text-white/60 text-[11px]">TEST SUITE BREAKDOWN</span>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-white/60 text-[11px]">TEST SUITE BREAKDOWN</span>
+              </div>
               <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">
                 100% PASS RATE (4/4)
               </span>
@@ -841,13 +863,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
       ══════════════════════════════════════════════════════════ */}
       <section
         id="webhooks-preview"
-        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+        className="relative px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
       >
+        {/* Subtle Ambient Section Glow */}
+        <div className="absolute top-1/2 left-10 -translate-y-1/2 w-80 h-80 bg-rose-500/10 blur-[100px] rounded-full pointer-events-none -z-10 animate-orb-1" />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* Left Graphic */}
-          <div className="p-5 rounded-2xl bg-[#141720] border border-rose-500/30 shadow-xl space-y-3 font-mono text-xs order-2 lg:order-1">
+          <div className="glow-card glow-card-rose p-5 rounded-2xl bg-[#141720]/95 backdrop-blur-md border border-rose-500/30 shadow-xl space-y-3 font-mono text-xs order-2 lg:order-1">
             <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
-              <span className="text-rose-400 text-[11px] font-bold">WEBHOOK STUDIO RUNNER</span>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                </span>
+                <span className="text-rose-400 text-[11px] font-bold">WEBHOOK STUDIO RUNNER</span>
+              </div>
               <span className="text-white/40 text-[11px]">Provider: Stripe</span>
             </div>
 
@@ -899,10 +930,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
       ══════════════════════════════════════════════════════════ */}
       <section
         id="offline-desktop"
-        className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
+        className="relative px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14"
       >
-        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#182030] via-[#141720] to-[#0C0E12] border border-purple-500/30 relative overflow-hidden">
-          <div className="max-w-2xl space-y-4">
+        <div className="glow-card glow-card-purple p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#182030] via-[#141720] to-[#0C0E12] border border-purple-500/30 relative overflow-hidden">
+          {/* Internal ambient orbs */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/15 blur-[100px] rounded-full pointer-events-none animate-orb-2" />
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-500/15 blur-[100px] rounded-full pointer-events-none animate-orb-1" />
+
+          <div className="max-w-2xl space-y-4 relative z-10">
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
               <Laptop className="w-4 h-4" />
               <span>Installable Desktop Tool</span>
@@ -956,9 +991,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
       {/* ══════════════════════════════════════════════════════════
           OPEN DESIGN MANIFESTO SECTION
       ══════════════════════════════════════════════════════════ */}
-      <section id="open-design" className="px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14">
+      <section id="open-design" className="relative px-4 sm:px-6 py-20 max-w-6xl mx-auto border-t border-[#2A2F45]/60 scroll-mt-14">
+        {/* Subtle Ambient Section Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/10 blur-[140px] rounded-full pointer-events-none -z-10 animate-orb-2" />
+
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400 mb-4 shadow-sm">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>The Open Design Manifesto</span>
           </div>
@@ -976,7 +1014,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         {/* Traditional Closed vs Open Design Comparison */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
           {/* Closed Design */}
-          <div className="p-6 rounded-2xl bg-[#141720]/80 border border-red-500/20 relative">
+          <div className="glow-card p-6 rounded-2xl bg-[#141720]/90 backdrop-blur-sm border border-red-500/25 hover:border-red-500/50 relative">
             <div className="flex items-center gap-2.5 pb-4 border-b border-[#2A2F45]">
               <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
               <h3 className="font-mono text-xs font-bold text-red-400 uppercase tracking-wider">
@@ -1008,7 +1046,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </div>
 
           {/* Open Design */}
-          <div className="p-6 rounded-2xl bg-gradient-to-b from-[#182030] to-[#121622] border border-emerald-500/40 relative shadow-xl shadow-emerald-500/5">
+          <div className="glow-card glow-card-emerald p-6 rounded-2xl bg-gradient-to-b from-[#182030] to-[#121622] border border-emerald-500/40 relative shadow-xl shadow-emerald-500/5">
             <div className="flex items-center gap-2.5 pb-4 border-b border-[#2A2F45]">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <h3 className="font-mono text-xs font-bold text-emerald-400 uppercase tracking-wider">
@@ -1048,12 +1086,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tenet 1 */}
-            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+            <div className="glow-card group p-5 rounded-xl bg-[#141720]/90 backdrop-blur-sm border border-[#2A2F45] space-y-2">
               <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
-                <span className="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-300 text-xs flex items-center justify-center font-mono">
+                <span className="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-300 text-xs flex items-center justify-center font-mono group-hover:scale-110 transition-transform">
                   1
                 </span>
-                <span>Zero Vendor Lock-in (Universal Interoperability)</span>
+                <span className="group-hover:text-indigo-300 transition-colors">Zero Vendor Lock-in (Universal Interoperability)</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
                 In closed tools, your work is trapped behind proprietary cloud sync. In APIFlow, every artifact uses universally accepted open standards: export/import OpenAPI 3.1.0 and Postman v2.1.0 JSON, ingest cURL, or export clean TypeScript, Axios, and Python code.
@@ -1061,12 +1099,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
 
             {/* Tenet 2 */}
-            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-emerald-500/40 transition-colors space-y-2">
+            <div className="glow-card glow-card-emerald group p-5 rounded-xl bg-[#141720]/90 backdrop-blur-sm border border-[#2A2F45] space-y-2">
               <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                <span className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-300 text-xs flex items-center justify-center font-mono">
+                <span className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-300 text-xs flex items-center justify-center font-mono group-hover:scale-110 transition-transform">
                   2
                 </span>
-                <span>Local-First & Data Sovereignty</span>
+                <span className="group-hover:text-emerald-300 transition-colors">Local-First & Data Sovereignty</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
                 You are the sovereign owner of your data. 100% of collections, drafts, environments, and execution history are stored on your machine in IndexedDB (Dexie.js). No enterprise API secrets or headers are ever uploaded to a remote cloud database.
@@ -1074,12 +1112,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
 
             {/* Tenet 3 */}
-            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+            <div className="glow-card glow-card-cyan group p-5 rounded-xl bg-[#141720]/90 backdrop-blur-sm border border-[#2A2F45] space-y-2">
               <div className="flex items-center gap-2 text-cyan-400 font-semibold text-sm">
-                <span className="w-6 h-6 rounded-md bg-cyan-500/20 text-cyan-300 text-xs flex items-center justify-center font-mono">
+                <span className="w-6 h-6 rounded-md bg-cyan-500/20 text-cyan-300 text-xs flex items-center justify-center font-mono group-hover:scale-110 transition-transform">
                   3
                 </span>
-                <span>Ephemeral, Frictionless Sharing</span>
+                <span className="group-hover:text-cyan-300 transition-colors">Ephemeral, Frictionless Sharing</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
                 No sign-up walls. Using URL-safe UTF-8 base64 state (<code className="text-cyan-300">?mock=...</code>), an interactive mock is compressed directly into the URL query. When a teammate opens the link, the browser engine recreates the mock state immediately with zero login.
@@ -1087,12 +1125,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
 
             {/* Tenet 4 */}
-            <div className="p-5 rounded-xl bg-[#141720] border border-[#2A2F45] hover:border-indigo-500/40 transition-colors space-y-2">
+            <div className="glow-card glow-card-purple group p-5 rounded-xl bg-[#141720]/90 backdrop-blur-sm border border-[#2A2F45] space-y-2">
               <div className="flex items-center gap-2 text-purple-400 font-semibold text-sm">
-                <span className="w-6 h-6 rounded-md bg-purple-500/20 text-purple-300 text-xs flex items-center justify-center font-mono">
+                <span className="w-6 h-6 rounded-md bg-purple-500/20 text-purple-300 text-xs flex items-center justify-center font-mono group-hover:scale-110 transition-transform">
                   4
                 </span>
-                <span>Design Systems as Shared Public Infrastructure</span>
+                <span className="group-hover:text-purple-300 transition-colors">Design Systems as Shared Public Infrastructure</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
                 UI components, tokens, and interactions are built as open, reusable building blocks (Tailwind, Radix primitives, Lucide icons). APIFlow is fully modular, transparent, accessible, and easily forkable or extensible by the developer community.

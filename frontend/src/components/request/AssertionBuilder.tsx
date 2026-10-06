@@ -62,7 +62,7 @@ export const AssertionBuilder: React.FC<AssertionBuilderProps> = ({ assertions =
         </div>
 
         {/* 1-Click Presets */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
           <span className="text-[10px] text-white/40 uppercase font-semibold flex items-center gap-1 flex-shrink-0 mr-1">
             <Sparkles className="w-3 h-3 text-amber-400" />
             <span>Presets:</span>
