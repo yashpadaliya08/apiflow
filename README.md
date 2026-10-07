@@ -38,19 +38,43 @@ Most API testing tools now require **mandatory cloud logins**, sync private API 
 
 ---
 
-## 📊 Feature Comparison
+## 📊 Feature Comparison Matrix
 
-| Feature | APIFlow Studio | Postman | Insomnia | Hoppscotch | Mockoon |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| **Mandatory Cloud Login** | ❌ **None (Zero Login)** | ⚠️ Yes | ⚠️ Yes | ⚠️ Partial | ❌ None |
-| **Data Storage Location** | 🔒 **100% Local (IndexedDB)** | ☁️ Cloud Sync | ☁️ Cloud / Local | ☁️ Cloud / Local | 💻 Local Disk |
-| **Client-Side Synthetic Mocking** | ✅ **Built-in (7 Statuses)** | ⚠️ Cloud Runner | ❌ Manual | ❌ No | ✅ Desktop App |
-| **Faker Heuristic Schemas** | ✅ **Automatic** | ❌ Manual | ❌ Manual | ❌ No | ⚠️ Template syntax |
-| **Built-in CORS Bypass Proxy** | ✅ **Included** | ❌ Desktop Agent | ❌ No | ⚠️ Node Proxy | ❌ Desktop Only |
-| **1-Click Interactive Mock Link** | ✅ **`?mock=...` URLs** | ❌ Requires Cloud | ❌ No | ❌ No | ❌ No |
-| **OpenAPI 3.1 & Postman 2.1 Import** | ✅ **Native** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
-| **Code Snippet Generator** | ✅ **cURL, Fetch, Axios, Python** | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No |
-| **License** | 📜 **MIT (Free & Open Source)** | Proprietary | Proprietary | AGPL v3 | GPL v3 |
+| Feature | APIFlow Studio | Postman | Bruno | Hoppscotch | Insomnia | Mockoon |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Mandatory Cloud Login** | ❌ **None (Zero Login)** | ⚠️ Yes | ❌ None | ⚠️ Partial | ⚠️ Yes | ❌ None |
+| **Data Storage Location** | 🔒 **100% Local (IndexedDB)** | ☁️ Cloud Sync | 💻 Git Files | ☁️ Cloud / Local | ☁️ Cloud / Local | 💻 Local Disk |
+| **Instant Client-Side Mocks** | ✅ **Built-in (7 Statuses)** | ⚠️ Cloud Runner | ❌ None | ❌ None | ❌ Manual | ✅ Desktop App |
+| **Faker Heuristic Schemas** | ✅ **Automatic** | ❌ Manual | ❌ None | ❌ None | ❌ Manual | ⚠️ Templating |
+| **Zero-Install (Browser Tab)** | ✅ **Instant Web App** | ⚠️ Limited Agent | ❌ Desktop Only | ✅ Web App | ❌ Desktop Only | ❌ Desktop Only |
+| **Built-in CORS Bypass Proxy** | ✅ **Included** | ❌ Desktop Agent | ❌ N/A | ⚠️ Node Proxy | ❌ Desktop Only | ❌ Desktop Only |
+| **1-Click Shareable Mock Link** | ✅ **`?mock=...` URLs** | ❌ Requires Cloud | ❌ None | ❌ None | ❌ None | ❌ None |
+| **OpenAPI 3.1 & Postman 2.1 Import** | ✅ **Native** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
+| **License** | 📜 **MIT (Free & Open Source)** | Proprietary | MIT | AGPL v3 | Proprietary | GPL v3 |
+
+---
+
+## 🥊 Competitor Breakdown: Where We Win & Honest Trade-offs
+
+### 1. vs. Postman
+* **Their Advantages:** Massive ecosystem, team collaboration workspaces, extensive documentation.
+* **Their Disadvantages:** Removed the offline scratchpad; forces mandatory cloud account creation; syncs your private API keys and tokens to remote servers; heavy memory usage (800MB–1.5GB RAM); paywalls mock runners and collection runs.
+* **Why APIFlow Wins:** Zero account setup, zero cloud tracking, 100% private data stored in IndexedDB, and instant in-browser mock simulation without subscription fees.
+
+### 2. vs. Bruno
+* **Their Advantages:** Fantastic Git-friendly `.bru` file storage; completely offline-first.
+* **Their Disadvantages:** Requires installing a desktop Electron app; **has no synthetic mock engine** (you can only send requests to already-running servers, you cannot simulate fake APIs).
+* **Why APIFlow Wins:** Runs instantly in any web browser without downloading software, and includes a built-in Faker mock engine to prototype frontends before backend APIs are created.
+
+### 3. vs. Hoppscotch
+* **Their Advantages:** Popular web-based interface; supports WebSockets, GraphQL, and gRPC.
+* **Their Disadvantages:** Pushes cloud accounts for workspace syncing; **lacks an in-browser synthetic mock runner** or Faker schema engine.
+* **Why APIFlow Wins:** APIFlow is mock-first: simulate realistic status codes (200/400/500) and share reproducible mock links (`?mock=...`) in 1 click.
+
+### 4. vs. Mockoon
+* **Their Advantages:** Mature rule-based desktop mock server with regex routing and proxy cascading.
+* **Their Disadvantages:** Desktop application only (cannot run purely inside a browser tab); requires configuring OS port listeners; does not include a full-featured request builder (you still need Postman or cURL to test your mocks).
+* **Why APIFlow Wins:** Unified 2-in-1 studio combining the **Request Builder** and the **Mock Engine** in a single 3-pane interface, with zero installation needed.
 
 ---
 
