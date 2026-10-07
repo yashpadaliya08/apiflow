@@ -1197,7 +1197,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </a>
         </div>
 
-        <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
+        <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator &amp; Mock Runner</p>
+
+        {/* Legal Links — crawlers discover legal pages through footer links */}
+        <div className="flex items-center justify-center gap-4 text-white/30 text-xs pt-2">
+          <a href="/privacy" className="hover:text-white/60 transition-colors">
+            Privacy Policy
+          </a>
+          <span>·</span>
+          <a href="/terms" className="hover:text-white/60 transition-colors">
+            Terms of Service
+          </a>
+          <span>·</span>
+          <a
+            href="https://github.com/yashpadaliya08/apiflow"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white/60 transition-colors"
+          >
+            MIT License
+          </a>
+        </div>
       </footer>
     </div>
   );

@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const helmet = require('helmet');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const dns = require('dns').promises;
 const net = require('net');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,7 +15,31 @@ const PORT = process.env.PORT || 5000;
 // Enable response compression (Gzip / Deflate)
 app.use(compression());
 
-// Enable CORS
+// ─── Security Headers (Helmet) ───────────────────────────────────────────────
+// Sets: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection,
+//       Strict-Transport-Security, Referrer-Policy, Permissions-Policy
+// CSP is relaxed to allow the browser app to load fonts + connect to any API
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc:     ["'self'"],
+        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'"],  // Vite/React needs eval in dev; inline for splash
+        styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc:        ["'self'", "https://fonts.gstatic.com"],
+        imgSrc:         ["'self'", "data:", "blob:", "https:"],
+        connectSrc:     ["'self'", "https:", "http:", "wss:", "ws:"], // must allow any API endpoint
+        frameSrc:       ["'none'"],
+        objectSrc:      ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // keep false — the proxy fetches cross-origin resources
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
+
+// Enable CORS (after helmet so CORS headers override helmet's CORP where needed)
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
@@ -63,14 +89,33 @@ const globalStats = {
   serverStartTime: new Date().toISOString(),
 };
 
+// Ephemeral per-instance salt generated on process startup — resets on every restart (never persisted)
+const TELEMETRY_SALT = crypto.randomBytes(16).toString('hex');
+
+function hashIp(ip) {
+  if (!ip) return 'unknown';
+  return crypto.createHash('sha256').update(ip + TELEMETRY_SALT).digest('hex').substring(0, 16);
+}
+
 function maskIp(ip) {
   if (!ip) return 'unknown';
-  const clean = ip.replace(/^.*:/, ''); // strip ipv6 prefix if mapped
+  // Strip IPv4-mapped IPv6 prefix if present (e.g. ::ffff:192.0.2.1)
+  const ipv4Mapped = ip.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  const clean = ipv4Mapped ? ipv4Mapped[1] : ip;
+
   if (clean.includes('.')) {
+    // IPv4: keep first 2 octets, mask last 2 (e.g. 192.168.***.***)
     const parts = clean.split('.');
     if (parts.length === 4) return `${parts[0]}.${parts[1]}.***.***`;
   }
-  return clean.substring(0, 7) + '...';
+  if (clean.includes(':')) {
+    // IPv6: keep first 3 hextets (48-bit network prefix), mask remaining 80 bits
+    const parts = clean.split(':').filter(Boolean);
+    if (parts.length >= 3) {
+      return `${parts.slice(0, 3).join(':')}:*:*:*:*`;
+    }
+  }
+  return '***.***';
 }
 
 function parseDevice(userAgent) {
@@ -137,11 +182,12 @@ function parseReferrer(rawReferrer, refParam) {
 
 function trackSession(ip) {
   if (!ip) return;
+  const ipHash = hashIp(ip);
   if (globalStats.activeSessions.size >= MAX_ACTIVE_SESSIONS) {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    for (const [sIp, lastSeen] of globalStats.activeSessions.entries()) {
+    for (const [sHash, lastSeen] of globalStats.activeSessions.entries()) {
       if (lastSeen < fiveMinutesAgo) {
-        globalStats.activeSessions.delete(sIp);
+        globalStats.activeSessions.delete(sHash);
       }
     }
     if (globalStats.activeSessions.size >= MAX_ACTIVE_SESSIONS) {
@@ -152,24 +198,25 @@ function trackSession(ip) {
       }
     }
   }
-  globalStats.activeSessions.set(ip, Date.now());
+  globalStats.activeSessions.set(ipHash, Date.now());
 }
 
 function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, country }) {
   const parsed = parseReferrer(referrer, refParam);
   const device = parseDevice(userAgent);
   const masked = maskIp(ip);
+  const ipHash = hashIp(ip);
   const now = new Date();
 
   globalStats.totalPageviews++;
 
   // Cap uniqueIps set size to prevent unbounded memory growth (PERF-001)
-  if (!globalStats.uniqueIps.has(ip)) {
+  if (!globalStats.uniqueIps.has(ipHash)) {
     globalStats.uniqueVisitorsCount = (globalStats.uniqueVisitorsCount || 0) + 1;
     if (globalStats.uniqueIps.size >= MAX_UNIQUE_IPS) {
       globalStats.uniqueIps.clear();
     }
-    globalStats.uniqueIps.add(ip);
+    globalStats.uniqueIps.add(ipHash);
   }
 
   trackSession(ip);
@@ -1172,6 +1219,41 @@ app.get('/sitemap.xml', (req, res) => {
     return res.sendFile(sitemapFile);
   }
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://apiflowstudio.onrender.com/</loc>\n    <lastmod>2026-10-06</lastmod>\n    <priority>1.0</priority>\n  </url>\n</urlset>`);
+});
+
+// ─── Security.txt (RFC 9116) ─────────────────────────────────────────────────
+app.get('/.well-known/security.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(`Contact: mailto:yashpadaliya2@gmail.com
+Contact: https://github.com/yashpadaliya08/apiflow/issues
+Preferred-Languages: en
+Canonical: https://apiflowstudio.onrender.com/.well-known/security.txt
+Policy: https://apiflowstudio.onrender.com/privacy
+Expires: 2027-10-07T00:00:00.000Z
+`);
+});
+
+// Also serve at /security.txt (some crawlers check both)
+app.get('/security.txt', (req, res) => {
+  res.redirect(301, '/.well-known/security.txt');
+});
+
+// ─── Legal Pages ─────────────────────────────────────────────────────────────
+app.get('/privacy', (req, res) => {
+  const privacyDist = path.resolve(__dirname, '../frontend/dist/privacy.html');
+  const privacyPublic = path.resolve(__dirname, '../frontend/public/privacy.html');
+  if (fs.existsSync(privacyDist))   return res.sendFile(privacyDist);
+  if (fs.existsSync(privacyPublic)) return res.sendFile(privacyPublic);
+  res.status(404).send('Privacy Policy page not found.');
+});
+
+app.get('/terms', (req, res) => {
+  const termsDist = path.resolve(__dirname, '../frontend/dist/terms.html');
+  const termsPublic = path.resolve(__dirname, '../frontend/public/terms.html');
+  if (fs.existsSync(termsDist))   return res.sendFile(termsDist);
+  if (fs.existsSync(termsPublic)) return res.sendFile(termsPublic);
+  res.status(404).send('Terms of Service page not found.');
 });
 
 // Explicit LLM AI Crawler Endpoint (llms.txt Standard for ChatGPT, Perplexity, Claude, Gemini)

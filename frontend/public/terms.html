@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — APIFlow Studio</title>
+  <meta name="description" content="APIFlow Studio Terms of Service. Free to use, MIT licensed open-source API testing tool. Read our simple, honest terms." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://apiflowstudio.onrender.com/terms" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0C0E12;
+      color: #cbd5e1;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid #1e2535;
+      padding: 1.25rem 1.5rem;
+    }
+    header nav {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    header span { color: #475569; font-size: 0.875rem; }
+    main {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 0.5rem;
+    }
+    .meta {
+      color: #475569;
+      font-size: 0.875rem;
+      margin-bottom: 2.5rem;
+    }
+    h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    p { margin-bottom: 1rem; }
+    a { color: #818cf8; }
+    ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.25rem; }
+    .highlight {
+      background: #1a1f2e;
+      border: 1px solid #2a3147;
+      border-left: 3px solid #6366f1;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      color: #94a3b8;
+    }
+    footer {
+      border-top: 1px solid #1e2535;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: #475569;
+      font-size: 0.875rem;
+      margin-top: 4rem;
+    }
+    footer a { color: #818cf8; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">⚡ APIFlow Studio</a>
+      <span>/ Terms of Service</span>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Terms of Service</h1>
+    <p class="meta">Last updated: October 7, 2026 &nbsp;·&nbsp; Effective immediately</p>
+
+    <div class="highlight">
+      <strong style="color:#c7d2fe;">Short version:</strong> APIFlow Studio is free, open source (MIT licensed), and provided as-is. Use it responsibly, don't abuse the shared proxy, and don't send production secrets through a public proxy you don't control.
+    </div>
+
+    <h2>1. Acceptance</h2>
+    <p>By accessing or using APIFlow Studio at <a href="https://apiflowstudio.onrender.com">apiflowstudio.onrender.com</a> or by self-hosting the software, you agree to these Terms of Service. If you do not agree, please do not use the service.</p>
+
+    <h2>2. What the Service Is</h2>
+    <p>APIFlow Studio is a browser-based API testing client, synthetic mock server, and webhook testing tool. It is open source under the <a href="https://github.com/yashpadaliya08/apiflow/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. The hosted version at <code>apiflowstudio.onrender.com</code> is provided free of charge with no uptime guarantee. The project is maintained by one person on a best-effort basis.</p>
+
+    <h2>3. Acceptable Use</h2>
+    <p>You agree <strong>not</strong> to use the service to:</p>
+    <ul>
+      <li>Perform security testing, penetration testing, or vulnerability scanning against systems <strong>without the explicit authorization</strong> of the system owner. Authorised testing of your own systems is permitted.</li>
+      <li>Send illegal, abusive, malicious, or harmful content through the proxy.</li>
+      <li>Scrape, flood, or intentionally overload the proxy server or any third-party system through it.</li>
+      <li>Circumvent the terms of service or rate limits of third-party APIs using our proxy.</li>
+      <li>Resell, white-label, or misrepresent the hosted service as your own product without attribution.</li>
+    </ul>
+
+    <h2>4. The Live Request Proxy</h2>
+    <p>The proxy at <code>/proxy</code> is a shared convenience service provided to bypass browser CORS restrictions during API development and testing. You acknowledge:</p>
+    <ul>
+      <li>Because the destination URL is transmitted via query parameters (<code>/proxy?url=...</code>), the target URL and any query parameters attached to it will appear in platform-level server and CDN access logs (Render, Cloudflare). Do not include raw secrets or sensitive tokens in URL query strings.</li>
+      <li>Request headers (including <code>Authorization</code> headers and custom API keys) and request bodies are forwarded through our server to the destination without persistent storage on our application layer, but pass through shared hosting infrastructure.</li>
+      <li>The proxy is rate-limited, intended for low-volume development use, and may be restricted or shut down without notice if abused.</li>
+      <li>You should <strong>not</strong> use the public proxy for production traffic or with credentials that would cause harm if exposed.</li>
+      <li>For sensitive or high-volume workloads, deploy the self-hosted Docker version so traffic stays entirely within your own infrastructure.</li>
+    </ul>
+
+    <h2>5. No Warranty</h2>
+    <p>APIFlow Studio is provided <strong>"as is"</strong>, without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement. We do not guarantee uptime, data persistence, or that the service will be free of errors. The hosted service runs on Render's free tier and will experience cold-start delays (up to 60 seconds after inactivity) and occasional downtime.</p>
+
+    <h2>6. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by applicable law, Yash Padaliya and the APIFlow Studio project contributors shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use the service, even if advised of the possibility of such damages.</p>
+
+    <h2>7. Intellectual Property</h2>
+    <p>APIFlow Studio's source code is licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT License</a>. You are free to fork, modify, and self-host it. The APIFlow Studio name and branding are the property of the creator and may not be used to misrepresent a derivative work as the original project.</p>
+
+    <h2>8. User Content & Data</h2>
+    <p>You retain full ownership of any API collections, environments, mock scenarios, or other content you create in the app. Because all data is stored locally in your browser (IndexedDB), we have no access to it and no obligation to back it up or restore it.</p>
+
+    <h2>9. Termination</h2>
+    <p>We reserve the right to block access to the hosted proxy service for any user or IP address that violates these terms or abuses the shared infrastructure, without prior notice.</p>
+
+    <h2>10. Changes to These Terms</h2>
+    <p>We may update these terms at any time. Material changes will be reflected in the "Last updated" date above. Continued use of the service after changes constitutes your acceptance of the revised terms.</p>
+
+    <h2>11. Governing Law</h2>
+    <p>These terms are governed by the laws of India. Any disputes arising from your use of this service shall be subject to the jurisdiction of courts in Gujarat, India. Users in other jurisdictions may have additional rights under their local laws that are not affected by this clause.</p>
+
+    <h2>12. Children</h2>
+    <p>APIFlow Studio is a developer tool not intended for use by children under 16 (the EU threshold) or under 13 (the US COPPA threshold). We do not knowingly provide the service to minors.</p>
+
+    <h2>13. Contact</h2>
+    <p>Questions about these terms?</p>
+    <ul>
+      <li>Email: <a href="mailto:yashpadaliya2@gmail.com">yashpadaliya2@gmail.com</a></li>
+      <li>GitHub Issues: <a href="https://github.com/yashpadaliya08/apiflow/issues" target="_blank" rel="noopener">github.com/yashpadaliya08/apiflow/issues</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    <p>
+      <a href="/">Home</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener">GitHub</a>
+    </p>
+    <p style="margin-top:0.75rem;">© 2026 APIFlow Studio — MIT Licensed Open Source Project</p>
+  </footer>
+</body>
+</html>

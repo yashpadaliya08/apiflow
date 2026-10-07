@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — APIFlow Studio</title>
+  <meta name="description" content="APIFlow Studio Privacy Policy. Your workspace data stays in your browser. Only Live Request calls pass through our proxy, and no personally identifiable information is stored." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://apiflowstudio.onrender.com/privacy" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0C0E12;
+      color: #cbd5e1;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid #1e2535;
+      padding: 1.25rem 1.5rem;
+    }
+    header nav {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    header span { color: #475569; font-size: 0.875rem; }
+    main {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 0.5rem;
+    }
+    .meta {
+      color: #475569;
+      font-size: 0.875rem;
+      margin-bottom: 2.5rem;
+    }
+    h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    p { margin-bottom: 1rem; }
+    a { color: #818cf8; }
+    ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.25rem; }
+    .highlight {
+      background: #1a1f2e;
+      border: 1px solid #2a3147;
+      border-left: 3px solid #6366f1;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      color: #94a3b8;
+    }
+    footer {
+      border-top: 1px solid #1e2535;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: #475569;
+      font-size: 0.875rem;
+      margin-top: 4rem;
+    }
+    footer a { color: #818cf8; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">⚡ APIFlow Studio</a>
+      <span>/ Privacy Policy</span>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: October 7, 2026 &nbsp;·&nbsp; Effective immediately</p>
+
+    <div class="highlight">
+      <strong style="color:#c7d2fe;">Short version:</strong> Your workspace data (collections, environments, mock scenarios, request history) never leaves your browser. Only <strong>Live Request</strong> calls pass through our proxy server so we can bypass browser CORS restrictions. We collect no tracking cookies, and <strong>no personally identifiable information is stored</strong> beyond the anonymised, in-memory page-view counts described below.
+    </div>
+
+    <h2>1. Who We Are</h2>
+    <p>APIFlow Studio is an open-source, browser-based API testing client, synthetic mock server, and webhook testing tool created by <a href="https://github.com/yashpadaliya08" target="_blank" rel="noopener">Yash Padaliya</a>. The live version is hosted at <a href="https://apiflowstudio.onrender.com">apiflowstudio.onrender.com</a>. Source code is available on <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener">GitHub</a> under the MIT License.</p>
+
+    <h2>2. Your Workspace Data</h2>
+    <p>All collections, environments, mock scenarios, request history, and UI preferences you create are stored exclusively on <strong>your own device</strong> using:</p>
+    <ul>
+      <li><strong>IndexedDB</strong> — your main workspace database (<code>APIFlowDB</code>)</li>
+      <li><strong>localStorage</strong> — small UI state values (active collection, active endpoint, onboarding seed flag)</li>
+    </ul>
+    <p>This data never touches our servers. Clearing your browser data will permanently delete it. We have no way to recover it for you.</p>
+
+    <h2>3. The Live Request Proxy</h2>
+    <p>When you click <strong>Send</strong> with a real endpoint (Live mode), your HTTP request is routed through our proxy at <code>apiflowstudio.onrender.com/proxy?url=...</code> to bypass browser CORS restrictions. You should know:</p>
+    <ul>
+      <li>The target URL is transmitted in the query string (<code>/proxy?url=...</code>) and forwarded to the destination along with your headers (including any <code>Authorization</code> header or API key you add) and request body.</li>
+      <li><strong>Platform Access Logs:</strong> Because the target URL is passed as a query parameter, the full destination URL and any query parameters embedded in it (such as query-based API keys or tokens) will appear in standard HTTP access logs maintained by Render (hosting provider) and Cloudflare (CDN/proxy). We strongly advise passing sensitive API credentials in HTTP headers (e.g. <code>Authorization</code>) rather than query parameters when using the public proxy.</li>
+      <li>We do <strong>not</strong> intentionally log, store, or inspect request bodies, headers, or response payloads on our application server. Requests are processed in-memory and discarded immediately after the response is returned.</li>
+      <li>Render and Cloudflare retain standard platform-level HTTP access logs (client IP address, full request URL, timestamp) per <a href="https://render.com/privacy" target="_blank" rel="noopener">Render's Privacy Policy</a> and <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's Privacy Policy</a>.</li>
+    </ul>
+    <p><strong>We strongly recommend not sending production secrets, credentials, or sensitive data through any public proxy.</strong> Use the self-hosted Docker version for sensitive workloads.</p>
+
+    <h2>4. Analytics & Telemetry</h2>
+    <p>We run a lightweight, privacy-first, server-side analytics system with no third-party scripts. Here is exactly what it does and does not collect:</p>
+    <ul>
+      <li><strong>What we count:</strong> aggregate page views, approximate traffic source (Google / GitHub / Direct / etc.), device type category (Desktop / Mobile / Bot), country code (from Cloudflare's <code>CF-IPCountry</code> header — a two-letter country code, not a precise location), and aggregate feature usage events (proxy requests sent, exports, code copies).</li>
+      <li><strong>No raw IP storage:</strong> Raw IP addresses are <strong>never stored</strong> in memory or written to disk. To de-duplicate visitor counts and measure active sessions without storing personal identifiers, our server computes a one-way cryptographic hash (<code>SHA-256(IP + Salt)</code>) using an ephemeral, randomly generated salt that resets every time the server restarts. Active sessions expire from memory after 5 minutes.</li>
+      <li><strong>IP Masking:</strong> In the ephemeral recent-visits log (capped at 100 entries, memory-only), IP addresses are stripped of identifiable segments: for IPv4, the last two octets are masked (e.g. <code>192.168.***.***</code>); for IPv6, only the first 3 hextets (48-bit network prefix) are retained while the remaining host identifier bits are masked (e.g. <code>2001:db8:85a3:*:*:*:*</code>).</li>
+      <li><strong>User-Agent:</strong> Used solely to classify your device as Desktop, Mobile, Tablet, or Bot. The raw User-Agent string is never stored; only the derived category is kept.</li>
+      <li><strong>What we never do:</strong> track individual users across sessions, build profiles, use browser fingerprinting, set tracking cookies, or share any telemetry data with third parties.</li>
+    </ul>
+    <p>All analytics data lives in server memory only and is permanently cleared each time Render's free-tier server restarts (typically every few hours or after periods of inactivity).</p>
+
+    <h2>5. Cookies</h2>
+    <p>We do not set any tracking cookies. The only cookie that may be set is a short-lived session cookie used for the <code>/stats</code> admin dashboard, which is accessible only with an admin key. Cloudflare may set its own cookies (<code>__cf_bm</code>, <code>cf_clearance</code>) for bot-mitigation purposes; these are governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's Privacy Policy</a>.</p>
+
+    <h2>6. Third-Party Services</h2>
+    <table style="width:100%; border-collapse: collapse; font-size:0.9rem; margin-bottom:1rem;">
+      <thead>
+        <tr style="border-bottom:1px solid #2a3147; color:#94a3b8;">
+          <th style="text-align:left; padding:0.5rem 0.75rem;">Service</th>
+          <th style="text-align:left; padding:0.5rem 0.75rem;">Purpose</th>
+          <th style="text-align:left; padding:0.5rem 0.75rem;">Their Policy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #1e2535;">
+          <td style="padding:0.5rem 0.75rem;">Google Fonts</td>
+          <td style="padding:0.5rem 0.75rem;">Loads Inter (legal &amp; marketing pages) and JetBrains Mono (code editor workspace)</td>
+          <td style="padding:0.5rem 0.75rem;"><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy</a></td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e2535;">
+          <td style="padding:0.5rem 0.75rem;">Cloudflare</td>
+          <td style="padding:0.5rem 0.75rem;">CDN, DDoS protection, DNSSEC</td>
+          <td style="padding:0.5rem 0.75rem;"><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy</a></td>
+        </tr>
+        <tr>
+          <td style="padding:0.5rem 0.75rem;">Render</td>
+          <td style="padding:0.5rem 0.75rem;">Hosts the Express proxy server</td>
+          <td style="padding:0.5rem 0.75rem;"><a href="https://render.com/privacy" target="_blank" rel="noopener">Render Privacy</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>7. Self-Hosting</h2>
+    <p>If you run APIFlow Studio via Docker on your own infrastructure, zero data is sent to our servers. You control all data completely. See the <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener">GitHub repository</a> for Docker setup instructions.</p>
+
+    <h2>8. GDPR & Your Rights</h2>
+    <p>Because all telemetry is anonymised, masked, or cryptographically hashed in memory, we hold no personal data beyond what is described above. If you have any questions or privacy concerns, please contact us via the methods in section 11 and we will respond promptly.</p>
+
+    <h2>9. Children's Privacy</h2>
+    <p>APIFlow Studio is a developer tool not directed at children. We do not knowingly collect any data from individuals under 16 (the EU GDPR threshold) or under 13 (the US COPPA threshold).</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>If we materially change this policy — particularly around proxy logging or analytics — we will update this page and the "Last updated" date above. We recommend checking this page periodically if you use the Live Request proxy with sensitive endpoints.</p>
+
+    <h2>11. Contact</h2>
+    <p>Privacy questions? Reach us at:</p>
+    <ul>
+      <li>Email: <a href="mailto:yashpadaliya2@gmail.com">yashpadaliya2@gmail.com</a></li>
+      <li>GitHub Issues: <a href="https://github.com/yashpadaliya08/apiflow/issues" target="_blank" rel="noopener">github.com/yashpadaliya08/apiflow/issues</a></li>
+      <li>LinkedIn: <a href="https://www.linkedin.com/in/padaliya-yash/" target="_blank" rel="noopener">linkedin.com/in/padaliya-yash</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    <p>
+      <a href="/">Home</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener">GitHub</a>
+    </p>
+    <p style="margin-top:0.75rem;">© 2026 APIFlow Studio — MIT Licensed Open Source Project</p>
+  </footer>
+</body>
+</html>
