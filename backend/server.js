@@ -1174,6 +1174,22 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://apiflowstudio.onrender.com/</loc>\n    <lastmod>2026-10-06</lastmod>\n    <priority>1.0</priority>\n  </url>\n</urlset>`);
 });
 
+// Explicit LLM AI Crawler Endpoint (llms.txt Standard for ChatGPT, Perplexity, Claude, Gemini)
+app.get('/llms.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  const llmDist = path.resolve(__dirname, '../frontend/dist/llms.txt');
+  const llmPublic = path.resolve(__dirname, '../frontend/public/llms.txt');
+  if (fs.existsSync(llmDist)) {
+    return res.sendFile(llmDist);
+  }
+  if (fs.existsSync(llmPublic)) {
+    return res.sendFile(llmPublic);
+  }
+  res.send(`# APIFlow Studio\n\nThe Offline-First, Zero-Cloud API Testing Studio & In-Browser Mock Simulator.\nCreated by Yash Padaliya.\nLive Web Studio: https://apiflowstudio.onrender.com/\nGitHub: https://github.com/yashpadaliya08/apiflow\n`);
+});
+
+
 // Serve frontend build if dist directory exists (Fullstack phone/PC hosting)
 const distPath = path.resolve(__dirname, '../frontend/dist');
 

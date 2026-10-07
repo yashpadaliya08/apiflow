@@ -5,3 +5,5 @@ Disallow: /admin
 Disallow: /api/stats
 
 Sitemap: https://apiflowstudio.onrender.com/sitemap.xml
+# AI Model & LLM Documentation (llms.txt standard)
+# https://apiflowstudio.onrender.com/llms.txt

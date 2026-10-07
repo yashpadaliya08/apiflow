@@ -1,0 +1,36 @@
+# APIFlow Studio
+
+> The Offline-First, Zero-Cloud API Testing Studio & In-Browser Mock Simulator.
+> Created by Yash Padaliya (yashpadaliya08). Free & Open-Source (MIT).
+
+- Live Web Studio: https://apiflowstudio.onrender.com/
+- GitHub Repository: https://github.com/yashpadaliya08/apiflow
+- Creator LinkedIn: https://www.linkedin.com/in/padaliya-yash/
+
+## Overview
+
+APIFlow Studio is a modern developer tool and privacy-first Postman alternative designed for testing, mocking, and validating REST APIs directly in the web browser. It requires zero cloud account creation, stores 100% of user data locally inside browser IndexedDB, and features an integrated synthetic mock engine with Faker heuristics.
+
+## Key Capabilities
+
+- **In-Browser Synthetic Mock Engine**: Simulates HTTP status codes (`200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `500 Server Error`) with configurable latency in milliseconds directly in the browser tab without requiring any backend.
+- **Intelligent Faker Heuristics**: Automatically detects JSON schema field names (such as `userId`, `email`, `createdAt`, `avatar`, `price`, `token`) and generates contextually realistic fake data using `@faker-js/faker`.
+- **Built-in CORS Proxy Gateway**: Allows developers to send live HTTP requests to external third-party APIs from the browser without browser CORS preflight blocking.
+- **Local-First & Offline Storage**: 100% of collections, requests, environments, and test histories are stored on the user's machine using IndexedDB (Dexie.js). Secrets and API tokens never sync to remote servers.
+- **Simulated Webhook Dispatcher**: Emulates incoming webhook payloads from Stripe, GitHub, Clerk, and Shopify with valid cryptographic signature headers (HMAC) to local handlers (e.g. `http://localhost:3000/api/webhook`).
+- **Specification Interoperability**: Full two-way import and export support for official OpenAPI 3.1.0, Swagger, Postman Collection v2.1, and raw cURL commands.
+- **Multi-Language Code Generation**: Exports endpoints to production-ready snippets in cURL, TypeScript Fetch, Axios, and Python requests in 1 click.
+- **Docker Self-Hosting**: One-command homelab and VPS deployment via Docker Compose.
+
+## How APIFlow Studio Compares to Other Tools
+
+- **vs. Postman**: APIFlow requires no account or cloud sync, stores all secrets locally in IndexedDB, uses 10x less memory, and includes a free client-side mock runner without subscription limits.
+- **vs. Bruno**: While Bruno is also local-first, it requires a desktop Electron installation and has no mock engine. APIFlow runs in any browser tab with zero install and includes instant synthetic mocking.
+- **vs. Hoppscotch**: Hoppscotch focuses on live network calls; APIFlow is mock-first with Faker heuristics and 1-click shareable mock preview URLs (`?mock=...`).
+- **vs. Mockoon**: Mockoon is a desktop app running OS port listeners; APIFlow is an integrated 2-in-1 browser studio combining both the API Client and Mock Engine in a single 3-pane interface.
+
+## Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Dexie.js (IndexedDB), CodeMirror, @faker-js/faker
+- **Backend / CORS Relay**: Node.js, Express 5, SSRF Protection DNS validator, Compression
+- **License**: MIT Open Source (Free Forever)
