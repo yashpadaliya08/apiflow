@@ -1307,6 +1307,23 @@ app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (req, res) => {
 });
 
 
+// Clean URL SEO Routes for Landing & Comparison Pages
+const serveLandingPage = (fileName) => (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+  const filePathDist = path.resolve(__dirname, `../frontend/dist/${fileName}`);
+  const filePathPublic = path.resolve(__dirname, `../frontend/public/${fileName}`);
+  if (fs.existsSync(filePathDist)) return res.sendFile(filePathDist);
+  if (fs.existsSync(filePathPublic)) return res.sendFile(filePathPublic);
+  res.status(404).send('Page not found');
+};
+
+app.get(['/postman-alternative', '/postman-alternative.html'], serveLandingPage('postman-alternative.html'));
+app.get(['/mock-api-generator', '/mock-api-generator.html'], serveLandingPage('mock-api-generator.html'));
+app.get(['/offline-api-client', '/offline-api-client.html'], serveLandingPage('offline-api-client.html'));
+app.get(['/privacy', '/privacy.html'], serveLandingPage('privacy.html'));
+app.get(['/terms', '/terms.html'], serveLandingPage('terms.html'));
+
 // Serve frontend build if dist directory exists (Fullstack phone/PC hosting)
 const distPath = path.resolve(__dirname, '../frontend/dist');
 

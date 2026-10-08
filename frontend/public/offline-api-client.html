@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline API Client & Local Testing Workbench — APIFlow Studio</title>
+  <meta name="description" content="A secure, offline-first API client that runs in your browser or desktop PWA. 100% local data sovereignty with zero cloud telemetry." />
+  <meta name="keywords" content="offline API client, private API tester, local REST client, air-gapped API testing, PWA API client, secure API testing tool" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0C0E12" />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://apiflowstudio.onrender.com/offline-api-client" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://apiflowstudio.onrender.com/offline-api-client" />
+  <meta property="og:title" content="Offline API Client & Local Testing Workbench — APIFlow Studio" />
+  <meta property="og:description" content="A secure, offline-first API client that runs in your browser or desktop PWA. 100% local data sovereignty with zero cloud telemetry." />
+  <meta property="og:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+  <meta property="og:site_name" content="APIFlow Studio" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@yashpadaliya08" />
+  <meta name="twitter:title" content="Offline API Client & Local Testing Workbench — APIFlow Studio" />
+  <meta name="twitter:description" content="A secure, offline-first API client that runs in your browser or desktop PWA. 100% local data sovereignty with zero cloud telemetry." />
+  <meta name="twitter:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "APIFlow Offline API Client",
+        "url": "https://apiflowstudio.onrender.com/offline-api-client",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All (Web, Windows, macOS, Linux)",
+        "description": "Offline-first, client-side API testing client and contract simulator with full data privacy.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does APIFlow work completely offline without internet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Once loaded, APIFlow's mock engine, schema builder, and collection manager work 100% offline via Service Workers and IndexedDB. You can build, mock, and test without any active internet connection."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is APIFlow compliant with strict corporate security policies?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Because APIFlow stores all data locally in the client and does not synchronize credentials or test histories to cloud databases, it eliminates risks of third-party data breaches."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I install APIFlow as a desktop app?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. APIFlow is a Progressive Web App (PWA). Click the install icon in your browser URL bar on Windows, macOS, or Linux for a dedicated desktop window that launches in under 50ms."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0C0E12;
+      color: #cbd5e1;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid #1e2535;
+      padding: 1.25rem 2rem;
+      background: rgba(12, 14, 18, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #6366F1, #A855F7);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0284C7;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .btn-cta:hover { background: #0369A1; }
+    main {
+      max-width: 1000px;
+      margin: 3.5rem auto;
+      padding: 0 1.5rem;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818CF8;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      max-width: 780px;
+      margin: 0 auto 2rem auto;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-large {
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      border-radius: 10px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 3.5rem 0;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 1.75rem;
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+    .faq-item {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .faq-item h3 {
+      font-size: 1.15rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      border-top: 1px solid #1e2535;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    footer a { color: #818cf8; text-decoration: none; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="/" class="logo">
+        <div class="logo-badge">⚡</div>
+        <span>APIFlow Studio</span>
+      </a>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <a href="/postman-alternative" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Postman Alternative</a>
+        <a href="/mock-api-generator" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Mock Engine</a>
+        <a href="/?view=studio" class="btn-cta">Open Studio (Free)</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pill">🔒 100% Data Sovereignty</div>
+      <h1>Private, Offline-First API Testing Client</h1>
+      <p class="subtitle">
+        Test private microservices, webhooks, and local APIs without cloud telemetry. Your API tokens, headers, and payloads stay strictly on your machine.
+      </p>
+      <div class="hero-actions">
+        <a href="/?view=studio" class="btn-cta btn-large">⚡ Launch Offline Client Free</a>
+      </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section>
+      <h2 style="font-size: 1.75rem; font-weight: 700; color: #ffffff; margin-bottom: 1.5rem;">Why Offline-First Matters for Developers</h2>
+      <div class="features-grid">
+        <div class="card">
+          <h3>🔐 Zero Cloud Sync Risk</h3>
+          <p>Never accidentally leak staging API keys or customer PII payloads to a third-party cloud database. Everything is stored locally in IndexedDB.</p>
+        </div>
+        <div class="card">
+          <h3>✈️ Works on Planes & Trains</h3>
+          <p>Develop anywhere without an internet connection. Build collections, craft mock contracts, and run visual test assertions offline.</p>
+        </div>
+        <div class="card">
+          <h3>🚀 Sub-Second Boot Time</h3>
+          <p>Launches in under 50ms compared to bloated 600MB Electron desktop clients that take 10+ seconds to load.</p>
+        </div>
+        <div class="card">
+          <h3>💻 Installable Desktop PWA</h3>
+          <p>Install directly from your browser as a native standalone window on Windows, macOS, and Linux with full offline caching.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section style="margin: 4rem 0;">
+      <h2 style="font-size: 1.75rem; font-weight: 700; color: #ffffff; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>How does APIFlow execute API calls offline?</h3>
+        <p>APIFlow Studio uses high-performance client-side Service Workers and IndexedDB. Mock responses, contract simulations, and schema validations happen directly on your CPU with 0 network latency.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Does APIFlow require any external server?</h3>
+        <p>No. When mocking, everything is client-side. When testing external live APIs with CORS restrictions, APIFlow includes an optional local proxy relay that forwards requests without storing payloads.</p>
+      </div>
+    </section>
+
+    <div style="text-align: center; margin: 4rem 0;">
+      <h2 style="color: #ffffff; font-size: 2rem; margin-bottom: 1rem;">Keep Your API Work Private & Fast</h2>
+      <p style="color: #94a3b8; margin-bottom: 2rem;">No sign up or account required. Free and open source.</p>
+      <a href="/?view=studio" class="btn-cta btn-large">⚡ Open APIFlow Studio</a>
+    </div>
+  </main>
+
+  <footer>
+    <nav aria-label="Footer Navigation" style="margin-bottom: 1rem;">
+      <a href="/">Home</a> ·
+      <a href="/postman-alternative">Postman Alternative</a> ·
+      <a href="/mock-api-generator">Mock API Generator</a> ·
+      <a href="/offline-api-client">Offline API Client</a> ·
+      <a href="/privacy">Privacy Policy</a> ·
+      <a href="/terms">Terms of Service</a> ·
+      <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+    <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
+  </footer>
+</body>
+</html>

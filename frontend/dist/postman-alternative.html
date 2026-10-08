@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Free Postman Alternative (Offline & Browser) — APIFlow</title>
+  <meta name="description" content="Looking for a lightweight Postman alternative? APIFlow Studio is 100% offline-first, free, and runs in your browser with zero cloud lock-in." />
+  <meta name="keywords" content="Postman alternative, free Postman alternative, offline API client, lightweight REST client, Postman alternative without account, API mocking tool" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0C0E12" />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://apiflowstudio.onrender.com/postman-alternative" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://apiflowstudio.onrender.com/postman-alternative" />
+  <meta property="og:title" content="Best Free Postman Alternative (Offline & Browser) — APIFlow" />
+  <meta property="og:description" content="Looking for a lightweight Postman alternative? APIFlow Studio is 100% offline-first, free, and runs in your browser with zero cloud lock-in." />
+  <meta property="og:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+  <meta property="og:site_name" content="APIFlow Studio" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@yashpadaliya08" />
+  <meta name="twitter:title" content="Best Free Postman Alternative (Offline & Browser) — APIFlow" />
+  <meta name="twitter:description" content="Looking for a lightweight Postman alternative? APIFlow Studio is 100% offline-first, free, and runs in your browser with zero cloud lock-in." />
+  <meta name="twitter:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "APIFlow Studio",
+        "url": "https://apiflowstudio.onrender.com/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All (Web, Windows, macOS, Linux)",
+        "description": "Free browser-first and offline Postman alternative with zero cloud dependencies and built-in mock engine.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why are developers switching from Postman?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Postman recently eliminated scratchpad offline mode, forcing users into cloud accounts and cloud sync. In addition, its desktop app consumes 400MB to 1GB+ of RAM. APIFlow runs instantly in your browser or as a lightweight PWA with zero forced login and 100% local data storage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I import my existing Postman collections into APIFlow?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. APIFlow supports one-click import and export of Postman Collection v2.1 formats, OpenAPI 3.0/3.1 specs, and raw cURL commands."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does APIFlow require payment or credit card?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. APIFlow Studio is 100% free with unlimited endpoints, mocks, and test assertions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my API secrets and tokens safe?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. All collections, environment variables, and authentication tokens are kept strictly inside your browser's IndexedDB database. Nothing is saved to third-party cloud servers."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0C0E12;
+      color: #cbd5e1;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid #1e2535;
+      padding: 1.25rem 2rem;
+      background: rgba(12, 14, 18, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #0EA5E9, #6366F1);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0284C7;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .btn-cta:hover { background: #0369A1; }
+    main {
+      max-width: 1000px;
+      margin: 3.5rem auto;
+      padding: 0 1.5rem;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      color: #38BDF8;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      max-width: 780px;
+      margin: 0 auto 2rem auto;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-large {
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      border-radius: 10px;
+    }
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { background: rgba(51, 65, 85, 0.8); }
+
+    /* Comparison Table */
+    .table-section {
+      margin: 4rem 0;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      overflow-x: auto;
+    }
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th, td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    th {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    th.highlight-col, td.highlight-col {
+      background: rgba(14, 165, 233, 0.06);
+      color: #38BDF8;
+      font-weight: 600;
+    }
+    .check { color: #10B981; font-weight: bold; }
+    .cross { color: #EF4444; font-weight: bold; }
+
+    /* Feature Cards */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 1.75rem;
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    /* FAQ */
+    .faq-item {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .faq-item h3 {
+      font-size: 1.15rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid #1e2535;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    footer a { color: #818cf8; text-decoration: none; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="/" class="logo">
+        <div class="logo-badge">⚡</div>
+        <span>APIFlow Studio</span>
+      </a>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <a href="/mock-api-generator" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Mock Engine</a>
+        <a href="/offline-api-client" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Offline Client</a>
+        <a href="/?view=studio" class="btn-cta">Open Studio (Free)</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pill">⚡ The Modern Developer Upgrade</div>
+      <h1>The Free, Lightweight Postman Alternative</h1>
+      <p class="subtitle">
+        Tired of forced cloud logins, 500MB memory bloat, and paywalled mock servers? APIFlow Studio is 100% offline-first, free, and runs instantly in your browser with zero account setup.
+      </p>
+      <div class="hero-actions">
+        <a href="/?view=studio" class="btn-cta btn-large">⚡ Launch Studio Free</a>
+        <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View GitHub Repository
+        </a>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="table-section">
+      <h2 class="section-title">Feature Comparison: APIFlow Studio vs Postman</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="highlight-col">APIFlow Studio</th>
+            <th>Postman</th>
+            <th>Insomnia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cloud Login Required</strong></td>
+            <td class="highlight-col"><span class="check">❌ None (100% Offline)</span></td>
+            <td><span class="cross">Mandatory Cloud Account</span></td>
+            <td><span class="cross">Mandatory Cloud Account</span></td>
+          </tr>
+          <tr>
+            <td><strong>Installation / Footprint</strong></td>
+            <td class="highlight-col"><span class="check">0 MB (Web & Instant PWA)</span></td>
+            <td><span class="cross">400MB - 1GB+ RAM</span></td>
+            <td><span class="cross">300MB - 800MB RAM</span></td>
+          </tr>
+          <tr>
+            <td><strong>In-Browser Mock Engine</strong></td>
+            <td class="highlight-col"><span class="check">✔ Built-in Faker & Latency</span></td>
+            <td><span class="cross">Requires Cloud Server</span></td>
+            <td><span class="cross">Limited / Plugins</span></td>
+          </tr>
+          <tr>
+            <td><strong>Data Sovereignty</strong></td>
+            <td class="highlight-col"><span class="check">✔ 100% Local IndexedDB</span></td>
+            <td><span class="cross">Syncs to Remote Cloud</span></td>
+            <td><span class="cross">Remote Cloud Sync</span></td>
+          </tr>
+          <tr>
+            <td><strong>Postman v2.1 Import</strong></td>
+            <td class="highlight-col"><span class="check">✔ 1-Click Import</span></td>
+            <td>Native</td>
+            <td>Supported</td>
+          </tr>
+          <tr>
+            <td><strong>Pricing</strong></td>
+            <td class="highlight-col"><span class="check">100% Free & Open Source</span></td>
+            <td>$14 - $49 / user / mo</td>
+            <td>$5 - $12 / user / mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Why Developers Love APIFlow -->
+    <section>
+      <h2 class="section-title">Why Developers Choose APIFlow Over Postman</h2>
+      <div class="features-grid">
+        <div class="card">
+          <h3>⚡ Instant In-Browser Execution</h3>
+          <p>No 500MB installers, background updaters, or lag. Launch your workspace in less than a second on any device.</p>
+        </div>
+        <div class="card">
+          <h3>🔒 Private & Secure By Design</h3>
+          <p>Your API keys, bearer tokens, and private payload drafts never leave your device. All saved in encrypted client storage.</p>
+        </div>
+        <div class="card">
+          <h3>🎲 Dynamic Mock Server Built-in</h3>
+          <p>Don't wait for backend developers. Generate realistic mock responses with Faker and simulate network delays with a slider.</p>
+        </div>
+        <div class="card">
+          <h3>🔄 Zero Vendor Lock-in</h3>
+          <p>Import your existing Postman collections and OpenAPI 3.1 specifications seamlessly without losing endpoints.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section style="margin: 4rem 0;">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>Why are developers looking for Postman alternatives?</h3>
+        <p>Postman phased out its offline scratchpad, forcing users to create cloud accounts and upload workspaces to remote servers. APIFlow Studio provides a fast, offline-first alternative that works in your browser with zero account requirements.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I import my existing Postman collections?</h3>
+        <p>Yes. Simply drag and drop your exported Postman Collection v2.1 JSON file into APIFlow Studio to import all your requests, parameters, and headers immediately.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is APIFlow Studio free?</h3>
+        <p>Yes, APIFlow Studio is 100% free with unlimited endpoints, mocks, and test assertions.</p>
+      </div>
+    </section>
+
+    <div style="text-align: center; margin: 4rem 0;">
+      <h2 style="color: #ffffff; font-size: 2rem; margin-bottom: 1rem;">Ready to upgrade your API workflow?</h2>
+      <p style="color: #94a3b8; margin-bottom: 2rem;">No sign up required. Try APIFlow Studio in your browser now.</p>
+      <a href="/?view=studio" class="btn-cta btn-large">⚡ Launch Studio Free</a>
+    </div>
+  </main>
+
+  <footer>
+    <nav aria-label="Footer Navigation" style="margin-bottom: 1rem;">
+      <a href="/">Home</a> ·
+      <a href="/postman-alternative">Postman Alternative</a> ·
+      <a href="/mock-api-generator">Mock API Generator</a> ·
+      <a href="/offline-api-client">Offline API Client</a> ·
+      <a href="/privacy">Privacy Policy</a> ·
+      <a href="/terms">Terms of Service</a> ·
+      <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+    <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
+  </footer>
+</body>
+</html>

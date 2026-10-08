@@ -17,9 +17,23 @@
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:mock-generator",
       "displayName": "Synthetic Mock Response Engine",
-      "type": "application/json",
-      "url": "https://apiflowstudio.onrender.com/",
-      "description": "Client-side synthetic mock response generation with Faker heuristics."
+      "type": "text/html",
+      "url": "https://apiflowstudio.onrender.com/mock-api-generator",
+      "description": "Client-side synthetic mock response generation with Faker heuristics and latency simulation."
+    },
+    {
+      "identifier": "urn:air:apiflowstudio.onrender.com:tool:postman-alternative",
+      "displayName": "APIFlow Postman Alternative Workbench",
+      "type": "text/html",
+      "url": "https://apiflowstudio.onrender.com/postman-alternative",
+      "description": "Free, lightweight, offline-first Postman alternative with zero cloud sync required."
+    },
+    {
+      "identifier": "urn:air:apiflowstudio.onrender.com:tool:offline-client",
+      "displayName": "APIFlow Offline API Client",
+      "type": "text/html",
+      "url": "https://apiflowstudio.onrender.com/offline-api-client",
+      "description": "Secure, private, air-gapped API testing workbench with 100% local IndexedDB storage."
     }
   ]
 }

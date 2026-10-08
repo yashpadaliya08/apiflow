@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free In-Browser Mock API Generator & Faker Engine — APIFlow</title>
+  <meta name="description" content="Generate realistic mock REST APIs directly in your browser. Simulate latency, custom status codes, and synthetic Faker data with zero backend." />
+  <meta name="keywords" content="mock API generator, fake API generator, in-browser mock server, mock REST API, fake json api, synthetic data generator, API latency simulator" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0C0E12" />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://apiflowstudio.onrender.com/mock-api-generator" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://apiflowstudio.onrender.com/mock-api-generator" />
+  <meta property="og:title" content="Free In-Browser Mock API Generator & Faker Engine — APIFlow" />
+  <meta property="og:description" content="Generate realistic mock REST APIs directly in your browser. Simulate latency, custom status codes, and synthetic Faker data with zero backend." />
+  <meta property="og:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+  <meta property="og:site_name" content="APIFlow Studio" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@yashpadaliya08" />
+  <meta name="twitter:title" content="Free In-Browser Mock API Generator & Faker Engine — APIFlow" />
+  <meta name="twitter:description" content="Generate realistic mock REST APIs directly in your browser. Simulate latency, custom status codes, and synthetic Faker data with zero backend." />
+  <meta name="twitter:image" content="https://apiflowstudio.onrender.com/favicon.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "APIFlow Mock API Generator",
+        "url": "https://apiflowstudio.onrender.com/mock-api-generator",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All (Web, Windows, macOS, Linux)",
+        "description": "Client-side mock API server and synthetic data generator for frontend and mobile developers.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does APIFlow generate mock APIs without a backend?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "APIFlow Studio executes a complete client-side mock engine in your browser's Web Worker and Service Worker layer. It generates synthetic data schemas and intercepts calls locally with realistic HTTP status codes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I simulate realistic network latency and throttling?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. APIFlow includes an interactive latency slider. You can inject custom delays from 0ms to 5000ms, simulate 3G mobile connections, or randomly trigger 500 internal server errors and 429 rate limits to test UI error states."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What data formats are supported for mocks?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "APIFlow supports dynamic JSON payloads, XML, plain text, headers manipulation, and relational synthetic datasets including user profiles, transactions, and geographic data."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0C0E12;
+      color: #cbd5e1;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid #1e2535;
+      padding: 1.25rem 2rem;
+      background: rgba(12, 14, 18, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #10B981, #0EA5E9);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0284C7;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .btn-cta:hover { background: #0369A1; }
+    main {
+      max-width: 1000px;
+      margin: 3.5rem auto;
+      padding: 0 1.5rem;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      max-width: 780px;
+      margin: 0 auto 2rem auto;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-large {
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      border-radius: 10px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 3.5rem 0;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 1.75rem;
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+    .code-demo {
+      background: #020617;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 1.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      margin: 3rem 0;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+    .faq-item {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .faq-item h3 {
+      font-size: 1.15rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      border-top: 1px solid #1e2535;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    footer a { color: #818cf8; text-decoration: none; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="/" class="logo">
+        <div class="logo-badge">⚡</div>
+        <span>APIFlow Studio</span>
+      </a>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <a href="/postman-alternative" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Postman Alternative</a>
+        <a href="/offline-api-client" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Offline Client</a>
+        <a href="/?view=studio" class="btn-cta">Open Studio (Free)</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pill">🎲 Zero-Backend Mocking Engine</div>
+      <h1>Instant In-Browser Mock API Generator</h1>
+      <p class="subtitle">
+        Build and test frontend features before backend APIs are ready. Generate dynamic faker schemas, simulate 500 error responses, and test slow 3G latency with zero configuration.
+      </p>
+      <div class="hero-actions">
+        <a href="/?view=studio" class="btn-cta btn-large">⚡ Generate Mock APIs Free</a>
+      </div>
+    </section>
+
+    <!-- Code Demo Section -->
+    <section class="code-demo">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.75rem;">
+        <span style="color: #38BDF8; font-weight: 600;">⚡ Simulated Response (Latency: 180ms · Status: 200 OK)</span>
+        <span style="color: #10B981; font-size: 0.85rem;">Faker Seed: Active</span>
+      </div>
+      <pre style="color: #E2E8F0; overflow-x: auto;"><code>{
+  <span style="color: #F43F5E;">"status"</span>: <span style="color: #10B981;">"success"</span>,
+  <span style="color: #F43F5E;">"data"</span>: {
+    <span style="color: #F43F5E;">"userId"</span>: <span style="color: #38BDF8;">"usr_982f1b0a"</span>,
+    <span style="color: #F43F5E;">"name"</span>: <span style="color: #F59E0B;">"Sarah Jenkins"</span>,
+    <span style="color: #F43F5E;">"email"</span>: <span style="color: #F59E0B;">"s.jenkins@enterprise.io"</span>,
+    <span style="color: #F43F5E;">"role"</span>: <span style="color: #F59E0B;">"Engineering Lead"</span>,
+    <span style="color: #F43F5E;">"billingPlan"</span>: <span style="color: #10B981;">"Enterprise_Annual"</span>
+  },
+  <span style="color: #F43F5E;">"metadata"</span>: {
+    <span style="color: #F43F5E;">"responseLatencyMs"</span>: <span style="color: #38BDF8;">180</span>,
+    <span style="color: #F43F5E;">"serverRegion"</span>: <span style="color: #F59E0B;">"in-browser-worker"</span>
+  }
+}</code></pre>
+    </section>
+
+    <!-- Features Grid -->
+    <section>
+      <h2 style="font-size: 1.75rem; font-weight: 700; color: #ffffff; margin-bottom: 1.5rem;">Core Mocking Capabilities</h2>
+      <div class="features-grid">
+        <div class="card">
+          <h3>🎲 Dynamic Faker Engine</h3>
+          <p>Generate realistic names, emails, credit cards, dates, and addresses automatically on every simulated request.</p>
+        </div>
+        <div class="card">
+          <h3>⏱️ Latency & Throttling</h3>
+          <p>Test UI loading spinners and skeleton loaders by simulating 200ms, 1000ms, or variable mobile network delays.</p>
+        </div>
+        <div class="card">
+          <h3>💥 Chaos & Error Simulation</h3>
+          <p>Trigger 400 Bad Request, 401 Unauthorized, 429 Rate Limited, and 500 Internal Server Errors to verify error handling.</p>
+        </div>
+        <div class="card">
+          <h3>🌐 Zero Backend Needed</h3>
+          <p>Runs 100% inside your browser. No Express server to spin up, no Docker containers, and no external subscriptions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section style="margin: 4rem 0;">
+      <h2 style="font-size: 1.75rem; font-weight: 700; color: #ffffff; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>How does in-browser mock API generation work?</h3>
+        <p>APIFlow Studio uses client-side interception. When you click Send or run a test flow, our mock runner matches your path, applies your faker templates, and returns synthetic JSON responses in milliseconds without network round-trips.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I export my mocks to OpenAPI?</h3>
+        <p>Yes! With one click, export all your mock contracts and schema definitions into valid OpenAPI 3.1 or Postman Collection v2.1 files to share with backend engineers.</p>
+      </div>
+    </section>
+
+    <div style="text-align: center; margin: 4rem 0;">
+      <h2 style="color: #ffffff; font-size: 2rem; margin-bottom: 1rem;">Start Mocking APIs in Seconds</h2>
+      <p style="color: #94a3b8; margin-bottom: 2rem;">No sign up or credit card required. Free forever.</p>
+      <a href="/?view=studio" class="btn-cta btn-large">⚡ Open APIFlow Studio</a>
+    </div>
+  </main>
+
+  <footer>
+    <nav aria-label="Footer Navigation" style="margin-bottom: 1rem;">
+      <a href="/">Home</a> ·
+      <a href="/postman-alternative">Postman Alternative</a> ·
+      <a href="/mock-api-generator">Mock API Generator</a> ·
+      <a href="/offline-api-client">Offline API Client</a> ·
+      <a href="/privacy">Privacy Policy</a> ·
+      <a href="/terms">Terms of Service</a> ·
+      <a href="https://github.com/yashpadaliya08/apiflow" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+    <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
+  </footer>
+</body>
+</html>

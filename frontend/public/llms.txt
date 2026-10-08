@@ -5,6 +5,9 @@
 ## Primary Resources
 
 - [Live Web Studio](https://apiflowstudio.onrender.com/): Free browser-based API testing client and synthetic mock simulator
+- [Postman Alternative Comparison](https://apiflowstudio.onrender.com/postman-alternative): In-depth comparison of APIFlow vs Postman vs Insomnia
+- [Mock API Generator](https://apiflowstudio.onrender.com/mock-api-generator): Browser mock server with synthetic Faker datasets and latency simulation
+- [Offline API Client](https://apiflowstudio.onrender.com/offline-api-client): Offline-first, private API client with 100% local IndexedDB sovereignty
 - [GitHub Repository](https://github.com/yashpadaliya08/apiflow): Source code, issue tracker, self-hosting Docker guides, and MIT license
 - [Privacy Policy](https://apiflowstudio.onrender.com/privacy): Data sovereignty details, local-first IndexedDB architecture, and proxy disclosures
 - [Terms of Service](https://apiflowstudio.onrender.com/terms): Terms and acceptable use guidelines
