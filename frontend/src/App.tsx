@@ -25,31 +25,28 @@ export const App: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!isStats) {
-      init();
-    }
     trackPageView();
-  }, [init, isStats]);
+    if (isStats) return;
+
+    if (view === 'studio') {
+      init();
+    } else {
+      // Warm up database in background only when main thread is idle (preserves LCP & TBT)
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(() => init(), { timeout: 4000 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(() => init(), 2000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [init, isStats, view]);
 
   if (isStats) {
     return (
       <Suspense fallback={<div className="h-screen w-screen bg-[#090B0E] flex items-center justify-center text-white text-xs">Loading Telemetry...</div>}>
         <StatsDashboard />
       </Suspense>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen bg-[#0C0E12] flex flex-col items-center justify-center text-white select-none">
-        <div className="relative mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center shadow-lg shadow-indigo-500/30 animate-pulse">
-            <Zap className="w-7 h-7 text-white fill-white" />
-          </div>
-        </div>
-        <h2 className="text-base font-semibold tracking-tight text-white/90">APIFlow Studio</h2>
-        <p className="text-xs text-white/40 mt-1">Initializing Dexie.js database & Enterprise mock seed...</p>
-      </div>
     );
   }
 
@@ -60,12 +57,27 @@ export const App: React.FC = () => {
 
       {/* Main View Area */}
       {view === 'studio' ? (
-        <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs font-mono">Loading Studio...</div>}>
-          <AppShell />
-        </Suspense>
+        isLoading ? (
+          <div className="h-full w-full bg-[#0C0E12] flex flex-col items-center justify-center text-white select-none">
+            <div className="relative mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center shadow-lg shadow-indigo-500/30 animate-pulse">
+                <Zap className="w-7 h-7 text-white fill-white" />
+              </div>
+            </div>
+            <h2 className="text-base font-semibold tracking-tight text-white/90">APIFlow Studio</h2>
+            <p className="text-xs text-white/40 mt-1 font-mono">Initializing Dexie.js database & Enterprise mock seed...</p>
+          </div>
+        ) : (
+          <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs font-mono">Loading Studio...</div>}>
+            <AppShell />
+          </Suspense>
+        )
       ) : (
         <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs">Loading Overview...</div>}>
-          <LandingPage onLaunchStudio={() => setView('studio')} />
+          <LandingPage onLaunchStudio={() => {
+            init();
+            setView('studio');
+          }} />
         </Suspense>
       )}
     </div>

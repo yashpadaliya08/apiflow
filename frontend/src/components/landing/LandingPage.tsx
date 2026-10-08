@@ -41,9 +41,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   const [webhookSent, setWebhookSent] = useState<boolean>(false);
   const [webhookProvider, setWebhookProvider] = useState<'stripe' | 'github' | 'clerk'>('stripe');
 
-  // Auto-play timeline for the interactive video tour
+  const [isDemoVisible, setIsDemoVisible] = useState<boolean>(false);
+
+  // Detect when interactive demo enters viewport before starting intervals
   useEffect(() => {
-    if (!isPlaying) return;
+    const el = document.getElementById('interactive-demo');
+    if (!el || typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsDemoVisible(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsDemoVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-play timeline for the interactive video tour (runs only when visible)
+  useEffect(() => {
+    if (!isPlaying || !isDemoVisible) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -62,7 +81,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isDemoVisible]);
 
   const handleSceneSelect = (scene: DemoScene) => {
     setActiveScene(scene);
