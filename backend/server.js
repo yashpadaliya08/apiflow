@@ -1288,11 +1288,21 @@ app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (req, res) => {
   if (fs.existsSync(catPublic)) return res.sendFile(catPublic);
   res.json({
     "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
-    "name": "APIFlow Studio",
-    "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
-    "url": "https://apiflowstudio.onrender.com/",
-    "version": "1.0.0",
-    "documentation": "https://apiflowstudio.onrender.com/llms.txt"
+    "specVersion": "1.0",
+    "host": {
+      "displayName": "APIFlow Studio",
+      "identifier": "urn:air:apiflowstudio.onrender.com:host",
+      "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt"
+    },
+    "entries": [
+      {
+        "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",
+        "displayName": "APIFlow REST API Client & In-Browser Runner",
+        "type": "text/html",
+        "url": "https://apiflowstudio.onrender.com/",
+        "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner."
+      }
+    ]
   });
 });
 

@@ -1,24 +1,25 @@
 {
   "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
-  "name": "APIFlow Studio",
-  "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
-  "url": "https://apiflowstudio.onrender.com/",
-  "version": "1.0.0",
-  "provider": {
-    "name": "Yash Padaliya",
-    "url": "https://github.com/yashpadaliya08"
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "APIFlow Studio",
+    "identifier": "urn:air:apiflowstudio.onrender.com:host",
+    "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt"
   },
-  "capabilities": [
+  "entries": [
     {
-      "type": "api-testing",
-      "name": "REST API Client",
-      "description": "Execute live and mocked HTTP requests directly in-browser with zero cloud tracking"
+      "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",
+      "displayName": "APIFlow REST API Client & In-Browser Runner",
+      "type": "text/html",
+      "url": "https://apiflowstudio.onrender.com/",
+      "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner."
     },
     {
-      "type": "mock-generation",
-      "name": "Synthetic Mock Engine",
-      "description": "Generate dynamic mock JSON responses with realistic schema Faker heuristics"
+      "identifier": "urn:air:apiflowstudio.onrender.com:tool:mock-generator",
+      "displayName": "Synthetic Mock Response Engine",
+      "type": "application/json",
+      "url": "https://apiflowstudio.onrender.com/",
+      "description": "Client-side synthetic mock response generation with Faker heuristics."
     }
-  ],
-  "documentation": "https://apiflowstudio.onrender.com/llms.txt"
+  ]
 }

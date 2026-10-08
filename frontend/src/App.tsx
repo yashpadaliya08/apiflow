@@ -1,10 +1,10 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { useCollectionStore } from '@/store/collection-store';
 import { Navbar } from '@/components/layout/Navbar';
-import { AppShell } from '@/components/layout/AppShell';
 import { Zap } from 'lucide-react';
 import { trackPageView } from '@/lib/analytics';
 
+const AppShell = lazy(() => import('@/components/layout/AppShell').then((m) => ({ default: m.AppShell })));
 const LandingPage = lazy(() => import('@/components/landing/LandingPage').then((m) => ({ default: m.LandingPage })));
 const StatsDashboard = lazy(() => import('@/components/stats/StatsDashboard').then((m) => ({ default: m.StatsDashboard })));
 
@@ -60,7 +60,9 @@ export const App: React.FC = () => {
 
       {/* Main View Area */}
       {view === 'studio' ? (
-        <AppShell />
+        <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs font-mono">Loading Studio...</div>}>
+          <AppShell />
+        </Suspense>
       ) : (
         <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs">Loading Overview...</div>}>
           <LandingPage onLaunchStudio={() => setView('studio')} />

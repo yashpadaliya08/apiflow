@@ -75,7 +75,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30 scroll-smooth relative bg-grid-pattern">
+    <main id="main-content" className="flex-1 overflow-y-auto bg-[#0C0E12] text-white selection:bg-indigo-500/30 scroll-smooth relative bg-grid-pattern">
       {/* ══════════════════════════════════════════════════════════
           HERO SECTION
       ══════════════════════════════════════════════════════════ */}
@@ -184,14 +184,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
                 activeScene === 'mock'
                   ? 'bg-indigo-600/10 text-indigo-300 font-semibold'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-slate-200 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Zap className="w-3.5 h-3.5 text-indigo-400" />
                 <span className="truncate">1. Instant Mock Engine</span>
               </div>
-              <div className="text-[10px] text-white/40 truncate">Faker heuristics & status codes</div>
+              <div className="text-[10px] text-slate-300 truncate">Faker heuristics & status codes</div>
               {activeScene === 'mock' && isPlaying && (
                 <div
                   className="absolute bottom-0 left-0 h-0.5 bg-indigo-500 transition-all duration-100"
@@ -205,14 +205,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
                 activeScene === 'assertions'
                   ? 'bg-emerald-600/10 text-emerald-300 font-semibold'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-slate-200 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="truncate">2. Visual Test Builder</span>
               </div>
-              <div className="text-[10px] text-white/40 truncate">No-code schema assertions</div>
+              <div className="text-[10px] text-slate-300 truncate">No-code schema assertions</div>
               {activeScene === 'assertions' && isPlaying && (
                 <div
                   className="absolute bottom-0 left-0 h-0.5 bg-emerald-500 transition-all duration-100"
@@ -226,14 +226,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
                 activeScene === 'webhooks'
                   ? 'bg-rose-600/10 text-rose-300 font-semibold'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-slate-200 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Radio className="w-3.5 h-3.5 text-rose-400" />
                 <span className="truncate">3. Webhook Dispatcher</span>
               </div>
-              <div className="text-[10px] text-white/40 truncate">Stripe, GitHub, Clerk events</div>
+              <div className="text-[10px] text-slate-300 truncate">Stripe, GitHub, Clerk events</div>
               {activeScene === 'webhooks' && isPlaying && (
                 <div
                   className="absolute bottom-0 left-0 h-0.5 bg-rose-500 transition-all duration-100"
@@ -247,14 +247,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               className={`p-2.5 text-left transition-all relative ${
                 activeScene === 'pwa'
                   ? 'bg-purple-600/10 text-purple-300 font-semibold'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-slate-200 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Laptop className="w-3.5 h-3.5 text-purple-400" />
                 <span className="truncate">4. Offline Desktop PWA</span>
               </div>
-              <div className="text-[10px] text-white/40 truncate">Borderless offline window</div>
+              <div className="text-[10px] text-slate-300 truncate">Borderless offline window</div>
               {activeScene === 'pwa' && isPlaying && (
                 <div
                   className="absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-100"
@@ -1219,6 +1219,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </a>
         </div>
       </footer>
-    </div>
+    </main>
   );
 };
