@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
+  "name": "APIFlow Studio",
+  "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
+  "url": "https://apiflowstudio.onrender.com/",
+  "version": "1.0.0",
+  "provider": {
+    "name": "Yash Padaliya",
+    "url": "https://github.com/yashpadaliya08"
+  },
+  "capabilities": [
+    {
+      "type": "api-testing",
+      "name": "REST API Client",
+      "description": "Execute live and mocked HTTP requests directly in-browser with zero cloud tracking"
+    },
+    {
+      "type": "mock-generation",
+      "name": "Synthetic Mock Engine",
+      "description": "Generate dynamic mock JSON responses with realistic schema Faker heuristics"
+    }
+  ],
+  "documentation": "https://apiflowstudio.onrender.com/llms.txt"
+}

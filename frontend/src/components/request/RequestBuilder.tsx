@@ -192,6 +192,8 @@ export const RequestBuilder: React.FC = () => {
       <div className="p-3 border-b border-[#2A2F45] bg-[#141720]/80 flex items-center justify-between gap-3 backdrop-blur-sm">
         <div className="flex-1 min-w-0">
           <input
+            id="endpoint-name-input"
+            name="endpointName"
             type="text"
             value={activeEndpoint.name}
             onChange={(e) => updateActiveEndpointDraft({ name: e.target.value })}
@@ -204,6 +206,8 @@ export const RequestBuilder: React.FC = () => {
         <div className="flex items-center gap-2">
           {/* Resource / Tag input */}
           <input
+            id="endpoint-resource-input"
+            name="endpointResource"
             type="text"
             value={activeEndpoint.resource || ''}
             onChange={(e) => updateActiveEndpointDraft({ resource: e.target.value })}
@@ -219,6 +223,8 @@ export const RequestBuilder: React.FC = () => {
         <div className="p-1.5 rounded-xl bg-[#141720] border border-[#2A2F45] shadow-lg shadow-black/20 flex items-center gap-2">
           {/* Method selector with glowing method pill styling */}
           <select
+            id="endpoint-method-select"
+            name="endpointMethod"
             value={activeEndpoint.method}
             onChange={(e) => {
               updateActiveEndpointDraft({ method: e.target.value as HttpMethod });
@@ -246,6 +252,8 @@ export const RequestBuilder: React.FC = () => {
           {/* URL Path input */}
           <div className="flex-1 min-w-[80px] relative flex items-center">
             <input
+              id="endpoint-path-input"
+              name="endpointPath"
               type="text"
               value={activeEndpoint.path}
               onChange={(e) => updateActiveEndpointDraft({ path: e.target.value })}
@@ -258,6 +266,8 @@ export const RequestBuilder: React.FC = () => {
           {/* Mock Scenario Dropdown (if in Mock mode) */}
           {executionMode === 'mock' && (
             <select
+              id="mock-scenario-select"
+              name="mockScenario"
               value={activeEndpoint.mockScenario || 200}
               onChange={(e) => {
                 const sc = Number(e.target.value) as StatusCode;

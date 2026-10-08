@@ -25,6 +25,7 @@ app.use(
       directives: {
         defaultSrc:     ["'self'"],
         scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'"],  // Vite/React needs eval in dev; inline for splash
+        scriptSrcAttr:  ["'unsafe-inline'"],                            // Permits inline event handlers if any
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc:        ["'self'", "https://fonts.gstatic.com"],
         imgSrc:         ["'self'", "data:", "blob:", "https:"],
@@ -38,6 +39,12 @@ app.use(
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 );
+
+// Standard Permissions-Policy header
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
 
 // Enable CORS (after helmet so CORS headers override helmet's CORP where needed)
 app.use(cors({
@@ -1269,6 +1276,24 @@ app.get('/llms.txt', (req, res) => {
     return res.sendFile(llmPublic);
   }
   res.send(`# APIFlow Studio\n\nThe Offline-First, Zero-Cloud API Testing Studio & In-Browser Mock Simulator.\nCreated by Yash Padaliya.\nLive Web Studio: https://apiflowstudio.onrender.com/\nGitHub: https://github.com/yashpadaliya08/apiflow\n`);
+});
+
+// Autonomous AI Agent Resource Discovery (ARD ai-catalog.json standard)
+app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  const catDist = path.resolve(__dirname, '../frontend/dist/ai-catalog.json');
+  const catPublic = path.resolve(__dirname, '../frontend/public/ai-catalog.json');
+  if (fs.existsSync(catDist))   return res.sendFile(catDist);
+  if (fs.existsSync(catPublic)) return res.sendFile(catPublic);
+  res.json({
+    "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
+    "name": "APIFlow Studio",
+    "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
+    "url": "https://apiflowstudio.onrender.com/",
+    "version": "1.0.0",
+    "documentation": "https://apiflowstudio.onrender.com/llms.txt"
+  });
 });
 
 

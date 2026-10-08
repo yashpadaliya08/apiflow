@@ -1,11 +1,14 @@
 # APIFlow Studio
 
-> The Offline-First, Zero-Cloud API Testing Studio & In-Browser Mock Simulator.
-> Created by Yash Padaliya (yashpadaliya08). Free & Open-Source (MIT).
+> The Offline-First, Zero-Cloud API Testing Studio & In-Browser Mock Simulator. Created by Yash Padaliya (yashpadaliya08). Free & Open-Source (MIT).
 
-- Live Web Studio: https://apiflowstudio.onrender.com/
-- GitHub Repository: https://github.com/yashpadaliya08/apiflow
-- Creator LinkedIn: https://www.linkedin.com/in/padaliya-yash/
+## Primary Resources
+
+- [Live Web Studio](https://apiflowstudio.onrender.com/): Free browser-based API testing client and synthetic mock simulator
+- [GitHub Repository](https://github.com/yashpadaliya08/apiflow): Source code, issue tracker, self-hosting Docker guides, and MIT license
+- [Privacy Policy](https://apiflowstudio.onrender.com/privacy): Data sovereignty details, local-first IndexedDB architecture, and proxy disclosures
+- [Terms of Service](https://apiflowstudio.onrender.com/terms): Terms and acceptable use guidelines
+- [AI Catalog Manifest](https://apiflowstudio.onrender.com/ai-catalog.json): Autonomous AI Agent Resource Discovery (ARD) catalog
 
 ## Overview
 
@@ -24,10 +27,10 @@ APIFlow Studio is a modern developer tool and privacy-first Postman alternative 
 
 ## How APIFlow Studio Compares to Other Tools
 
-- **vs. Postman**: APIFlow requires no account or cloud sync, stores all secrets locally in IndexedDB, uses 10x less memory, and includes a free client-side mock runner without subscription limits.
-- **vs. Bruno**: While Bruno is also local-first, it requires a desktop Electron installation and has no mock engine. APIFlow runs in any browser tab with zero install and includes instant synthetic mocking.
-- **vs. Hoppscotch**: Hoppscotch focuses on live network calls; APIFlow is mock-first with Faker heuristics and 1-click shareable mock preview URLs (`?mock=...`).
-- **vs. Mockoon**: Mockoon is a desktop app running OS port listeners; APIFlow is an integrated 2-in-1 browser studio combining both the API Client and Mock Engine in a single 3-pane interface.
+- [Postman Comparison](https://apiflowstudio.onrender.com/): APIFlow requires no account or cloud sync, stores all secrets locally in IndexedDB, uses 10x less memory, and includes a free client-side mock runner without subscription limits.
+- [Bruno Comparison](https://apiflowstudio.onrender.com/): While Bruno is also local-first, it requires a desktop Electron installation and has no mock engine. APIFlow runs in any browser tab with zero install and includes instant synthetic mocking.
+- [Hoppscotch Comparison](https://apiflowstudio.onrender.com/): Hoppscotch focuses on live network calls; APIFlow is mock-first with Faker heuristics and 1-click shareable mock preview URLs (`?mock=...`).
+- [Mockoon Comparison](https://apiflowstudio.onrender.com/): Mockoon is a desktop app running OS port listeners; APIFlow is an integrated 2-in-1 browser studio combining both the API Client and Mock Engine in a single 3-pane interface.
 
 ## Tech Stack
 

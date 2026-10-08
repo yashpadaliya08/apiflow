@@ -161,6 +161,8 @@ export const Sidebar: React.FC = () => {
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
           <input
+            id="search-endpoints"
+            name="searchQuery"
             type="text"
             placeholder="Search endpoints..."
             value={searchQuery}

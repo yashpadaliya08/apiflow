@@ -88,6 +88,8 @@ export const ParamTable: React.FC<ParamTableProps> = ({
                 {/* Key */}
                 <div className="px-1">
                   <input
+                    id={`param-key-${item.id}`}
+                    name={`param_key_${item.id}`}
                     type="text"
                     value={item.key}
                     onChange={(e) => handleChangeKey(item.id, e.target.value)}
@@ -99,6 +101,8 @@ export const ParamTable: React.FC<ParamTableProps> = ({
                 {/* Value */}
                 <div className="px-1">
                   <input
+                    id={`param-val-${item.id}`}
+                    name={`param_val_${item.id}`}
                     type="text"
                     value={item.value}
                     onChange={(e) => handleChangeValue(item.id, e.target.value)}
