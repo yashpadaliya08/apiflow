@@ -32,7 +32,6 @@ This comparison reflects only features that are currently implemented and verifi
 | **Postman v2.1 Collection Import** | **Supported** (JSON import) | Native | Supported | Supported |
 | **OpenAPI 3.x Import / Export** | **Supported** (Local JSON) | Supported | Supported | Supported |
 | **Signed Webhook Dispatcher** | **Built-in** (Stripe, GitHub, Clerk, Shopify HMAC) | Manual pre-request scripts | Manual scripts | Manual scripts |
-| **AI Agent Discovery (ARD 1.0 & llms.txt)** | **Supported** (`/ai-catalog.json`, `/llms.txt`) | None | None | None |
 | **Live Request Execution** | Bounded backend security proxy (`POST /api/proxy`) | Desktop client / Cloud agent | Browser extension / Proxy / Cloud agent | Direct from desktop |
 | **License / Pricing** | **MIT** (100% Free & Open Source) | Proprietary / Paid tiers ($14–$49/mo) | AGPL / Paid team cloud | MIT / Paid Golden Edition |
 
