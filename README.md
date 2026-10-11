@@ -1,5 +1,8 @@
 # APIFlow Studio
 
+[![CI](https://github.com/yashpadaliya08/apiflow/actions/workflows/ci.yml/badge.svg)](https://github.com/yashpadaliya08/apiflow/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A local-first API request client and in-browser mock simulator built with React, TypeScript, Zustand, Dexie, and Express.
 
 [Public demo](https://apiflowstudio.onrender.com/) · [Source](https://github.com/yashpadaliya08/apiflow) · [AI Catalog Manifest](https://apiflowstudio.onrender.com/ai-catalog.json) · [llms.txt](https://apiflowstudio.onrender.com/llms.txt)
