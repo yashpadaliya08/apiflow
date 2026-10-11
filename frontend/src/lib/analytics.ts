@@ -130,7 +130,7 @@ export function trackPageView() {
     const visitPayload = {
       event: 'page_view',
       referrer: document.referrer ? new URL(document.referrer).origin : 'direct',
-      refParam: ['reddit', 'twitter', 'hn', 'github', 'linkedin', 'producthunt'].includes(refParam) ? refParam : '',
+      refParam: ['reddit', 'twitter', 'hn', 'github', 'linkedin', 'producthunt', 'selfhosted', 'webdev'].includes(refParam) ? refParam : '',
       path: window.location.pathname === '/' ? '/' : '/page',
       timestamp: new Date().toISOString(),
     };

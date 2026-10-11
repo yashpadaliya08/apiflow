@@ -103,11 +103,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
 
   useEffect(() => {
     let current = true;
-    void hasAdminSession().then(active => {
-      if (current) setIsAdminActive(active || new URLSearchParams(window.location.search).has('admin'));
-    });
+    const hasAdminQuery = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('admin');
+    if (hasAdminQuery) {
+      setIsAdminActive(true);
+      return;
+    }
+    // Only verify admin session when analytics modal is explicitly opened or in studio view, never on critical initial landing load
+    if (analyticsOpen || currentView === 'studio') {
+      void hasAdminSession().then(active => {
+        if (current) setIsAdminActive(active);
+      });
+    }
     return () => { current = false; };
-  }, [analyticsOpen]);
+  }, [analyticsOpen, currentView]);
 
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
 

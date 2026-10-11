@@ -104,6 +104,23 @@ const globalStats = {
 // Ephemeral per-instance salt generated on process startup — resets on every restart (never persisted)
 const TELEMETRY_SALT = crypto.randomBytes(16).toString('hex');
 
+function getClientIp(req) {
+  if (!req) return '127.0.0.1';
+  const cfIp = req.headers?.['cf-connecting-ip'];
+  if (cfIp && typeof cfIp === 'string' && cfIp.trim().length > 0) return cfIp.trim();
+
+  const forwarded = req.headers?.['x-forwarded-for'];
+  if (forwarded && typeof forwarded === 'string' && forwarded.trim().length > 0) {
+    const first = forwarded.split(',')[0].trim();
+    if (first) return first;
+  }
+
+  const realIp = req.headers?.['x-real-ip'];
+  if (realIp && typeof realIp === 'string' && realIp.trim().length > 0) return realIp.trim();
+
+  return req.ip || req.socket?.remoteAddress || '127.0.0.1';
+}
+
 function hashIp(ip) {
   if (!ip) return 'unknown';
   return crypto.createHash('sha256').update(ip + TELEMETRY_SALT).digest('hex').substring(0, 16);
@@ -302,7 +319,7 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
       ? JSON.parse(req.body.toString('utf8'))
       : (typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
 
-    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const clientIp = getClientIp(req);
     const country = req.headers['cf-ipcountry'] || 'Global';
     const userAgent = req.headers['user-agent'] || '';
 
@@ -965,7 +982,7 @@ app.all('/proxy', (_req, res) => res.status(410).json({ error: 'Reload APIFlow t
 // Middleware for recording direct page requests on root static route
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/proxy') && !req.path.includes('.')) {
-    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const clientIp = getClientIp(req);
     recordVisit({
       ip: clientIp,
       userAgent: req.headers['user-agent'] || '',

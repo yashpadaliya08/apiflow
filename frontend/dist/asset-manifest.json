@@ -15,7 +15,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-hToMhs5W.js",
+    "file": "assets/index-78p7t_WM.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -33,7 +33,7 @@
     ]
   },
   "src/components/landing/LandingPage.tsx": {
-    "file": "assets/LandingPage-CW-OfI-R.js",
+    "file": "assets/LandingPage-ClLUW3QM.js",
     "name": "LandingPage",
     "src": "src/components/landing/LandingPage.tsx",
     "isDynamicEntry": true,
@@ -47,20 +47,20 @@
     ]
   },
   "src/components/layout/AppShell.tsx": {
-    "file": "assets/AppShell-CmBMnexE.js",
+    "file": "assets/AppShell-5M-9JHh7.js",
     "name": "AppShell",
     "src": "src/components/layout/AppShell.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
       "_vendor-lucide-BLObK2Hs.js",
-      "_vendor-faker-CdBPqZdY.js",
       "src/lib/engines/schema-generator.ts",
+      "_vendor-faker-CdBPqZdY.js",
       "_vendor-dexie-B0yzgGqo.js"
     ]
   },
   "src/components/stats/StatsDashboard.tsx": {
-    "file": "assets/StatsDashboard-BwnybYGS.js",
+    "file": "assets/StatsDashboard-BNnIsyXF.js",
     "name": "StatsDashboard",
     "src": "src/components/stats/StatsDashboard.tsx",
     "isDynamicEntry": true,

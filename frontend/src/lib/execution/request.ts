@@ -1,5 +1,5 @@
 import type { Endpoint, KeyValue } from '@/types';
-import { interpolateVariables } from '@/lib/engines/synthetic-engine';
+import { interpolateVariables } from '@/lib/utils/interpolation';
 
 export function prepareRequest(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []) {
   const resolve = (value: string) => {

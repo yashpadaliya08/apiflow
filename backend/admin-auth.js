@@ -17,7 +17,8 @@ function createAdminAuth({ key = '', clock = Date.now, ttlMs = 30 * 60 * 1000, s
   function sameOrigin(req) {
     try {
       const origin = req.get('origin');
-      const expected = publicOrigin || `${req.protocol}://${req.get('host')}`;
+      const proto = req.headers?.['x-forwarded-proto'] || req.protocol;
+      const expected = publicOrigin || `${proto}://${req.get('host')}`;
       return Boolean(origin && new URL(origin).origin === new URL(expected).origin && req.get('sec-fetch-site') !== 'cross-site');
     } catch { return false; }
   }
@@ -30,7 +31,7 @@ function createAdminAuth({ key = '', clock = Date.now, ttlMs = 30 * 60 * 1000, s
     if (!sameOrigin(req)) return res.status(403).json({error:'Same-origin login required.'});
     if (!configured) return res.status(503).json({error:'Admin access is not configured.'});
     prune(attempts); prune(sessions);
-    const client = req.ip || req.socket.remoteAddress || 'unknown';
+    const client = req.headers?.['cf-connecting-ip'] || (req.headers?.['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : '') || req.ip || req.socket?.remoteAddress || 'unknown';
     const quota = attempts.get(client) || {count:0, expires:clock()+60000};
     if (quota.count >= 5 || (!attempts.has(client) && attempts.size >= 1000)) return res.status(429).set('Retry-After','60').json({error:'Too many login attempts. Try again in a minute.'});
     quota.count++; attempts.set(client,quota);

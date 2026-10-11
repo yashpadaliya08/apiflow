@@ -186,12 +186,4 @@ export function generateCreateResponse(endpoint: Endpoint): unknown {
 // ═══════════════════════════════════════════════════
 // Interpolate environment variables into a string
 // ═══════════════════════════════════════════════════
-export function interpolateVariables(
-  str: string,
-  variables: KeyValue[]
-): string {
-  return str.replace(/\{\{([\w.-]+)\}\}/g, (match, key) => {
-    const found = variables.find(v => v.key === key && v.enabled);
-    return found ? found.value : match;
-  });
-}
+export { interpolateVariables } from '@/lib/utils/interpolation';
