@@ -15,7 +15,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-78p7t_WM.js",
+    "file": "assets/index-sR9C5BWP.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -33,7 +33,7 @@
     ]
   },
   "src/components/landing/LandingPage.tsx": {
-    "file": "assets/LandingPage-ClLUW3QM.js",
+    "file": "assets/LandingPage-G2L2PwEi.js",
     "name": "LandingPage",
     "src": "src/components/landing/LandingPage.tsx",
     "isDynamicEntry": true,
@@ -47,7 +47,7 @@
     ]
   },
   "src/components/layout/AppShell.tsx": {
-    "file": "assets/AppShell-5M-9JHh7.js",
+    "file": "assets/AppShell-BILJPJLP.js",
     "name": "AppShell",
     "src": "src/components/layout/AppShell.tsx",
     "isDynamicEntry": true,
@@ -60,7 +60,7 @@
     ]
   },
   "src/components/stats/StatsDashboard.tsx": {
-    "file": "assets/StatsDashboard-BNnIsyXF.js",
+    "file": "assets/StatsDashboard-Mjv4v9T1.js",
     "name": "StatsDashboard",
     "src": "src/components/stats/StatsDashboard.tsx",
     "isDynamicEntry": true,

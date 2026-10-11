@@ -30,15 +30,6 @@ export const App: React.FC = () => {
 
     if (view === 'studio') {
       init();
-    } else {
-      // Warm up database in background only when main thread is idle (preserves LCP & TBT)
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        const id = window.requestIdleCallback(() => init(), { timeout: 4000 });
-        return () => window.cancelIdleCallback(id);
-      } else {
-        const timer = setTimeout(() => init(), 2000);
-        return () => clearTimeout(timer);
-      }
     }
   }, [init, isStats, view]);
 
