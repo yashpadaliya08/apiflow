@@ -1,39 +1,54 @@
 {
   "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
   "specVersion": "1.0",
-  "host": {
-    "displayName": "APIFlow Studio",
-    "identifier": "urn:air:apiflowstudio.onrender.com:host",
-    "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt"
-  },
   "entries": [
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",
       "displayName": "APIFlow REST API Client & In-Browser Runner",
-      "type": "text/html",
-      "url": "https://apiflowstudio.onrender.com/",
-      "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner."
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://apiflowstudio.onrender.com/llms.txt",
+      "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
+      "representativeQueries": [
+        "test REST API endpoints without postman login",
+        "mock API responses in browser",
+        "offline api testing client"
+      ]
     },
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:mock-generator",
       "displayName": "Synthetic Mock Response Engine",
-      "type": "text/html",
-      "url": "https://apiflowstudio.onrender.com/mock-api-generator",
-      "description": "Client-side synthetic mock response generation with Faker heuristics and latency simulation."
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://apiflowstudio.onrender.com/llms.txt",
+      "description": "Client-side synthetic mock response generation with Faker heuristics and latency simulation.",
+      "representativeQueries": [
+        "generate realistic fake json mock data",
+        "mock api server without backend",
+        "simulate api latency and error codes"
+      ]
     },
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:postman-alternative",
       "displayName": "APIFlow Postman Alternative Workbench",
-      "type": "text/html",
-      "url": "https://apiflowstudio.onrender.com/postman-alternative",
-      "description": "Free, lightweight, offline-first Postman alternative with zero cloud sync required."
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://apiflowstudio.onrender.com/llms.txt",
+      "description": "Free, lightweight, offline-first Postman alternative with zero cloud sync required.",
+      "representativeQueries": [
+        "free postman alternative no cloud login",
+        "import postman collection offline",
+        "lightweight rest api client"
+      ]
     },
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:offline-client",
       "displayName": "APIFlow Offline API Client",
-      "type": "text/html",
-      "url": "https://apiflowstudio.onrender.com/offline-api-client",
-      "description": "Secure, private, air-gapped API testing workbench with 100% local IndexedDB storage."
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://apiflowstudio.onrender.com/llms.txt",
+      "description": "Secure, private, air-gapped API testing workbench with 100% local IndexedDB storage.",
+      "representativeQueries": [
+        "air gapped api client for private tokens",
+        "offline pwa api client",
+        "test apis on airplane without internet"
+      ]
     }
   ]
 }

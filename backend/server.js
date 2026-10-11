@@ -1056,18 +1056,18 @@ app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (req, res) => {
   res.json({
     "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
     "specVersion": "1.0",
-    "host": {
-      "displayName": "APIFlow Studio",
-      "identifier": "urn:air:apiflowstudio.onrender.com:host",
-      "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt"
-    },
     "entries": [
       {
         "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",
         "displayName": "APIFlow REST API Client & In-Browser Runner",
-        "type": "text/html",
-        "url": "https://apiflowstudio.onrender.com/",
-        "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner."
+        "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+        "url": "https://apiflowstudio.onrender.com/llms.txt",
+        "description": "Zero-cloud, client-side API testing studio, contract simulator, and mock runner.",
+        "representativeQueries": [
+          "test REST API endpoints without postman login",
+          "mock API responses in browser",
+          "offline api testing client"
+        ]
       }
     ]
   });

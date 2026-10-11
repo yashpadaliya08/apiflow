@@ -21,7 +21,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { generateSchemaValue } from '@/lib/engines/schema-generator';
+
 
 interface LandingPageProps {
   onLaunchStudio: () => void;
@@ -64,6 +64,32 @@ const SCHEMA_PRESETS: Record<'user' | 'order' | 'event', Record<string, unknown>
   },
 };
 
+const INITIAL_PRESET_MOCKS: Record<'user' | 'order' | 'event', Record<string, unknown>> = {
+  user: {
+    id: 'd3b07384-d113-4632-9c97-6a7516df5f12',
+    name: 'Alex Morgan',
+    email: 'alex.morgan@example.com',
+    role: 'Senior Architect',
+    active: true,
+    createdAt: '2026-10-11T06:00:00.000Z',
+  },
+  order: {
+    orderId: 'ord_9f82c471-2b0e-473d-9d22',
+    customer: 'Sophia Chen',
+    email: 'sophia.chen@enterprise.io',
+    amount: 249.5,
+    currency: 'USD',
+    status: 'paid',
+  },
+  event: {
+    eventId: 'evt_10a48b9c-5d1e',
+    event: 'api_request',
+    timestamp: '2026-10-11T06:01:23.412Z',
+    latencyMs: 42,
+    success: true,
+  },
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   // Demo player state
   const [activeScene, setActiveScene] = useState<DemoScene>('mock');
@@ -77,7 +103,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   const [mockSeed, setMockSeed] = useState<number>(42);
   const [activeEditorTab, setActiveEditorTab] = useState<'schema' | 'request'>('schema');
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const [liveResponse, setLiveResponse] = useState<unknown>(null);
+  const [liveResponse, setLiveResponse] = useState<unknown>(() => INITIAL_PRESET_MOCKS.user);
   const [copiedMock, setCopiedMock] = useState<boolean>(false);
 
   // Assertion simulation toggles
@@ -89,17 +115,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
 
   const [isDemoVisible, setIsDemoVisible] = useState<boolean>(false);
 
-  // Live generator computation
+  // Live generator computation (lazily imports schema-generator to avoid loading Faker in initial landing bundle)
   useEffect(() => {
     if (demoStatus >= 200 && demoStatus < 300) {
+      let isMounted = true;
       try {
         const parsed = JSON.parse(schemaText);
-        const generated = generateSchemaValue(parsed, mockSeed);
-        setLiveResponse(generated);
-        setSchemaError(null);
+        import('@/lib/engines/schema-generator')
+          .then(({ generateSchemaValue }) => {
+            if (isMounted) {
+              const generated = generateSchemaValue(parsed, mockSeed);
+              setLiveResponse(generated);
+              setSchemaError(null);
+            }
+          })
+          .catch((err) => {
+            if (isMounted) {
+              setSchemaError((err as Error).message || 'Failed to generate mock response');
+            }
+          });
       } catch (err) {
         setSchemaError((err as Error).message || 'Invalid JSON Schema');
       }
+      return () => {
+        isMounted = false;
+      };
     } else {
       setSchemaError(null);
       if (demoStatus === 400) {
@@ -162,6 +202,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   const handleSelectPreset = (preset: 'user' | 'order' | 'event') => {
     setSchemaPreset(preset);
     setSchemaText(JSON.stringify(SCHEMA_PRESETS[preset], null, 2));
+    setLiveResponse(INITIAL_PRESET_MOCKS[preset]);
     setIsPlaying(false);
   };
 
@@ -284,7 +325,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 bg-[#0C0E12] border-b border-[#2A2F45] text-xs select-none">
             <button
               onClick={() => handleSceneSelect('mock')}
-              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+              className={`p-2.5 text-left transition-colors duration-150 border-r border-[#2A2F45] relative ${
                 activeScene === 'mock'
                   ? 'bg-indigo-600/10 text-indigo-300 font-semibold'
                   : 'text-slate-200 hover:text-white hover:bg-white/5'
@@ -297,15 +338,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <div className="text-[10px] text-slate-300 truncate">Faker heuristics & status codes</div>
               {activeScene === 'mock' && isPlaying && (
                 <div
-                  className="absolute bottom-0 left-0 h-0.5 bg-indigo-500 transition-all duration-100"
-                  style={{ width: `${progress}%` }}
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 origin-left transition-transform duration-100 ease-linear"
+                  style={{ transform: `scaleX(${progress / 100})` }}
                 />
               )}
             </button>
 
             <button
               onClick={() => handleSceneSelect('assertions')}
-              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+              className={`p-2.5 text-left transition-colors duration-150 border-r border-[#2A2F45] relative ${
                 activeScene === 'assertions'
                   ? 'bg-emerald-600/10 text-emerald-300 font-semibold'
                   : 'text-slate-200 hover:text-white hover:bg-white/5'
@@ -318,15 +359,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <div className="text-[10px] text-slate-300 truncate">No-code schema assertions</div>
               {activeScene === 'assertions' && isPlaying && (
                 <div
-                  className="absolute bottom-0 left-0 h-0.5 bg-emerald-500 transition-all duration-100"
-                  style={{ width: `${progress}%` }}
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 origin-left transition-transform duration-100 ease-linear"
+                  style={{ transform: `scaleX(${progress / 100})` }}
                 />
               )}
             </button>
 
             <button
               onClick={() => handleSceneSelect('webhooks')}
-              className={`p-2.5 text-left transition-all border-r border-[#2A2F45] relative ${
+              className={`p-2.5 text-left transition-colors duration-150 border-r border-[#2A2F45] relative ${
                 activeScene === 'webhooks'
                   ? 'bg-rose-600/10 text-rose-300 font-semibold'
                   : 'text-slate-200 hover:text-white hover:bg-white/5'
@@ -339,15 +380,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <div className="text-[10px] text-slate-300 truncate">Stripe, GitHub, Clerk events</div>
               {activeScene === 'webhooks' && isPlaying && (
                 <div
-                  className="absolute bottom-0 left-0 h-0.5 bg-rose-500 transition-all duration-100"
-                  style={{ width: `${progress}%` }}
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-500 origin-left transition-transform duration-100 ease-linear"
+                  style={{ transform: `scaleX(${progress / 100})` }}
                 />
               )}
             </button>
 
             <button
               onClick={() => handleSceneSelect('pwa')}
-              className={`p-2.5 text-left transition-all relative ${
+              className={`p-2.5 text-left transition-colors duration-150 relative ${
                 activeScene === 'pwa'
                   ? 'bg-purple-600/10 text-purple-300 font-semibold'
                   : 'text-slate-200 hover:text-white hover:bg-white/5'
@@ -360,8 +401,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <div className="text-[10px] text-slate-300 truncate">Borderless offline window</div>
               {activeScene === 'pwa' && isPlaying && (
                 <div
-                  className="absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-100"
-                  style={{ width: `${progress}%` }}
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 origin-left transition-transform duration-100 ease-linear"
+                  style={{ transform: `scaleX(${progress / 100})` }}
                 />
               )}
             </button>
@@ -496,6 +537,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                       {demoStatus} {demoStatus === 200 ? 'OK' : demoStatus === 201 ? 'Created' : 'Error'}
                     </span>
                     <select
+                      id="demo-status-scenario"
+                      aria-label="Simulation Status Scenario"
                       value={demoStatus}
                       onChange={(e) => setDemoStatus(Number(e.target.value))}
                       className="bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded px-1.5 py-0.5 focus:outline-none"

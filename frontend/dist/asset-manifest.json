@@ -1,11 +1,4 @@
 {
-  "_schema-generator-BMWslmup.js": {
-    "file": "assets/schema-generator-BMWslmup.js",
-    "name": "schema-generator",
-    "imports": [
-      "_vendor-faker-CdBPqZdY.js"
-    ]
-  },
   "_vendor-dexie-B0yzgGqo.js": {
     "file": "assets/vendor-dexie-B0yzgGqo.js",
     "name": "vendor-dexie"
@@ -22,7 +15,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-CYIGkXLW.js",
+    "file": "assets/index-hToMhs5W.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -36,24 +29,25 @@
       "src/components/stats/StatsDashboard.tsx"
     ],
     "css": [
-      "assets/index-CQcE8hX_.css"
+      "assets/index-5Q8PwA9L.css"
     ]
   },
   "src/components/landing/LandingPage.tsx": {
-    "file": "assets/LandingPage-CAy53Zrv.js",
+    "file": "assets/LandingPage-CW-OfI-R.js",
     "name": "LandingPage",
     "src": "src/components/landing/LandingPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
       "_vendor-lucide-BLObK2Hs.js",
-      "_schema-generator-BMWslmup.js",
-      "_vendor-dexie-B0yzgGqo.js",
-      "_vendor-faker-CdBPqZdY.js"
+      "_vendor-dexie-B0yzgGqo.js"
+    ],
+    "dynamicImports": [
+      "src/lib/engines/schema-generator.ts"
     ]
   },
   "src/components/layout/AppShell.tsx": {
-    "file": "assets/AppShell-Hf5thyvA.js",
+    "file": "assets/AppShell-CmBMnexE.js",
     "name": "AppShell",
     "src": "src/components/layout/AppShell.tsx",
     "isDynamicEntry": true,
@@ -61,12 +55,12 @@
       "index.html",
       "_vendor-lucide-BLObK2Hs.js",
       "_vendor-faker-CdBPqZdY.js",
-      "_schema-generator-BMWslmup.js",
+      "src/lib/engines/schema-generator.ts",
       "_vendor-dexie-B0yzgGqo.js"
     ]
   },
   "src/components/stats/StatsDashboard.tsx": {
-    "file": "assets/StatsDashboard-DgP8ghIu.js",
+    "file": "assets/StatsDashboard-BwnybYGS.js",
     "name": "StatsDashboard",
     "src": "src/components/stats/StatsDashboard.tsx",
     "isDynamicEntry": true,
@@ -74,6 +68,15 @@
       "index.html",
       "_vendor-lucide-BLObK2Hs.js",
       "_vendor-dexie-B0yzgGqo.js"
+    ]
+  },
+  "src/lib/engines/schema-generator.ts": {
+    "file": "assets/schema-generator-LtWMFmUy.js",
+    "name": "schema-generator",
+    "src": "src/lib/engines/schema-generator.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-faker-CdBPqZdY.js"
     ]
   }
 }

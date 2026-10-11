@@ -159,14 +159,14 @@ code, pre, .font-mono {
 .animate-orb-2       { animation: orbFloat2 14s ease-in-out infinite; }
 
 @keyframes gradientText {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { filter: hue-rotate(0deg); opacity: 0.95; }
+  50% { filter: hue-rotate(30deg); opacity: 1; }
+  100% { filter: hue-rotate(0deg); opacity: 0.95; }
 }
 
 .animate-gradient-text {
-  background-size: 200% auto;
-  animation: gradientText 6s ease infinite;
+  animation: gradientText 6s ease-in-out infinite;
+  will-change: filter, opacity;
 }
 
 @keyframes beamSweep {
