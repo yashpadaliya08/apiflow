@@ -1,6 +1,10 @@
 {
-  "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
   "specVersion": "1.0",
+  "host": {
+    "displayName": "APIFlow Studio",
+    "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt",
+    "logoUrl": "https://apiflowstudio.onrender.com/favicon.svg"
+  },
   "entries": [
     {
       "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",

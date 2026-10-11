@@ -252,3 +252,78 @@ code, pre, .font-mono {
 .cm-editor.cm-focused { outline: none !important; }
 
 .cm-scroller { overflow: auto; }
+
+/* Desktop workspace refinements. The marketing page keeps its own treatment. */
+[data-workspace] [data-button-variant="accent"],
+[data-workspace] [data-button-variant="primary"] {
+  background-image: none;
+  background-color: #4f46e5;
+  box-shadow: none;
+}
+[data-workspace] [data-button-variant="accent"]:hover,
+[data-workspace] [data-button-variant="primary"]:hover { background-color: #4338ca; }
+[data-workspace] button:focus-visible,
+[data-workspace] input:focus-visible {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 2px;
+}
+[data-workspace] .text-white\/40,
+[data-workspace] .text-white\/35,
+[data-workspace] .text-white\/50 { color: #a1aabb; }
+[data-workspace] .response-state {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #0c0e12;
+  overflow: auto;
+}
+[data-workspace] .response-state-content { width: 100%; max-width: 340px; }
+[data-workspace] .response-state h3 { font-size: 16px; font-weight: 600; letter-spacing: -.02em; }
+[data-workspace] .response-state p { margin-top: 10px; color: #a1aabb; font-size: 13px; line-height: 1.7; }
+@media (min-width: 1024px) {
+  [data-workspace] .workspace-navbar { flex-wrap: wrap; padding-top: 10px; gap: 10px 20px; }
+  [data-workspace] .workspace-tools {
+    width: 100%;
+    flex-wrap: wrap;
+    padding: 6px 0;
+    border-top: 1px solid #2a2f45;
+    gap: 12px;
+  }
+  [data-workspace] .workspace-tools > div {
+    background: transparent;
+    border: 0;
+    border-right: 1px solid #2a2f45;
+    border-radius: 0;
+    padding: 0 12px 0 0;
+  }
+  [data-workspace] .workspace-tools button { border-color: transparent; color: #c4ccda; border-radius: 4px; }
+  [data-workspace] .workspace-tools button svg { color: #929eb2; fill: none; }
+  [data-workspace] .workspace-tools button span { display: inline; }
+}
+[data-workspace] .workspace-analytics { font-size: 12px; }
+[data-workspace] .workspace-analytics .analytics-metrics > div {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 12px 16px 0;
+}
+[data-workspace] .workspace-analytics .analytics-section {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #2a2f45;
+  border-radius: 0;
+  padding: 20px 0 0;
+}
+[data-workspace] .workspace-analytics .analytics-metrics svg { display: none; }
+[data-workspace] .workspace-analytics .analytics-metrics .text-xl { color: #f1f5f9; font-weight: 500; }
+[data-workspace] .workspace-analytics .text-\[10px\],
+[data-workspace] .workspace-analytics .text-\[11px\] { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  [data-workspace] *, [data-workspace] *::before, [data-workspace] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

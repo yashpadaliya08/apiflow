@@ -87,14 +87,14 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Client Simulation Metrics & Telemetry"
-      description="Monitor local client-side simulations, latency timers, and protected server telemetry"
+      title="Usage & analytics"
+      description="Activity in this browser. Server statistics require admin access."
       maxWidth="xl"
     >
-      <div className="space-y-4 text-xs">
+      <div className="workspace-analytics space-y-5 text-xs">
         {authError && <div role="alert" className="text-red-400 text-xs">{authError}</div>}
         {/* Top Metric Cards Grid (Local Client) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="analytics-metrics grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div className="p-3 bg-[#0C0E12] border border-[#2A2F45] rounded-lg">
             <div className="flex items-center justify-between text-white/50 mb-1">
               <span className="text-[11px] font-semibold uppercase">Simulations</span>
@@ -121,7 +121,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
             <div className="text-xl font-bold font-mono text-white">
               {localSummary.avgLatencyMs ? `${localSummary.avgLatencyMs}ms` : '--'}
             </div>
-            <span className="text-[10px] text-white/40">Client jitter</span>
+            <span className="text-[10px] text-white/40">Recorded duration</span>
           </div>
 
           <div className="p-3 bg-[#0C0E12] border border-[#2A2F45] rounded-lg">
@@ -129,15 +129,15 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
               <span className="text-[11px] font-semibold uppercase">Success Rate</span>
               <Activity className="w-3.5 h-3.5 text-purple-400" />
             </div>
-            <div className="text-xl font-bold font-mono text-purple-400">{totalReqs > 0 ? `${successRate}%` : '100%'}</div>
+            <div className="text-xl font-bold font-mono text-purple-400">{totalReqs > 0 ? `${successRate}%` : '—'}</div>
             <span className="text-[10px] text-white/40">{success2xx} of {totalReqs} 2xx</span>
           </div>
         </div>
 
         {/* Status Code Distribution Bar */}
-        <div className="p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg space-y-2">
+        <div className="analytics-section p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg space-y-2">
           <div className="flex items-center justify-between text-white/70 font-semibold text-[11px]">
-            <span>HTTP Status Code Distribution</span>
+            <span>Response status</span>
             <span className="text-white/40 font-mono text-[10px]">{totalReqs} total executions</span>
           </div>
 
@@ -182,11 +182,11 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Server & Global Telemetry (Protected) */}
-        <div className="p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg space-y-2.5">
+        <div className="analytics-section p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg space-y-2.5">
           <div className="flex items-center justify-between text-white/70 font-semibold text-[11px]">
             <div className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Server-Side Telemetry</span>
+              <span>Server statistics</span>
               <span className="px-1.5 py-0.2 text-[9px] font-mono rounded bg-[#1C2030] text-white/50 border border-[#2A2F45]">
                 {serverStats ? 'UNLOCKED' : 'PROTECTED'}
               </span>
@@ -244,22 +244,25 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-[#141720]/60 border border-[#2A2F45] rounded-md space-y-2">
+            <div className="pt-2 space-y-3">
               <div className="flex items-center gap-2 text-white/60">
                 <Lock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                <span className="text-[11px]">Server visitor metrics and server traffic are restricted to admin access.</span>
+                <span className="text-[11px]">Sign in with the admin key configured on your server.</span>
               </div>
 
 
               <form onSubmit={handleUnlock} className="flex gap-1.5 items-center pt-1">
+                <label htmlFor="analytics-admin-key" className="sr-only">Admin key</label>
                 <input
+                  id="analytics-admin-key"
                   type="password"
+                  autoComplete="current-password"
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
-                  placeholder="Enter ADMIN_KEY..."
-                  className="flex-1 px-2.5 py-1 bg-[#0C0E12] border border-[#2A2F45] text-white rounded text-xs focus:outline-none focus:border-indigo-500 font-mono"
+                  placeholder="Admin key"
+                  className="min-w-0 flex-1 h-9 px-3 bg-[#0C0E12] border border-[#2A2F45] text-white rounded text-xs focus:outline-none focus:border-indigo-500 font-mono"
                 />
-                <Button size="xs" variant="primary" type="submit" isLoading={loadingServer}>
+                <Button size="md" variant="primary" type="submit" isLoading={loadingServer}>
                   Unlock
                 </Button>
               </form>

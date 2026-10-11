@@ -42,7 +42,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-screen bg-[#0C0E12] flex flex-col overflow-hidden text-white">
+    <div data-workspace={view === 'studio' ? '' : undefined} className="h-screen w-screen bg-[#0C0E12] flex flex-col overflow-hidden text-white">
       {/* Top Navbar */}
       <Navbar currentView={view} onToggleView={setView} />
 
@@ -51,12 +51,12 @@ export const App: React.FC = () => {
         isLoading ? (
           <div className="h-full w-full bg-[#0C0E12] flex flex-col items-center justify-center text-white select-none">
             <div className="relative mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center shadow-lg shadow-indigo-500/30 animate-pulse">
+              <div className="w-10 h-10 rounded-md bg-indigo-600 flex items-center justify-center">
                 <Zap className="w-7 h-7 text-white fill-white" />
               </div>
             </div>
             <h2 className="text-base font-semibold tracking-tight text-white/90">APIFlow Studio</h2>
-            <p className="text-xs text-white/40 mt-1 font-mono">Initializing Dexie.js database & Enterprise mock seed...</p>
+            <p role="status" className="text-sm text-slate-400 mt-2">Opening your saved workspace…</p>
           </div>
         ) : (
           <Suspense fallback={<div className="h-full w-full bg-[#0C0E12] flex items-center justify-center text-white/50 text-xs font-mono">Loading Studio...</div>}>

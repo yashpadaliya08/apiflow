@@ -147,7 +147,7 @@ export const Sidebar: React.FC = () => {
 
           <button
             onClick={handleCreateNew}
-            className="p-1 rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md shadow-indigo-500/20 transition-all flex items-center gap-1 text-[11px] px-2 font-semibold"
+            className="p-1 rounded bg-[#1C2030] hover:bg-[#2A2F48] border border-[#363C55] text-white/90 transition-colors flex items-center gap-1 text-xs px-2 font-medium"
             title="Create New Endpoint"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -309,7 +309,7 @@ export const Sidebar: React.FC = () => {
                           onClick={() => selectEndpoint(ep.id)}
                           className={`group relative flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all border ${
                             isActive
-                              ? 'bg-gradient-to-r from-indigo-500/15 via-purple-500/10 to-transparent text-white border-indigo-500/40 shadow-sm shadow-indigo-500/10 border-l-2 border-l-indigo-400'
+                              ? 'bg-[#1C2030] text-white border-[#363C55] border-l-2 border-l-indigo-400'
                               : 'text-white/70 border-transparent hover:bg-[#141720]/80 hover:text-white hover:border-[#2A2F45]/50'
                           }`}
                         >

@@ -93,93 +93,44 @@ export const ResponseViewer: React.FC = () => {
 
   if (isExecuting) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] select-none relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
-        <div className="relative mb-4">
-          <div className="w-14 h-14 rounded-2xl border-2 border-indigo-500/20 border-t-indigo-500 animate-spin bg-[#141720]/80 backdrop-blur-md flex items-center justify-center shadow-xl shadow-indigo-500/10" />
-          <Zap className="w-6 h-6 text-indigo-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+      <div role="status" className="response-state">
+        <div className="response-state-content">
+          <div aria-hidden="true" className="mb-4 h-5 w-5 rounded-full border-2 border-slate-600 border-t-indigo-400 animate-spin" />
+          <h3>{executionMode === 'live' ? 'Sending request…' : 'Generating mock response…'}</h3>
+          <p>The response, headers and test results will appear here.</p>
         </div>
-        <h3 className="text-sm font-bold text-white tracking-tight">Executing Simulation</h3>
-        <p className="text-xs text-white/40 mt-1 max-w-xs font-mono">
-          Generating synthetic Faker schema & evaluating schema assertions...
-        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-red-400 select-none relative overflow-hidden">
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 mb-3 shadow-xl shadow-red-500/5">
-          <Terminal className="w-7 h-7 text-red-400" />
+      <div className="response-state">
+        <div className="response-state-content">
+          <h3 className="text-red-300">Request failed</h3>
+          <p role="alert" className="font-mono break-words">{error}</p>
+          <Button onClick={handleExecuteFromEmpty} variant="secondary" className="mt-5">
+            Try again
+          </Button>
         </div>
-        <h3 className="text-sm font-bold text-red-300">Execution Failed</h3>
-        <p className="text-xs text-red-400/80 max-w-sm mt-1 font-mono leading-relaxed">{error}</p>
-        <button
-          onClick={handleExecuteFromEmpty}
-          className="mt-4 px-3 py-1.5 rounded-lg bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs text-white/80 hover:text-white transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     );
   }
 
   if (!response) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-[#0C0E12] select-none relative overflow-hidden">
-        {/* Ambient Glow Backdrop */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-
-        {/* First-Page Styled Interactive Card */}
-        <div className="relative max-w-sm w-full p-5 rounded-2xl bg-[#141720]/80 border border-[#2A2F45] shadow-2xl backdrop-blur-xl space-y-4">
-          {/* Traffic lights header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#2A2F45]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-semibold flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-indigo-400" />
-              <span>Studio Sandbox</span>
-            </span>
-          </div>
-
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/15 to-purple-600/10 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md shadow-indigo-500/10">
-            <Zap className="w-5 h-5 text-indigo-400 fill-indigo-400/20" />
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">No Active Response</h3>
-            <p className="text-xs text-white/50 mt-1 leading-relaxed">
-              Click simulate to generate synthetic Faker payloads, evaluate schema assertions, and inspect headers.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-left text-[11px] font-mono pt-1">
-            <div className="p-2 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
-              <div className="text-white/40 text-[9px] uppercase">Engine Latency</div>
-              <div className="text-emerald-400 font-bold mt-0.5">&lt; 30ms (Local)</div>
-            </div>
-            <div className="p-2 rounded-lg bg-[#0C0E12] border border-[#2A2F45]">
-              <div className="text-white/40 text-[9px] uppercase">Test Suite</div>
-              <div className="text-indigo-400 font-bold mt-0.5 truncate">
-                {(activeEndpoint?.assertions || []).length} Active Assertions
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-1">
-            <Button
-              size="sm"
-              variant="accent"
-              onClick={handleExecuteFromEmpty}
-              leftIcon={<Sparkles className="w-3.5 h-3.5" />}
-              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md shadow-indigo-500/25 border-0 font-semibold py-2.5 rounded-lg"
-            >
-              Simulate Request (Ctrl + Enter)
+      <div className="response-state">
+        <div className="response-state-content">
+          <Terminal aria-hidden="true" className="mb-5 h-6 w-6 text-slate-500" />
+          <h3>Ready when you are</h3>
+          <p>{executionMode === 'live'
+            ? 'Send a request to inspect the response body, headers and test results.'
+            : 'Simulate this endpoint to inspect a mock response and run your assertions. No request is sent to your server.'}</p>
+          <div className="mt-5 flex items-center gap-3 flex-wrap">
+            <Button variant="primary" onClick={handleExecuteFromEmpty} disabled={!activeEndpoint}>
+              {executionMode === 'live' ? 'Send request' : 'Simulate request'}
             </Button>
+            <span className="text-xs text-slate-400 font-mono">Ctrl + Enter</span>
           </div>
         </div>
       </div>

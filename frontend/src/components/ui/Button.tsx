@@ -40,7 +40,7 @@ export const Button: React.FC<ButtonProps> = ({
   }[size];
 
   return (
-    <button className={cn(base, variants, sizes, className)} disabled={disabled || isLoading} {...props}>
+    <button data-button-variant={variant} className={cn(base, variants, sizes, className)} disabled={disabled || isLoading} {...props}>
       {isLoading ? (
         <svg className="animate-spin -ml-0.5 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

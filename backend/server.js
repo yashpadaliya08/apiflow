@@ -1071,8 +1071,12 @@ app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (req, res) => {
   if (fs.existsSync(catDist))   return res.sendFile(catDist);
   if (fs.existsSync(catPublic)) return res.sendFile(catPublic);
   res.json({
-    "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
     "specVersion": "1.0",
+    "host": {
+      "displayName": "APIFlow Studio",
+      "documentationUrl": "https://apiflowstudio.onrender.com/llms.txt",
+      "logoUrl": "https://apiflowstudio.onrender.com/favicon.svg"
+    },
     "entries": [
       {
         "identifier": "urn:air:apiflowstudio.onrender.com:tool:api-testing-client",

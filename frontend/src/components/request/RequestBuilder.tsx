@@ -140,7 +140,7 @@ export const RequestBuilder: React.FC = () => {
 
       {/* Main Request Command Bar: Floating Elevated Container */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#0C0E12]/80 space-y-2">
-        <div className="p-1.5 rounded-xl bg-[#141720] border border-[#2A2F45] shadow-lg shadow-black/20 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Method selector with glowing method pill styling */}
           <select
             id="endpoint-method-select"
@@ -250,7 +250,7 @@ export const RequestBuilder: React.FC = () => {
 
       {/* Request Segmented Pill Tabs Header */}
       <div className="px-3 py-2 bg-[#141720] border-b border-[#2A2F45]">
-        <div className="flex items-center gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-[#0C0E12] py-1 overflow-x-auto no-scrollbar">
           <button onClick={() => setRequestTab('mock')} className={`px-3 py-1.5 rounded-lg text-xs shrink-0 ${requestTab === 'mock' ? 'bg-[#1C2030] text-white' : 'text-white/60'}`}>Mock response</button>
           <button
             onClick={() => setRequestTab('params')}

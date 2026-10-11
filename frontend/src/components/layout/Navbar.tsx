@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
   }
 
   return (
-    <header className="h-14 min-h-[3.5rem] w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-visible">
+    <header className="workspace-navbar min-h-14 w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-visible">
       {/* Left: Brand + Collection Picker */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div
@@ -226,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
           className="flex items-center gap-2.5 cursor-pointer group"
           title="Go to landing page"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-md bg-indigo-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white fill-white" />
           </div>
           <div>
@@ -363,6 +363,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
       <div className="flex items-center bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] shrink-0 whitespace-nowrap">
         <button
           onClick={() => setExecutionMode('mock')}
+          aria-pressed={executionMode === 'mock'}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'mock'
               ? 'bg-indigo-600 text-white shadow-sm'
@@ -376,6 +377,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
 
         <button
           onClick={() => setExecutionMode('live')}
+          aria-pressed={executionMode === 'live'}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
             executionMode === 'live'
               ? 'bg-emerald-600 text-white shadow-sm'
@@ -389,7 +391,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
       </div>
 
       {/* Right: Grouped Studio Actions */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
+      <div className="workspace-tools flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap" role="group" aria-label="Workspace tools">
         {/* Group 1: Execution Tools */}
         <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
           <Button
@@ -458,7 +460,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
             title="Import / Export OpenAPI 3.1 & Postman 2.1 collections"
             className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
           >
-            <span className="hidden xl:inline">Portability</span>
+            <span className="hidden xl:inline">Import / export</span>
           </Button>
         </div>
 
