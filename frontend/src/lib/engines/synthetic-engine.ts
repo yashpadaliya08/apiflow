@@ -68,7 +68,14 @@ function regenerateObject(obj: unknown): unknown {
   if (obj !== null && typeof obj === 'object') {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
-      result[key] = generateFieldValue(key) ?? regenerateObject(val);
+      if (val === null || typeof val === 'object') {
+        result[key] = regenerateObject(val);
+      } else {
+        const generated = generateFieldValue(key);
+        result[key] = typeof generated === typeof val ? generated
+          : typeof val === 'number' ? faker.number.int({ min: 0, max: 100 })
+          : typeof val === 'boolean' ? faker.datatype.boolean() : String(generated);
+      }
     }
     return result;
   }
@@ -183,7 +190,7 @@ export function interpolateVariables(
   str: string,
   variables: KeyValue[]
 ): string {
-  return str.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  return str.replace(/\{\{([\w.-]+)\}\}/g, (match, key) => {
     const found = variables.find(v => v.key === key && v.enabled);
     return found ? found.value : match;
   });

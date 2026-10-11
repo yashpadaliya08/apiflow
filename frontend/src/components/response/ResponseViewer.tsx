@@ -1,3 +1,4 @@
+import { runActiveRequest } from '@/lib/execution/run-active-request';
 import React, { useState, useMemo } from 'react';
 import {
   Clock,
@@ -28,9 +29,11 @@ import { trackEvent } from '@/lib/analytics';
 
 export const ResponseViewer: React.FC = () => {
   const {
-    response,
+    response: storedResponse,
+    responseEndpointId,
     previousResponse,
     error,
+    warning,
     isExecuting,
     setResponse,
     setError,
@@ -45,20 +48,21 @@ export const ResponseViewer: React.FC = () => {
     addHistoryEntry,
   } = useCollectionStore();
 
+  const response = responseEndpointId === activeEndpoint?.id ? storedResponse : null;
   const { responseTab, setResponseTab, executionMode } = useUIStore();
   const [copied, setCopied] = useState(false);
   const [rawView, setRawView] = useState(false);
 
   // MUST be called unconditionally at top of component before any early returns (React Rules of Hooks)
   const jsonString = useMemo(() => {
-    if (!response?.body) return '';
+    if (response?.body === undefined) return '';
     return typeof response.body === 'string'
       ? response.body
       : JSON.stringify(response.body, null, 2);
   }, [response]);
 
   const previousJsonString = useMemo(() => {
-    if (!previousResponse?.body) return '';
+    if (previousResponse?.body === undefined) return '';
     return typeof previousResponse.body === 'string'
       ? previousResponse.body
       : JSON.stringify(previousResponse.body, null, 2);
@@ -85,78 +89,7 @@ export const ResponseViewer: React.FC = () => {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handleExecuteFromEmpty = async () => {
-    if (!activeEndpoint) return;
-    setIsExecuting(true);
-    try {
-      if (executionMode === 'mock') {
-        const res = await executeMock(activeEndpoint);
-        setResponse(res);
-        trackEvent('request_simulated', {
-          mode: 'mock',
-          status: res.status,
-          latency: res.latency,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-        });
-
-        await addHistoryEntry({
-          endpointId: activeEndpoint.id,
-          endpointName: activeEndpoint.name,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-          status: res.status,
-          latency: res.latency,
-          timestamp: new Date().toISOString(),
-          response: res,
-          requestBody: activeEndpoint.requestBody,
-          queryParams: activeEndpoint.queryParams,
-          headers: activeEndpoint.headers,
-        });
-      } else {
-        const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
-        const resolvedBase = activeEnv
-          ? interpolateVariables(activeCollection?.baseUrl || '', activeEnv.variables)
-          : activeCollection?.baseUrl || '';
-
-        const headerMap: Record<string, string> = {};
-        activeEndpoint.headers
-          .filter((h) => h.enabled && h.key)
-          .forEach((h) => {
-            headerMap[h.key] = activeEnv ? interpolateVariables(h.value, activeEnv.variables) : h.value;
-          });
-
-        const res = await executeLive(activeEndpoint, resolvedBase, headerMap);
-        setResponse(res);
-
-        trackEvent('request_simulated', {
-          mode: 'live',
-          status: res.status,
-          latency: res.latency,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-        });
-
-        await addHistoryEntry({
-          endpointId: activeEndpoint.id,
-          endpointName: activeEndpoint.name,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-          status: res.status,
-          latency: res.latency,
-          timestamp: new Date().toISOString(),
-          response: res,
-          requestBody: activeEndpoint.requestBody,
-          queryParams: activeEndpoint.queryParams,
-          headers: activeEndpoint.headers,
-        });
-      }
-    } catch (err: any) {
-      setError(err.message || 'Execution failed');
-    } finally {
-      setIsExecuting(false);
-    }
-  };
+  const handleExecuteFromEmpty = runActiveRequest;
 
   if (isExecuting) {
     return (
@@ -255,6 +188,7 @@ export const ResponseViewer: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] overflow-hidden">
+      {warning && <div role="status" className="p-3 text-xs text-amber-300 bg-amber-500/10">{warning}</div>}
       {/* Top Response Meta Header */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#141720]/80 backdrop-blur-sm flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">

@@ -294,6 +294,30 @@
       font-size: 0.875rem;
     }
     footer a { color: #818cf8; text-decoration: none; margin: 0 0.5rem; }
+
+    /* SPA View Transitions & Smooth Switch */
+    @keyframes spaFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spaFadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-6px); }
+    }
+    ::view-transition-old(root) {
+      animation: 140ms ease both spaFadeOut;
+    }
+    ::view-transition-new(root) {
+      animation: 180ms ease both spaFadeIn;
+    }
+    .spa-transition-out {
+      opacity: 0 !important;
+      transform: translateY(6px);
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+    .spa-transition-in {
+      animation: spaFadeIn 180ms ease forwards;
+    }
   </style>
 </head>
 <body>
@@ -439,5 +463,149 @@
     </nav>
     <p>© 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator & Mock Runner</p>
   </footer>
+
+  <script>
+    (function () {
+      const SEO_ROUTES = [
+        '/postman-alternative',
+        '/mock-api-generator',
+        '/offline-api-client'
+      ];
+
+      const pageCache = new Map();
+
+      function normalizePath(urlStr) {
+        try {
+          const u = new URL(urlStr, window.location.origin);
+          let p = u.pathname.replace(/\.html$/, '');
+          if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+          return p;
+        } catch {
+          return '';
+        }
+      }
+
+      function isSeoRoute(path) {
+        return SEO_ROUTES.includes(path);
+      }
+
+      // Seed current page into cache
+      const curPath = normalizePath(window.location.pathname);
+      if (isSeoRoute(curPath)) {
+        pageCache.set(curPath, {
+          title: document.title,
+          description: document.querySelector('meta[name="description"]')?.getAttribute('content') || '',
+          canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '',
+          mainHtml: document.querySelector('main')?.innerHTML || '',
+          navHtml: document.querySelector('header .header-nav')?.innerHTML || ''
+        });
+      }
+
+      async function fetchPage(path) {
+        if (pageCache.has(path)) return pageCache.get(path);
+        const res = await fetch(path, { headers: { 'X-Requested-With': 'APIFlow-SPA' } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const data = {
+          title: doc.title,
+          description: doc.querySelector('meta[name="description"]')?.getAttribute('content') || '',
+          canonical: doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || '',
+          mainHtml: doc.querySelector('main')?.innerHTML || '',
+          navHtml: doc.querySelector('header .header-nav')?.innerHTML || ''
+        };
+        pageCache.set(path, data);
+        return data;
+      }
+
+      function applyPageData(data) {
+        if (data.title) document.title = data.title;
+        if (data.description) {
+          const m = document.querySelector('meta[name="description"]');
+          if (m) m.setAttribute('content', data.description);
+        }
+        if (data.canonical) {
+          const c = document.querySelector('link[rel="canonical"]');
+          if (c) c.setAttribute('href', data.canonical);
+        }
+        const main = document.querySelector('main');
+        if (main && data.mainHtml) {
+          main.innerHTML = data.mainHtml;
+        }
+        const nav = document.querySelector('header .header-nav');
+        if (nav && data.navHtml) {
+          nav.innerHTML = data.navHtml;
+        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      async function navigate(path, updateHistory) {
+        const current = normalizePath(window.location.pathname);
+        if (current === path) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        try {
+          const data = await fetchPage(path);
+          if (document.startViewTransition) {
+            document.startViewTransition(() => {
+              applyPageData(data);
+            });
+          } else {
+            const main = document.querySelector('main');
+            if (main) {
+              main.classList.add('spa-transition-out');
+              setTimeout(() => {
+                applyPageData(data);
+                main.classList.remove('spa-transition-out');
+                main.classList.add('spa-transition-in');
+                setTimeout(() => main.classList.remove('spa-transition-in'), 200);
+              }, 120);
+            } else {
+              applyPageData(data);
+            }
+          }
+
+          if (updateHistory) {
+            window.history.pushState({ path }, data.title, path);
+          }
+        } catch (e) {
+          window.location.href = path;
+        }
+      }
+
+      document.addEventListener('click', (e) => {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || a.target === '_blank') return;
+        const path = normalizePath(href);
+        if (isSeoRoute(path)) {
+          e.preventDefault();
+          navigate(path, true);
+        }
+      });
+
+      document.addEventListener('mouseover', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href) return;
+        const path = normalizePath(href);
+        if (isSeoRoute(path) && !pageCache.has(path)) {
+          fetchPage(path).catch(() => {});
+        }
+      }, { passive: true });
+
+      window.addEventListener('popstate', () => {
+        const path = normalizePath(window.location.pathname);
+        if (isSeoRoute(path)) {
+          navigate(path, false);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

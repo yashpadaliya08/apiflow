@@ -13,9 +13,9 @@ export const HistoryDrawer: React.FC = () => {
   const { history, selectEndpoint, clearHistory } = useCollectionStore();
   const { setResponse } = useExecutionStore();
 
-  const handleReplay = (entry: HistoryEntry) => {
-    selectEndpoint(entry.endpointId);
-    setResponse(entry.response);
+  const handleReplay = async (entry: HistoryEntry) => {
+    await selectEndpoint(entry.endpointId);
+    setResponse(entry.response, entry.endpointId);
     setHistoryOpen(false);
   };
 
@@ -90,7 +90,7 @@ export const HistoryDrawer: React.FC = () => {
                       handleReplay(item);
                     }}
                     className="p-1 rounded bg-indigo-600/20 text-indigo-300 group-hover:bg-indigo-600 group-hover:text-white transition-all"
-                    title="Load & Replay"
+                    title="View saved response"
                   >
                     <Play className="w-3 h-3" />
                   </button>

@@ -12,6 +12,8 @@ export function getMethodClass(method: HttpMethod): string {
 
 export function getMethodColor(method: HttpMethod): string {
   const colors: Record<HttpMethod, string> = {
+    HEAD: 'var(--color-method-get)',
+    OPTIONS: 'var(--color-method-get)',
     GET: 'var(--color-method-get)',
     POST: 'var(--color-method-post)',
     PUT: 'var(--color-method-put)',

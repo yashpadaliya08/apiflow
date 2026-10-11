@@ -4,6 +4,8 @@
   "description": "Standalone API Testing Studio & Synthetic Mock Runner",
   "main": "backend/server.js",
   "scripts": {
+    "test": "node --test tests",
+    "check": "node frontend/node_modules/typescript/bin/tsc --project frontend/tsconfig.json --noEmit && node --check backend/server.js",
     "build": "npm --prefix frontend run build",
     "start": "node backend/server.js",
     "dev:backend": "node backend/server.js",

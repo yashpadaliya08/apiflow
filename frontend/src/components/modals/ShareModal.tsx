@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/store/ui-store';
 import { useCollectionStore } from '@/store/collection-store';
-import { encodeEndpointToUrl } from '@/lib/utils/share-encoder';
+import { encodeEndpointToUrl, getSharePreview } from '@/lib/utils/share-encoder';
 import { copyToClipboard } from '@/lib/utils';
 
 export const ShareModal: React.FC = () => {
@@ -22,9 +22,12 @@ export const ShareModal: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedBadge, setCopiedBadge] = useState(false);
 
-  if (!activeEndpoint) return null;
+  if (!activeEndpoint || !shareOpen) return null;
 
-  const shareUrl = encodeEndpointToUrl(activeEndpoint);
+  let shareUrl = '';
+  let shareError = '';
+  try { shareUrl = encodeEndpointToUrl(activeEndpoint); }
+  catch (error) { shareError = error instanceof Error ? error.message : 'Unable to share this endpoint.'; }
   const markdownBadge = `[![Test Mock in APIFlow](https://img.shields.io/badge/APIFlow-Test_Mock-6366F1?style=flat-square&logo=fastapi)](${shareUrl})`;
 
   const handleCopyLink = async () => {
@@ -48,6 +51,9 @@ export const ShareModal: React.FC = () => {
       maxWidth="lg"
     >
       <div className="space-y-4 text-xs">
+        <p className="text-amber-300">Known credential fields are redacted. Sensitive assertions, schema secret literals, and non-JSON bodies are omitted. Review the preview for other sensitive data before sharing. Anyone with the link can read it.</p>
+        {shareError && <p role="alert" className="text-red-300">{shareError}</p>}
+        {!shareError && <details><summary className="cursor-pointer text-indigo-300">Preview shared data</summary><pre className="max-h-52 overflow-auto whitespace-pre-wrap mt-2">{JSON.stringify(getSharePreview(activeEndpoint), null, 2)}</pre></details>}
         {/* Endpoint preview banner */}
         <div className="p-3 bg-[#0C0E12] border border-[#2A2F45] rounded-lg flex items-center justify-between">
           <div className="space-y-0.5">
@@ -86,6 +92,7 @@ export const ShareModal: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={handleCopyLink}
+              disabled={!shareUrl}
               leftIcon={copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             >
               {copiedLink ? 'Copied Link!' : 'Copy Link'}
@@ -109,6 +116,7 @@ export const ShareModal: React.FC = () => {
               variant="outline"
               size="xs"
               onClick={handleCopyBadge}
+              disabled={!shareUrl}
               leftIcon={copiedBadge ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
             >
               {copiedBadge ? 'Copied' : 'Copy Badge'}

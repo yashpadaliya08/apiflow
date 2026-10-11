@@ -1,216 +1,80 @@
-<div align="center">
+# APIFlow Studio
 
-# 🚀 APIFlow Studio
+A local-first API request client and in-browser mock simulator built with React, TypeScript, Zustand, Dexie, and Express.
 
-### The Offline-First, Zero-Cloud Postman Alternative & In-Browser Mock Simulator
+[Public demo](https://apiflowstudio.onrender.com/) · [Source](https://github.com/yashpadaliya08/apiflow)
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-apiflowstudio.onrender.com-10B981?style=for-the-badge&logo=render&logoColor=white)](https://apiflowstudio.onrender.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](./docker-compose.yml)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-6366F1?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yashpadaliya08/apiflow/pulls)
+## What it does
 
-<p align="center">
-  <b>Private by Design</b> • <b>Faker-Driven In-Browser Mock Engine</b> • <b>Pure IndexedDB Storage</b><br>
-  <b>Built-in CORS Proxy Gateway</b> • <b>OpenAPI 3.1 & Postman 2.1 Portability</b> • <b>1-Click Docker Self-Hosting</b>
-</p>
+- Organize requests into collections and environments stored in browser IndexedDB.
+- Run simulated responses locally, or send real HTTP requests through the backend proxy.
+- Configure response examples, a supported JSON Schema subset, repeatable seeds, and mock latency.
+- Evaluate status, latency, header, and body-path assertions in individual requests and collection runs.
+- Import OpenAPI 3.x JSON and Postman v2.1 JSON with explicit warnings for unsupported features.
+- Generate request snippets and dispatch signed Stripe, GitHub, Clerk, and Shopify webhook test events.
+- Share redacted mock definitions using URL fragments and export workspace backups.
 
-👉 **[Try Live Demo in your Browser (No Sign-up)](https://apiflowstudio.onrender.com)** 👈
+An in-browser mock is a simulation inside this app, not a remotely accessible mock server.
 
----
+## Run locally
 
-![APIFlow Studio Preview](assets/preview.png)
+Use Node.js 24 LTS and npm for production. The Docker build targets Node 24.
 
-</div>
-
----
-
-## ⚡ Why APIFlow Studio?
-
-Most API testing tools now require **mandatory cloud logins**, sync private API keys and company tokens to remote servers, and gate basic mock servers behind subscription paywalls.
-
-**APIFlow Studio** is built from the ground up to be **100% private, offline-first, and zero-cloud**:
-
-* 🔒 **Zero Cloud Lock-in & Privacy First:** All collections, environments, and execution history are stored on your local machine in **IndexedDB** (via Dexie.js). Your API tokens, cookies, and secrets never leave your device.
-* ⚡ **Browser-Native Synthetic Mock Engine:** Simulate realistic `200`, `201`, `400`, `401`, `403`, `404`, and `500` HTTP status codes with custom latency. Built-in **@faker-js/faker** heuristics detect field names (`userId`, `email`, `createdAt`, `avatar`) to generate realistic schemas on the fly without running any backend.
-* 🌐 **Built-in CORS Proxy Relay:** Call external third-party APIs directly from your browser without encountering browser CORS preflight errors.
-* 📦 **Universal Specification Interoperability:** Seamlessly import and export official **OpenAPI 3.1.0**, **Swagger**, and **Postman Collection v2.1** formats.
-* 🐳 **Self-Host in 1 Command:** Deploy anywhere with Docker Compose — homelabs, private VPS, or on local dev machines.
-
----
-
-## 📊 Feature Comparison Matrix
-
-| Feature | APIFlow Studio | Postman | Bruno | Hoppscotch | Insomnia | Mockoon |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Mandatory Cloud Login** | ❌ **None (Zero Login)** | ⚠️ Yes | ❌ None | ⚠️ Partial | ⚠️ Yes | ❌ None |
-| **Data Storage Location** | 🔒 **100% Local (IndexedDB)** | ☁️ Cloud Sync | 💻 Git Files | ☁️ Cloud / Local | ☁️ Cloud / Local | 💻 Local Disk |
-| **Instant Client-Side Mocks** | ✅ **Built-in (7 Statuses)** | ⚠️ Cloud Runner | ❌ None | ❌ None | ❌ Manual | ✅ Desktop App |
-| **Faker Heuristic Schemas** | ✅ **Automatic** | ❌ Manual | ❌ None | ❌ None | ❌ Manual | ⚠️ Templating |
-| **Zero-Install (Browser Tab)** | ✅ **Instant Web App** | ⚠️ Limited Agent | ❌ Desktop Only | ✅ Web App | ❌ Desktop Only | ❌ Desktop Only |
-| **Built-in CORS Bypass Proxy** | ✅ **Included** | ❌ Desktop Agent | ❌ N/A | ⚠️ Node Proxy | ❌ Desktop Only | ❌ Desktop Only |
-| **1-Click Shareable Mock Link** | ✅ **`?mock=...` URLs** | ❌ Requires Cloud | ❌ None | ❌ None | ❌ None | ❌ None |
-| **OpenAPI 3.1 & Postman 2.1 Import** | ✅ **Native** | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
-| **License** | 📜 **MIT (Free & Open Source)** | Proprietary | MIT | AGPL v3 | Proprietary | GPL v3 |
-
----
-
-## 🥊 Competitor Breakdown: Where We Win & Honest Trade-offs
-
-### 1. vs. Postman
-* **Their Advantages:** Massive ecosystem, team collaboration workspaces, extensive documentation.
-* **Their Disadvantages:** Removed the offline scratchpad; forces mandatory cloud account creation; syncs your private API keys and tokens to remote servers; heavy memory usage (800MB–1.5GB RAM); paywalls mock runners and collection runs.
-* **Why APIFlow Wins:** Zero account setup, zero cloud tracking, 100% private data stored in IndexedDB, and instant in-browser mock simulation without subscription fees.
-
-### 2. vs. Bruno
-* **Their Advantages:** Fantastic Git-friendly `.bru` file storage; completely offline-first.
-* **Their Disadvantages:** Requires installing a desktop Electron app; **has no synthetic mock engine** (you can only send requests to already-running servers, you cannot simulate fake APIs).
-* **Why APIFlow Wins:** Runs instantly in any web browser without downloading software, and includes a built-in Faker mock engine to prototype frontends before backend APIs are created.
-
-### 3. vs. Hoppscotch
-* **Their Advantages:** Popular web-based interface; supports WebSockets, GraphQL, and gRPC.
-* **Their Disadvantages:** Pushes cloud accounts for workspace syncing; **lacks an in-browser synthetic mock runner** or Faker schema engine.
-* **Why APIFlow Wins:** APIFlow is mock-first: simulate realistic status codes (200/400/500) and share reproducible mock links (`?mock=...`) in 1 click.
-
-### 4. vs. Mockoon
-* **Their Advantages:** Mature rule-based desktop mock server with regex routing and proxy cascading.
-* **Their Disadvantages:** Desktop application only (cannot run purely inside a browser tab); requires configuring OS port listeners; does not include a full-featured request builder (you still need Postman or cURL to test your mocks).
-* **Why APIFlow Wins:** Unified 2-in-1 studio combining the **Request Builder** and the **Mock Engine** in a single 3-pane interface, with zero installation needed.
-
----
-
-## 🌟 Key Features
-
-### 1. In-Browser Synthetic Mock Engine
-* Simulate real API scenarios instantly before backend engineers even finish building endpoints.
-* Supports status codes: `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `500 Internal Error`.
-* Configurable simulated network latency (0ms to 2000ms).
-
-### 2. Dual Execution Mode
-* **Mock Mode:** Executes purely within the browser tab using Faker schemas. Zero network requests, zero server dependencies.
-* **Live Mode:** Routes real network calls through the built-in Express CORS proxy gateway (`/proxy?url=...`).
-
-### 3. Collection Test Runner
-* Automated sequential test runner that validates status codes, response headers, schema contracts, and SLA latencies across entire collections.
-* Real-time pass/fail telemetries and 1-click Markdown test report export.
-
-### 4. Simulated Webhook Dispatcher
-* Simulate incoming webhook events from **Stripe**, **GitHub**, **Clerk**, and **Shopify** with cryptographic signature headers (`Stripe-Signature`, `X-Hub-Signature-256`, `svix-signature`) sent directly to your local handler (e.g. `http://localhost:3000/api/webhook`).
-
-### 5. Multi-Language Code Snippet Generator
-* Generate ready-to-paste production code with one click:
-  * **cURL** (command line)
-  * **TypeScript Fetch**
-  * **Axios** (Node / Browser)
-  * **Python Requests**
-
-### 6. Keyboard Shortcuts for Power Users
-* <kbd>Ctrl</kbd> + <kbd>Enter</kbd> — Execute active request immediately
-* <kbd>/</kbd> — Focus endpoint search bar
-* <kbd>?</kbd> — Open 7-step interactive onboarding walkthrough
-
----
-
-## ⚡ Quick Start
-
-### Option 1: Docker Compose (Recommended)
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/yashpadaliya08/apiflow.git
-cd apiflow
-
-# 2. Launch containerized studio
-docker compose up -d
-
-# 3. Open in browser
-# http://localhost:5000
-```
-
-### Option 2: Local Node.js
-
-```bash
-# 1. Clone repository
-git clone https://github.com/yashpadaliya08/apiflow.git
-cd apiflow
-
-# 2. Install dependencies & start server
-npm install
+```sh
+npm run install:all
 npm run build
 npm start
-
-# 3. Open in browser
-# http://localhost:5000
 ```
 
-### Option 3: Development Mode (Vite Hot-Reload)
+Open http://localhost:5000. For development, run `npm run dev:backend` and `npm run dev:frontend` in separate terminals.
 
-```bash
-# Terminal 1: Start Backend CORS Proxy
-npm run dev:backend
+Configuration is read from process environment variables. A plain `npm start` does not automatically load a .env file. On Node 20.6+, you can use `node --env-file=.env backend/server.js` after creating your own .env from .env.example.
 
-# Terminal 2: Start Frontend Dev Server
-npm run dev:frontend
+- `PORT`: defaults to 5000.
+- `ADMIN_KEY`: set a strong private value to enable stats authentication. Missing or placeholder keys disable admin access.
+- `PUBLIC_ORIGIN`: exact browser-facing origin for admin login, especially behind HTTPS ingress. Production session cookies require HTTPS.
+- `TRUSTED_PROXY_CIDRS`: explicit trusted ingress IPs/CIDRs; empty trusts no forwarded headers.
+- `ALLOWED_PROXY_DOMAINS`: comma-separated domains; supports exact names and wildcard subdomains. The server default is `*`; restrict this for your deployment.
 
-# Open Vite dev server:
-# http://localhost:5173
+Docker: `docker compose up --build -d`. The compose configuration defaults to example-domain-only proxy access; configure your permitted API domains and admin key through environment variables or .env first.
+
+## Privacy and transport
+
+Collections, environments, and history are stored locally, without automatic cloud sync. Clearing browser storage deletes this data.
+
+**Live requests are not device-only.** The destination URL, explicitly supplied headers (including credentials), and body pass through the Express backend to the destination. Use a trusted self-hosted instance for sensitive requests.
+
+The current transport is `POST /api/proxy` with a JSON request envelope. Responses are returned as JSON data; upstream HTML is never served as an app-origin document, redirects are not followed, and app cookies are not forwarded implicitly. Private/reserved destinations are blocked. The legacy `/proxy?url=...` route returns 410; reload older clients after upgrading.
+
+Limits: 1 MB request envelope, 5 MB upstream response, 5-second DNS deadline, 30-second upstream deadline, 20 concurrent requests, and 120 requests/minute per trusted client IP (socket peer by default). Configure only your actual ingress CIDRs to distinguish clients behind a reverse proxy. This is a bounded text/JSON relay, not a binary download, streaming, or cookie-jar client.
+
+Admin login exchanges the key for a 30-minute HttpOnly session. Key-bearing URLs/headers and legacy raw-key cookies no longer authenticate. Read [release hardening and operator checklist](docs/release-hardening.md) before publishing. For current work, verification evidence, and IDE transfer instructions, read [HANDOFF.md](HANDOFF.md).
+
+The application records limited in-memory traffic and feature counters. Platform operators can still observe network metadata. See the in-app privacy page.
+
+Share links are readable by anyone who has them. Known credential fields are redacted, sensitive assertions and non-JSON bodies are omitted, and schema secret literals may be removed. **Review the payload preview**: automatic detection cannot recognize all sensitive information. Backups and collection exports are not redacted or encrypted; treat them as secrets.
+
+## Compatibility and limitations
+
+- OpenAPI: JSON 3.x with local references; external/recursive references, Swagger 2.0, and YAML require conversion or bundling. Security schemes need manual credentials. Operation-specific server overrides produce a warning.
+- Postman: common raw HTTP requests, variables, headers, query/path parameters, and inherited bearer/API-key/basic auth. Scripts, OAuth flows, and non-raw bodies are not executed. Environment variables override collection variables at send time.
+- Schema mocks: objects, arrays, primitive types, enum/const, explicit examples/defaults, common string formats, and basic length/numeric bounds. Advanced constraints may require an explicit response example. Integer mocks reject fractional multipleOf. This is not a full JSON Schema validator; supplied examples are used as given.
+- Webhooks: this is a signed dispatcher, not a receiver. Localhost delivery is direct from the browser and requires the receiving handler's CORS configuration; remote delivery uses the public-destination proxy.
+- Offline: after a successful production service-worker install, cached app assets and local mocks work offline. Live calls need a network connection. Admin/API responses and query-string URLs are excluded from app caching.
+- Workspace backups include collections, endpoints, and environments, not execution history. Restore validates before transactional writes; matching IDs are replaced.
+
+## Verification
+
+```sh
+npm test
+npm run check
+npm run build
 ```
 
----
+Tests cover transport isolation/SSRF boundaries, single-attempt live requests, draft identity, strict assertions, webhook signatures, import fidelity, schema generation, share redaction, backup validation, and service-worker exclusions. They use local fixtures, not third-party APIs.
 
-## 🛠️ Architecture & Tech Stack
+See [the reliability notes](docs/reliability.md) for upgrade details and remaining hardening work.
 
-```text
-┌────────────────────────────────────────────────────────┐
-│                   APIFlow Studio                       │
-├──────────────────────────┬─────────────────────────────┤
-│ Frontend (Browser Tab)   │ Backend / Gateway           │
-│ • React 18 + TypeScript  │ • Node.js + Express 5       │
-│ • Vite 6 + Tailwind CSS  │ • Lightweight CORS Proxy    │
-│ • Dexie.js (IndexedDB)   │ • SSRF Protection & DNS     │
-│ • @faker-js/faker Engine │ • Response Gzip Compression │
-│ • Lucide Icons           │ • Prometheus / Health Route │
-└──────────────────────────┴─────────────────────────────┘
-```
+## License
 
-* **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Zustand, Dexie.js, CodeMirror.
-* **Backend:** Express 5, CORS proxy relay with SSRF private network guards.
-* **Storage:** 100% Client-side IndexedDB — zero server database required.
-
----
-
-## 📚 Documentation Suite
-
-Comprehensive guides are available in the [**`docs/`**](./docs/) directory:
-
-* 📖 [**What is APIFlow Studio?**](./docs/WHAT_IS_APIFLOW_STUDIO.md) — Product philosophy, problem solved, and architecture deep-dive.
-* ⚡ [**Product Guide & Specifications**](./docs/PRODUCT_GUIDE.md) — Faker heuristics, HTTP status schemas, and IndexedDB schema design.
-* 🖥️ [**User Interface Guide**](./docs/USER_GUIDE.md) — 3-pane layout, shortcut keys, and theme system.
-* 📘 [**User Manual**](./docs/USER_MANUAL.md) — Managing collections, environments, headers, request bodies, and mock scenarios.
-* 🎓 [**Step-by-Step Tutorials**](./docs/STEP_BY_STEP_TUTORIALS.md) — Practical workflows from frontend prototyping to contract handoff.
-* 📱 [**Deployment & Hosting Guide**](./docs/DEPLOYMENT_AND_HOSTING_GUIDE.md) — Homelab Docker setup, VPS guides, and spare phone hosting via Termux.
-
----
-
-## 🤝 Contributing
-
-Contributions are warmly welcome! Whether it's adding new mock heuristics, blueprint templates, or fixing bugs:
-
-1. Fork the Project (`https://github.com/yashpadaliya08/apiflow`)
-2. Create your Feature Branch (`git checkout -b feat/amazing-feature`)
-3. Commit your Changes (`git commit -m "feat: add amazing feature"`)
-4. Push to the Branch (`git push origin feat/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 👤 Author
-
-**Yash Padaliya**
-* GitHub: [@yashpadaliya08](https://github.com/yashpadaliya08)
-* LinkedIn: [in/padaliya-yash](https://www.linkedin.com/in/padaliya-yash/)
-
----
-
-## 📄 License
-
-This project is open source and available under the [**MIT License**](./LICENSE).
+MIT.

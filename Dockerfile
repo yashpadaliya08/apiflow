@@ -3,7 +3,7 @@
 # -------------------------------------------------------------
 # Stage 1: Build React 19 Frontend Bundle
 # -------------------------------------------------------------
-FROM node:20-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -18,7 +18,7 @@ RUN npm run build
 # -------------------------------------------------------------
 # Stage 2: Production Server Runner
 # -------------------------------------------------------------
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 

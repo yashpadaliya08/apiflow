@@ -3,14 +3,14 @@ const cors = require('cors');
 const compression = require('compression');
 const helmet = require('helmet');
 const path = require('path');
-const http = require('http');
 const fs = require('fs');
-const dns = require('dns').promises;
-const net = require('net');
 const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+// Only explicit ingress CIDRs/addresses may supply forwarded identity. Default: trust nobody.
+const trustedProxies = (process.env.TRUSTED_PROXY_CIDRS || '').split(',').map(value => value.trim()).filter(Boolean);
+if (trustedProxies.length) app.set('trust proxy', trustedProxies);
 
 // Enable response compression (Gzip / Deflate)
 app.use(compression());
@@ -24,7 +24,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc:     ["'self'"],
-        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'"],  // Vite/React needs eval in dev; inline for splash
+        scriptSrc:      ["'self'", "'unsafe-inline'"],  // Inline scripts in the current admin page
         scriptSrcAttr:  ["'unsafe-inline'"],                            // Permits inline event handlers if any
         styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc:        ["'self'", "https://fonts.gstatic.com"],
@@ -55,9 +55,14 @@ app.use(cors({
 }));
 
 // Body parsers
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '20mb' }));
-app.use(express.raw({ type: '*/*', limit: '20mb' }));
+app.use('/api/proxy', express.json({ limit: '1mb' }));
+app.use(['/api/telemetry', '/api/visit'], express.json({ limit: '8kb' }));
+app.use('/api/admin', express.json({ limit: '4kb' }));
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.too.large') return res.status(413).json({ error: 'Request body exceeds this route limit.' });
+  if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON request body.' });
+  next(error);
+});
 
 // ═══════════════════════════════════════════════════════════════
 // Real-time Traffic, Visitor & Telemetry Analytics Engine
@@ -209,7 +214,7 @@ function trackSession(ip) {
 }
 
 function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, country }) {
-  const parsed = parseReferrer(referrer, refParam);
+  const parsed = parseReferrer(typeof referrer === 'string' ? referrer.slice(0, 256) : '', typeof refParam === 'string' ? refParam.slice(0, 64) : '');
   const device = parseDevice(userAgent);
   const masked = maskIp(ip);
   const ipHash = hashIp(ip);
@@ -237,7 +242,9 @@ function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, count
 
   // Count campaign
   if (parsed.tag && parsed.tag !== 'direct') {
-    globalStats.campaignCounts[parsed.tag] = (globalStats.campaignCounts[parsed.tag] || 0) + 1;
+    if (Object.keys(globalStats.campaignCounts).length < 1000 || Object.hasOwn(globalStats.campaignCounts, parsed.tag)) {
+      globalStats.campaignCounts[parsed.tag] = (globalStats.campaignCounts[parsed.tag] || 0) + 1;
+    }
   }
 
   // Count country
@@ -295,7 +302,7 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
       ? JSON.parse(req.body.toString('utf8'))
       : (typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
 
-    const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
     const country = req.headers['cf-ipcountry'] || 'Global';
     const userAgent = req.headers['user-agent'] || '';
 
@@ -333,27 +340,12 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
 // Admin Security & Telemetry Protection
 // ═══════════════════════════════════════════════════════════════
 
-const ADMIN_KEY = process.env.ADMIN_KEY || 'apiflow-admin-2026';
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
 
-function verifyAdmin(req) {
-  // Check header 'x-admin-key'
-  const headerKey = req.headers['x-admin-key'];
-  if (headerKey && headerKey === ADMIN_KEY) return true;
-
-  // Check Bearer authorization token
-  const auth = req.headers['authorization'];
-  if (auth && auth.startsWith('Bearer ') && auth.slice(7).trim() === ADMIN_KEY) return true;
-
-  // Check query param
-  const queryKey = req.query.key || req.query.admin_key;
-  if (queryKey && queryKey === ADMIN_KEY) return true;
-
-  // Check cookie
-  const cookieHeader = req.headers.cookie || '';
-  if (cookieHeader.includes(`apiflow_admin_key=${ADMIN_KEY}`)) return true;
-
-  return false;
-}
+const adminAuth = require('./admin-auth').createAdminAuth({ key: ADMIN_KEY });
+const verifyAdmin = adminAuth.verify;
+app.post('/api/admin/login', adminAuth.login);
+app.post('/api/admin/logout', adminAuth.logout);
 
 function renderAdminLoginPage() {
   return `<!DOCTYPE html>
@@ -468,13 +460,19 @@ function renderAdminLoginPage() {
   </div>
 
   <script>
-    document.getElementById('login-form').addEventListener('submit', function(e) {
+    history.replaceState(null, '', window.location.pathname);
+    try { localStorage.removeItem('apiflow_admin_key'); } catch {}
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       const key = document.getElementById('adminKey').value.trim();
       if (!key) return;
 
-      document.cookie = 'apiflow_admin_key=' + encodeURIComponent(key) + '; path=/; max-age=604800; SameSite=Lax';
-      window.location.href = window.location.pathname + '?key=' + encodeURIComponent(key);
+      try {
+        const response = await fetch('/api/admin/login', {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key})});
+        document.getElementById('adminKey').value = '';
+        if (response.ok) window.location.replace(window.location.pathname);
+        else alert((await response.json()).error || 'Login failed.');
+      } catch { alert('Cannot reach the server.'); }
     });
   </script>
 </body>
@@ -483,10 +481,11 @@ function renderAdminLoginPage() {
 
 // JSON Stats API Endpoint (Protected with Admin Auth)
 app.get('/api/stats', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   if (!verifyAdmin(req)) {
     return res.status(401).json({
       error: 'Unauthorized: Admin authentication required to access server telemetry.',
-      hint: 'Provide header "x-admin-key: <your_key>" or query param "?key=<your_key>".'
+      hint: 'Sign in at /stats to create a short-lived admin session.'
     });
   }
 
@@ -511,11 +510,7 @@ app.get('/api/stats', (req, res) => {
 
 // Visual Admin Stats Dashboard (Protected with Admin Auth)
 app.get(['/stats', '/admin/stats'], (req, res) => {
-  // Support logout
-  if (req.query.logout !== undefined) {
-    res.setHeader('Set-Cookie', 'apiflow_admin_key=; path=/; max-age=0');
-    return res.redirect('/stats');
-  }
+  res.set('Cache-Control', 'no-store');
 
   if (!verifyAdmin(req)) {
     return res.status(401).send(renderAdminLoginPage());
@@ -730,7 +725,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
           <span>Live Auto-Refresh (3s)</span>
         </div>
         <button class="btn-refresh" onclick="fetchStats()">↻ Refresh Now</button>
-        <a href="/stats?logout=true" class="btn-refresh" style="text-decoration: none; color: #F87171;">🔒 Logout</a>
+        <button onclick="logout()" class="btn-refresh" style="color: #F87171;">🔒 Logout</button>
       </div>
     </header>
 
@@ -848,12 +843,20 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
       });
     }
 
+    function escapeHtml(value) {
+      const node = document.createElement('span');
+      node.textContent = String(value ?? '');
+      return node.innerHTML;
+    }
+
+    history.replaceState(null, '', window.location.pathname);
+    async function logout() {
+      const response = await fetch('/api/admin/logout', {method:'POST',credentials:'same-origin'});
+      if (response.ok) window.location.reload();
+    }
     async function fetchStats() {
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const key = urlParams.get('key');
-        const fetchUrl = key ? '/api/stats?key=' + encodeURIComponent(key) : '/api/stats';
-        const res = await fetch(fetchUrl, { credentials: 'include' });
+        const res = await fetch('/api/stats', { credentials: 'same-origin', cache: 'no-store' });
         if (res.status === 401) {
           window.location.reload();
           return;
@@ -906,12 +909,12 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
 
             return \`
               <tr>
-                <td class="time-mono">\${v.formattedTime}</td>
-                <td><span class="badge \${badgeClass}">\${v.source}</span></td>
-                <td><span style="font-family: var(--font-mono); font-size: 11px; color: #94A3B8;">\${v.tag || 'direct'}</span></td>
-                <td><span class="badge badge-device">\${v.device || 'Desktop'}</span></td>
-                <td>\${v.country || 'Global'}</td>
-                <td class="time-mono" style="opacity: 0.7;">\${v.ipMasked || 'unknown'}</td>
+                <td class="time-mono">\${escapeHtml(v.formattedTime)}</td>
+                <td><span class="badge \${badgeClass}">\${escapeHtml(v.source)}</span></td>
+                <td><span style="font-family: var(--font-mono); font-size: 11px; color: #94A3B8;">\${escapeHtml(v.tag || 'direct')}</span></td>
+                <td><span class="badge badge-device">\${escapeHtml(v.device || 'Desktop')}</span></td>
+                <td>\${escapeHtml(v.country || 'Global')}</td>
+                <td class="time-mono" style="opacity: 0.7;">\${escapeHtml(v.ipMasked || 'unknown')}</td>
               </tr>
             \`;
           }).join('');
@@ -955,250 +958,14 @@ app.get('/health', (req, res) => {
 // CORS Proxy Security & SSRF Protection Engine (SEC-001)
 // ═══════════════════════════════════════════════════════════════
 
-const DEFAULT_ALLOWED_DOMAINS = ['*'];
-const ALLOWED_PROXY_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS
-  ? process.env.ALLOWED_PROXY_DOMAINS.split(',')
-  : DEFAULT_ALLOWED_DOMAINS
-)
-  .map(d => d.trim().toLowerCase())
-  .filter(Boolean);
-
-const BLOCKED_HOSTNAMES = [
-  'localhost',
-  '127.0.0.1',
-  '::1',
-  '0.0.0.0',
-  'metadata.google.internal',
-  'instance-data',
-  'metadata.azure.com',
-];
-
-const BLOCKED_PORTS = [21, 22, 23, 25, 53, 110, 143, 389, 445, 1433, 1521, 3306, 5432, 6379, 9200, 11211, 27017, 28017];
-
-function isPrivateOrReservedIp(ip) {
-  if (!ip) return true;
-
-  // Handle IPv4-mapped IPv6 addresses (e.g. ::ffff:192.168.1.1)
-  if (ip.startsWith('::ffff:')) {
-    ip = ip.substring(7);
-  }
-
-  // IPv4 checks
-  if (net.isIPv4(ip)) {
-    const parts = ip.split('.').map(Number);
-    if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
-      return true;
-    }
-    const [a, b, c, d] = parts;
-
-    if (a === 0) return true; // 0.0.0.0/8
-    if (a === 10) return true; // 10.0.0.0/8
-    if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 CGNAT
-    if (a === 127) return true; // 127.0.0.0/8 Loopback
-    if (a === 169 && b === 254) return true; // 169.254.0.0/16 Link-local / Cloud metadata
-    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12 Private
-    if (a === 192 && b === 0 && c === 0) return true; // 192.0.0.0/24
-    if (a === 192 && b === 0 && c === 2) return true; // 192.0.2.0/24 TEST-NET-1
-    if (a === 192 && b === 88 && c === 99) return true; // 192.88.99.0/24 6to4
-    if (a === 192 && b === 168) return true; // 192.168.0.0/16 Private
-    if (a === 198 && (b === 18 || b === 19)) return true; // 198.18.0.0/15
-    if (a === 198 && b === 51 && c === 100) return true; // 198.51.100.0/24 TEST-NET-2
-    if (a === 203 && b === 0 && c === 113) return true; // 203.0.113.0/24 TEST-NET-3
-    if (a >= 224 && a <= 239) return true; // 224.0.0.0/4 Multicast
-    if (a >= 240) return true; // 240.0.0.0/4 Reserved
-    if (a === 255 && b === 255 && c === 255 && d === 255) return true;
-
-    return false;
-  }
-
-  // IPv6 checks
-  if (net.isIPv6(ip)) {
-    const norm = ip.toLowerCase();
-    if (norm === '::1' || norm === '0:0:0:0:0:0:0:1') return true;
-    if (norm === '::' || norm === '0:0:0:0:0:0:0:0') return true;
-    if (norm.startsWith('fe8') || norm.startsWith('fe9') || norm.startsWith('fea') || norm.startsWith('feb')) return true;
-    if (norm.startsWith('fc') || norm.startsWith('fd')) return true;
-    return false;
-  }
-
-  return true;
-}
-
-function isBlockedHostname(hostname) {
-  const lower = (hostname || '').toLowerCase();
-  if (BLOCKED_HOSTNAMES.includes(lower)) return true;
-  if (lower.endsWith('.localhost') || lower.endsWith('.local') || lower.endsWith('.internal') || lower.endsWith('.lan')) {
-    return true;
-  }
-  return false;
-}
-
-function isDomainAllowed(hostname, allowedList) {
-  if (allowedList.includes('*')) return true;
-  const lower = (hostname || '').toLowerCase();
-  return allowedList.some(pattern => {
-    if (pattern.startsWith('*.')) {
-      const suffix = pattern.slice(1); // .example.com
-      return lower.endsWith(suffix) || lower === pattern.slice(2);
-    }
-    return lower === pattern;
-  });
-}
-
-// Universal CORS Bypass Proxy
-app.all('/proxy', async (req, res) => {
-  const targetUrl = req.query.url || req.headers['x-target-url'];
-
-  if (!targetUrl || typeof targetUrl !== 'string') {
-    return res.status(400).json({
-      error: 'Missing required query parameter "url" or header "x-target-url"',
-      example: '/proxy?url=https://api.github.com/users/octocat',
-    });
-  }
-
-  let urlObj;
-  try {
-    urlObj = new URL(targetUrl);
-  } catch (err) {
-    return res.status(400).json({
-      error: 'Invalid target URL format',
-      message: err.message,
-    });
-  }
-
-  // 1. Enforce HTTP/HTTPS protocols only (prevent file://, gopher://, etc.)
-  if (!['http:', 'https:'].includes(urlObj.protocol)) {
-    return res.status(400).json({
-      error: 'Forbidden protocol. Only HTTP and HTTPS are permitted.',
-    });
-  }
-
-  // 2. Strict Domain Allowlist validation (SEC-001)
-  if (!isDomainAllowed(urlObj.hostname, ALLOWED_PROXY_DOMAINS)) {
-    return res.status(403).json({
-      error: 'Forbidden: Target domain is not permitted by proxy allowlist policy.',
-      domain: urlObj.hostname,
-      hint: 'Configure ALLOWED_PROXY_DOMAINS to permit this domain or use "*".',
-    });
-  }
-
-  // 3. SSRF Protection: Block loopback, internal hosts & cloud metadata
-  if (isBlockedHostname(urlObj.hostname)) {
-    return res.status(403).json({
-      error: 'Forbidden: Access to local, internal, or cloud metadata hosts is blocked (SSRF Protection).',
-      host: urlObj.hostname,
-    });
-  }
-
-  // 4. SSRF Protection: Block direct private / reserved IP addresses
-  if (net.isIP(urlObj.hostname) && isPrivateOrReservedIp(urlObj.hostname)) {
-    return res.status(403).json({
-      error: 'Forbidden: Direct access to private, loopback, or reserved IP addresses is blocked (SSRF Protection).',
-      ip: urlObj.hostname,
-    });
-  }
-
-  // 5. Port restriction: Block internal and sensitive management ports
-  if (urlObj.port && BLOCKED_PORTS.includes(Number(urlObj.port))) {
-    return res.status(403).json({
-      error: `Forbidden: Port ${urlObj.port} is restricted from proxy forwarding.`,
-    });
-  }
-
-  // 6. SSRF Protection: DNS resolution check to prevent DNS rebinding attacks
-  try {
-    const lookup = await dns.lookup(urlObj.hostname);
-    if (isPrivateOrReservedIp(lookup.address)) {
-      return res.status(403).json({
-        error: 'Forbidden: Resolved destination IP is private or restricted (SSRF Protection).',
-        domain: urlObj.hostname,
-        resolvedIp: lookup.address,
-      });
-    }
-  } catch (dnsErr) {
-    // If DNS resolution fails here, proceed to let fetch attempt or handle offline
-  }
-
-  const startTime = Date.now();
-
-  try {
-
-    // Filter headers to forward
-    const forwardHeaders = {};
-    const prohibitedHeaders = ['host', 'connection', 'content-length', 'x-target-url'];
-
-    for (const [key, val] of Object.entries(req.headers)) {
-      if (!prohibitedHeaders.includes(key.toLowerCase()) && !key.toLowerCase().startsWith('x-forwarded')) {
-        forwardHeaders[key] = val;
-      }
-    }
-
-    forwardHeaders['host'] = urlObj.host;
-
-    let bodyData = undefined;
-    if (!['GET', 'HEAD'].includes(req.method.toUpperCase())) {
-      if (Buffer.isBuffer(req.body) && req.body.length > 0) {
-        bodyData = req.body;
-      } else if (typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-        bodyData = JSON.stringify(req.body);
-      } else if (typeof req.body === 'string' && req.body.length > 0) {
-        bodyData = req.body;
-      }
-    }
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-    const fetchOptions = {
-      method: req.method,
-      headers: forwardHeaders,
-      signal: controller.signal,
-    };
-
-    if (bodyData) {
-      fetchOptions.body = bodyData;
-    }
-
-    const upstreamResponse = await fetch(targetUrl, fetchOptions);
-    clearTimeout(timeout);
-
-    const latency = Date.now() - startTime;
-    const responseHeaders = {};
-    upstreamResponse.headers.forEach((val, key) => {
-      responseHeaders[key] = val;
-    });
-
-    const responseBuffer = await upstreamResponse.arrayBuffer();
-    const buffer = Buffer.from(responseBuffer);
-
-    // Send headers back
-    res.status(upstreamResponse.status);
-    for (const [k, v] of Object.entries(responseHeaders)) {
-      if (!['transfer-encoding', 'content-encoding'].includes(k.toLowerCase())) {
-        res.setHeader(k, v);
-      }
-    }
-    res.setHeader('x-apiflow-latency', `${latency}ms`);
-    res.setHeader('x-apiflow-proxy', 'true');
-
-    res.send(buffer);
-  } catch (err) {
-    const latency = Date.now() - startTime;
-    console.error('[Proxy Error]:', err.message);
-
-    res.status(502).json({
-      error: 'Proxy Gateway Error',
-      message: err.message,
-      targetUrl,
-      latencyMs: latency,
-    });
-  }
-});
+const { createProxyHandler } = require('./proxy');
+app.post('/api/proxy', createProxyHandler());
+app.all('/proxy', (_req, res) => res.status(410).json({ error: 'Reload APIFlow to use the secure POST /api/proxy transport.' }));
 
 // Middleware for recording direct page requests on root static route
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/proxy') && !req.path.includes('.')) {
-    const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
     recordVisit({
       ip: clientIp,
       userAgent: req.headers['user-agent'] || '',
@@ -1335,21 +1102,24 @@ if (fs.existsSync(distPath)) {
     maxAge: '1y',
     immutable: true,
     setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) {
+      if (!filePath.includes(`${path.sep}assets${path.sep}`)) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       }
     },
   }));
 
+  app.use('/assets', (req, res) => res.status(404).type('text/plain').send('Asset not found'));
   app.use((req, res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => {
   console.log(`[APIFlow Studio Server] running on http://0.0.0.0:${PORT}`);
   console.log(`  - Live Stats Admin: http://localhost:${PORT}/stats`);
   console.log(`  - Health Check:     http://localhost:${PORT}/health`);
-  console.log(`  - CORS Proxy:       http://localhost:${PORT}/proxy?url=https://...`);
+  console.log(`  - CORS Proxy:       POST http://localhost:${PORT}/api/proxy`);
 });
+
+module.exports = app;

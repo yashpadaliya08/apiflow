@@ -1,3 +1,5 @@
+import { runActiveRequest, cancelActiveRequest } from '@/lib/execution/run-active-request';
+import { prepareRequest } from '@/lib/execution/request';
 import React, { useEffect } from 'react';
 import {
   Send,
@@ -17,6 +19,7 @@ import { interpolateVariables } from '@/lib/engines/synthetic-engine';
 import { ParamTable } from '@/components/request/ParamTable';
 import { BodyEditor } from '@/components/request/BodyEditor';
 import { AssertionBuilder } from '@/components/request/AssertionBuilder';
+import { MockSettings } from '@/components/request/MockSettings';
 import { MethodBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { trackEvent } from '@/lib/analytics';
@@ -25,6 +28,7 @@ import type { HttpMethod, StatusCode } from '@/types';
 export const RequestBuilder: React.FC = () => {
   const {
     activeEndpoint,
+    saveError,
     activeCollection,
     createEndpoint,
     updateActiveEndpointDraft,
@@ -44,12 +48,12 @@ export const RequestBuilder: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        handleExecute();
+        void runActiveRequest();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeEndpoint, executionMode, activeEnv]);
+  }, []);
 
   if (!activeEndpoint) {
     return (
@@ -85,97 +89,12 @@ export const RequestBuilder: React.FC = () => {
     );
   }
 
-  // Calculate resolved URL with environment variables and path parameter substitution
-  const rawBase = activeCollection?.baseUrl || 'https://api.enterprise.dev';
-  const resolvedBase = activeEnv ? interpolateVariables(rawBase, activeEnv.variables) : rawBase;
-  let resolvedPath = activeEnv ? interpolateVariables(activeEndpoint.path, activeEnv.variables) : activeEndpoint.path;
-  (activeEndpoint.pathParams || []).filter((p) => p.enabled && p.key).forEach((p) => {
-    resolvedPath = resolvedPath.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
-  });
-  const isAbsolute = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
-  const fullPreviewUrl = isAbsolute
-    ? `${resolvedPath}`
-    : `${resolvedBase}${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
+  let fullPreviewUrl = '';
+  try { fullPreviewUrl = prepareRequest(activeEndpoint, activeCollection?.baseUrl || '', [...(activeEnv?.variables || []), ...(activeCollection?.variables || [])]).url; }
+  catch (error) { fullPreviewUrl = error instanceof Error ? error.message : 'Check request parameters'; }
+  const handleExecute = runActiveRequest;
 
-  const handleExecute = async () => {
-    if (!activeEndpoint || isExecuting) return;
-    setIsExecuting(true);
-    setError(null);
-
-    try {
-      if (executionMode === 'mock') {
-        const res = await executeMock(activeEndpoint);
-        setResponse(res);
-
-        trackEvent('request_simulated', {
-          mode: 'mock',
-          status: res.status,
-          latency: res.latency,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-        });
-
-        // Record history
-        await addHistoryEntry({
-          endpointId: activeEndpoint.id,
-          endpointName: activeEndpoint.name,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-          status: res.status,
-          latency: res.latency,
-          timestamp: new Date().toISOString(),
-          response: res,
-          requestBody: activeEndpoint.requestBody,
-          queryParams: activeEndpoint.queryParams,
-          headers: activeEndpoint.headers,
-        });
-      } else {
-        // Live Proxy mode
-        const headerMap: Record<string, string> = {};
-        activeEndpoint.headers
-          .filter((h) => h.enabled && h.key)
-          .forEach((h) => {
-            headerMap[h.key] = activeEnv ? interpolateVariables(h.value, activeEnv.variables) : h.value;
-          });
-
-        const res = await executeLive(
-          activeEndpoint,
-          resolvedBase,
-          headerMap
-        );
-        setResponse(res);
-
-        trackEvent('request_simulated', {
-          mode: 'live',
-          status: res.status,
-          latency: res.latency,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-        });
-
-        await addHistoryEntry({
-          endpointId: activeEndpoint.id,
-          endpointName: activeEndpoint.name,
-          method: activeEndpoint.method,
-          path: activeEndpoint.path,
-          status: res.status,
-          latency: res.latency,
-          timestamp: new Date().toISOString(),
-          response: res,
-          requestBody: activeEndpoint.requestBody,
-          queryParams: activeEndpoint.queryParams,
-          headers: activeEndpoint.headers,
-        });
-      }
-    } catch (err: any) {
-      console.error('Execution error:', err);
-      setError(err.message || 'Execution failed');
-    } finally {
-      setIsExecuting(false);
-    }
-  };
-
-  const methods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+  const methods: HttpMethod[] = ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'];
   const scenarios: { code: StatusCode; label: string }[] = [
     { code: 200, label: '200 OK' },
     { code: 201, label: '201 Created' },
@@ -188,6 +107,7 @@ export const RequestBuilder: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#141720] border-r border-[#2A2F45] overflow-hidden">
+      {saveError && <div role="alert" className="p-2 text-xs text-red-300">{saveError}</div>}
       {/* Top Header: Endpoint Name & Resource */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#141720]/80 flex items-center justify-between gap-3 backdrop-blur-sm">
         <div className="flex-1 min-w-0">
@@ -220,7 +140,7 @@ export const RequestBuilder: React.FC = () => {
 
       {/* Main Request Command Bar: Floating Elevated Container */}
       <div className="p-3 border-b border-[#2A2F45] bg-[#0C0E12]/80 space-y-2">
-        <div className="p-1.5 rounded-xl bg-[#141720] border border-[#2A2F45] shadow-lg shadow-black/20 flex items-center gap-2">
+        <div className="p-1.5 rounded-xl bg-[#141720] border border-[#2A2F45] shadow-lg shadow-black/20 flex flex-wrap items-center gap-2">
           {/* Method selector with glowing method pill styling */}
           <select
             id="endpoint-method-select"
@@ -250,7 +170,7 @@ export const RequestBuilder: React.FC = () => {
           </select>
 
           {/* URL Path input */}
-          <div className="flex-1 min-w-[80px] relative flex items-center">
+          <div className="flex-1 min-w-[120px] relative flex items-center">
             <input
               id="endpoint-path-input"
               name="endpointPath"
@@ -285,6 +205,7 @@ export const RequestBuilder: React.FC = () => {
             </select>
           )}
 
+          {isExecuting && <Button variant="outline" size="sm" onClick={cancelActiveRequest}>Cancel</Button>}
           {/* Send / Simulate Button with Signature First Page Gradient */}
           <Button
             variant={executionMode === 'mock' ? 'accent' : 'primary'}
@@ -330,6 +251,7 @@ export const RequestBuilder: React.FC = () => {
       {/* Request Segmented Pill Tabs Header */}
       <div className="px-3 py-2 bg-[#141720] border-b border-[#2A2F45]">
         <div className="flex items-center gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] overflow-x-auto no-scrollbar">
+          <button onClick={() => setRequestTab('mock')} className={`px-3 py-1.5 rounded-lg text-xs shrink-0 ${requestTab === 'mock' ? 'bg-[#1C2030] text-white' : 'text-white/60'}`}>Mock response</button>
           <button
             onClick={() => setRequestTab('params')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
@@ -413,6 +335,7 @@ export const RequestBuilder: React.FC = () => {
 
       {/* Tab Panels */}
       <div className="flex-1 overflow-y-auto p-4 bg-[#0C0E12]">
+        {requestTab === 'mock' && <MockSettings key={activeEndpoint.id} endpoint={activeEndpoint} onChange={updates => { updateActiveEndpointDraft(updates); void saveActiveEndpointDraft(); }} />}
         {requestTab === 'params' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-white/60">

@@ -23,7 +23,8 @@ lerna-debug.log*
 
 # Marketing & Internal drafts (excluded from public repo)
 marketing/
-docs/APIFLOW_STUDIO_DEEP_AUDIT_REPORT.md
+docs/
+HANDOFF.md
 
 # Environment files
 .env

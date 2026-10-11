@@ -1,3 +1,4 @@
+import { executeEndpoint } from '@/lib/execution/execute-endpoint';
 import React, { useState, useRef } from 'react';
 import {
   Play,
@@ -48,14 +49,17 @@ export const CollectionRunnerModal: React.FC = () => {
   const [copiedReport, setCopiedReport] = useState(false);
 
   const abortRef = useRef(false);
+  const controllerRef = useRef<AbortController | null>(null);
 
   if (!activeCollection) return null;
 
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
-  const baseUrl = activeEnv?.variables.find((v) => v.enabled && v.key === 'baseUrl')?.value || activeCollection.baseUrl || 'https://api.example.com';
+  const baseUrl = activeCollection.baseUrl || 'https://api.example.com';
 
   const handleStartRun = async () => {
-    if (endpoints.length === 0) return;
+    if (endpoints.length === 0 || controllerRef.current) return;
+    const controller = new AbortController();
+    controllerRef.current = controller;
     setIsRunning(true);
     setResults([]);
     setCurrentIndex(0);
@@ -69,32 +73,10 @@ export const CollectionRunnerModal: React.FC = () => {
       const ep = endpoints[i];
 
       try {
-        let actualStatus = 200;
-        let statusText = 'OK';
-        let latency = 20;
-
-        if (mode === 'mock') {
-          const res = await executeMock(ep);
-          actualStatus = res.status;
-          statusText = res.statusText;
-          latency = res.latency;
-        } else {
-          // Construct live headers
-          const liveHeaders: Record<string, string> = {};
-          (ep.headers || []).filter((h) => h.enabled && h.key).forEach((h) => {
-            liveHeaders[h.key] = h.value;
-          });
-          const res = await executeLive(ep, baseUrl, liveHeaders);
-          actualStatus = res.status;
-          statusText = res.statusText;
-          latency = res.latency;
-        }
-
-        // Determine pass/fail:
-        // In mock mode, if actual status matches the mock scenario, it passed.
-        // In live mode, 2xx and 3xx are passed.
+        const execution = await executeEndpoint(ep, baseUrl, [...(activeEnv?.variables || []), ...(activeCollection.variables || [])], mode, controller.signal);
+        const { status: actualStatus, statusText, latency } = execution.response;
         const expected = ep.mockScenario || 200;
-        const passed = mode === 'mock' ? actualStatus === expected : actualStatus >= 200 && actualStatus < 400;
+        const passed = execution.passed;
 
         const result: RunResult = {
           endpointId: ep.id,
@@ -106,6 +88,7 @@ export const CollectionRunnerModal: React.FC = () => {
           statusText,
           latencyMs: latency,
           passed,
+          error: execution.assertions.filter(a => !a.passed).map(a => a.message).join('; ') || undefined,
         };
 
         accumulatedResults.push(result);
@@ -115,6 +98,7 @@ export const CollectionRunnerModal: React.FC = () => {
           break;
         }
       } catch (err: any) {
+        if (controller.signal.aborted) break;
         const result: RunResult = {
           endpointId: ep.id,
           name: ep.name,
@@ -137,13 +121,14 @@ export const CollectionRunnerModal: React.FC = () => {
       }
     }
 
+    controllerRef.current = null;
     setIsRunning(false);
     setCurrentIndex(-1);
   };
 
   const handleStopRun = () => {
     abortRef.current = true;
-    setIsRunning(false);
+    controllerRef.current?.abort();
   };
 
   const passedCount = results.filter((r) => r.passed).length;
@@ -170,7 +155,7 @@ export const CollectionRunnerModal: React.FC = () => {
 
     results.forEach((r) => {
       lines.push(
-        `| **${r.method}** | \`${r.path}\` | ${r.expectedStatus} | ${r.actualStatus} ${r.statusText} | ${r.latencyMs}ms | ${r.passed ? '✅ PASSED' : '❌ FAILED'} |`
+        `| **${r.method}** | \`${r.path}\` | ${r.expectedStatus} | ${r.actualStatus} ${r.statusText} | ${r.latencyMs}ms | ${r.passed ? '✅ PASSED' : '❌ FAILED: ' + (r.error || 'Unexpected status').replace(/\|/g, '/')} |`
       );
     });
 
@@ -412,7 +397,7 @@ export const CollectionRunnerModal: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setRunnerOpen(false)}
+              onClick={() => { if (isRunning) handleStopRun(); setRunnerOpen(false); }}
             >
               Close
             </Button>

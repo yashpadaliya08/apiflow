@@ -1,0 +1,79 @@
+{
+  "_schema-generator-BMWslmup.js": {
+    "file": "assets/schema-generator-BMWslmup.js",
+    "name": "schema-generator",
+    "imports": [
+      "_vendor-faker-CdBPqZdY.js"
+    ]
+  },
+  "_vendor-dexie-B0yzgGqo.js": {
+    "file": "assets/vendor-dexie-B0yzgGqo.js",
+    "name": "vendor-dexie"
+  },
+  "_vendor-faker-CdBPqZdY.js": {
+    "file": "assets/vendor-faker-CdBPqZdY.js",
+    "name": "vendor-faker"
+  },
+  "_vendor-lucide-BLObK2Hs.js": {
+    "file": "assets/vendor-lucide-BLObK2Hs.js",
+    "name": "vendor-lucide",
+    "imports": [
+      "_vendor-dexie-B0yzgGqo.js"
+    ]
+  },
+  "index.html": {
+    "file": "assets/index-CYIGkXLW.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_vendor-lucide-BLObK2Hs.js",
+      "_vendor-dexie-B0yzgGqo.js"
+    ],
+    "dynamicImports": [
+      "src/components/layout/AppShell.tsx",
+      "src/components/landing/LandingPage.tsx",
+      "src/components/stats/StatsDashboard.tsx"
+    ],
+    "css": [
+      "assets/index-CQcE8hX_.css"
+    ]
+  },
+  "src/components/landing/LandingPage.tsx": {
+    "file": "assets/LandingPage-CAy53Zrv.js",
+    "name": "LandingPage",
+    "src": "src/components/landing/LandingPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_vendor-lucide-BLObK2Hs.js",
+      "_schema-generator-BMWslmup.js",
+      "_vendor-dexie-B0yzgGqo.js",
+      "_vendor-faker-CdBPqZdY.js"
+    ]
+  },
+  "src/components/layout/AppShell.tsx": {
+    "file": "assets/AppShell-Hf5thyvA.js",
+    "name": "AppShell",
+    "src": "src/components/layout/AppShell.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_vendor-lucide-BLObK2Hs.js",
+      "_vendor-faker-CdBPqZdY.js",
+      "_schema-generator-BMWslmup.js",
+      "_vendor-dexie-B0yzgGqo.js"
+    ]
+  },
+  "src/components/stats/StatsDashboard.tsx": {
+    "file": "assets/StatsDashboard-DgP8ghIu.js",
+    "name": "StatsDashboard",
+    "src": "src/components/stats/StatsDashboard.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_vendor-lucide-BLObK2Hs.js",
+      "_vendor-dexie-B0yzgGqo.js"
+    ]
+  }
+}

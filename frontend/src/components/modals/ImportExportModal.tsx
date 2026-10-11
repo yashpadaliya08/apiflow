@@ -22,6 +22,7 @@ export const ImportExportModal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'export' | 'import' | 'curl' | 'backup'>('export');
   const [importJson, setImportJson] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [copiedFormat, setCopiedFormat] = useState<'openapi' | 'postman' | null>(null);
 
@@ -72,9 +73,12 @@ export const ImportExportModal: React.FC = () => {
   if (!activeCollection) return null;
 
   const handleDownloadOpenAPI = () => {
+    setExportError(null);
+    try {
     const json = exportToOpenAPI(activeCollection, endpoints);
     const filename = `${activeCollection.name.toLowerCase().replace(/\s+/g, '-')}-openapi-3.1.json`;
     downloadFile(json, filename);
+    } catch (err) { setExportError(err instanceof Error ? err.message : 'Export failed.'); }
   };
 
   const handleDownloadPostman = () => {
@@ -84,6 +88,8 @@ export const ImportExportModal: React.FC = () => {
   };
 
   const handleCopy = async (format: 'openapi' | 'postman') => {
+    setExportError(null);
+    try {
     const json =
       format === 'openapi'
         ? exportToOpenAPI(activeCollection, endpoints)
@@ -91,6 +97,7 @@ export const ImportExportModal: React.FC = () => {
     await copyToClipboard(json);
     setCopiedFormat(format);
     setTimeout(() => setCopiedFormat(null), 1500);
+    } catch (err) { setExportError(err instanceof Error ? err.message : 'Export failed.'); }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,20 +123,20 @@ export const ImportExportModal: React.FC = () => {
     try {
       const result = importCollection(importJson);
       // Save collection into Dexie
-      await db.collections.add(result.collection);
-      // Save endpoints
-      await db.endpoints.bulkAdd(result.endpoints);
+      await db.transaction('rw', db.collections, db.endpoints, async () => {
+        await db.collections.add(result.collection);
+        await db.endpoints.bulkAdd(result.endpoints);
+      });
 
       await loadCollections();
       await selectCollection(result.collection.id);
 
       setImportSuccess(
-        `Successfully imported "${result.collection.name}" with ${result.endpoints.length} endpoints!`
+        `Imported "${result.collection.name}" with ${result.endpoints.length} endpoints. ${result.warnings.join(" ")}`
       );
       setImportJson('');
       setTimeout(() => {
-        setImportOpen(false);
-        setImportSuccess(null);
+        if (!result.warnings.length) { setImportOpen(false); setImportSuccess(null); }
       }, 1500);
     } catch (err: any) {
       setImportError(err.message || 'Failed to parse and import collection.');
@@ -150,7 +157,7 @@ export const ImportExportModal: React.FC = () => {
       const newEp = await createEndpoint(activeCollection.id, {
         name: parsed.name,
         method: parsed.method,
-        path: parsed.path,
+        path: parsed.baseUrl + parsed.path,
         queryParams: parsed.queryParams,
         headers: parsed.headers,
         requestBody: parsed.requestBody,
@@ -174,7 +181,7 @@ export const ImportExportModal: React.FC = () => {
       isOpen={importOpen}
       onClose={() => setImportOpen(false)}
       title="Contract Portability: Import & Export"
-      description="Zero vendor lock-in. Seamlessly swap specs with Postman, Insomnia, Swagger & OpenAPI 3.1"
+      description="Import OpenAPI 3.x and Postman 2.1 JSON. Unsupported features are reported before use."
       maxWidth="xl"
     >
       <div className="space-y-4 text-xs">
@@ -234,6 +241,7 @@ export const ImportExportModal: React.FC = () => {
         {/* Tab 1: Export */}
         {activeTab === 'export' && (
           <div className="space-y-3">
+            {exportError && <div role="alert" className="p-2.5 text-red-300 bg-red-500/10 rounded-md">{exportError}</div>}
             {/* Card 1: OpenAPI 3.1.0 */}
             <div className="p-3.5 bg-[#0C0E12] border border-[#2A2F45] rounded-lg flex items-center justify-between">
               <div className="space-y-1">
@@ -279,7 +287,7 @@ export const ImportExportModal: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-white/50 text-[11px]">
-                  Directly importable into Postman Desktop or Web workspace with nested folders and environments.
+                  Directly importable into Postman Desktop or Web workspace with resource folders and collection variables.
                 </p>
               </div>
 
@@ -313,7 +321,7 @@ export const ImportExportModal: React.FC = () => {
               </label>
               <input
                 type="file"
-                accept=".json,.yaml,.yml"
+                accept=".json"
                 onChange={handleFileUpload}
                 className="w-full text-xs text-white/60 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer mb-2"
               />
@@ -435,7 +443,7 @@ export const ImportExportModal: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-white">Full Workspace Backup</h4>
                   <p className="text-[11px] text-white/50 mt-1">
-                    Download complete snapshot of all collections, endpoints, environments & history.
+                    Download collections, endpoints and environments. Includes credentials; keep backups private. History is not included.
                   </p>
                 </div>
                 <Button
@@ -455,7 +463,7 @@ export const ImportExportModal: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-white">Restore from Backup</h4>
                   <p className="text-[11px] text-white/50 mt-1">
-                    Upload an APIFlow JSON backup to restore your collections and variables.
+                    Restore collections and variables. Matching IDs are replaced; other entries are kept. Invalid files make no changes.
                   </p>
                 </div>
                 <label className="cursor-pointer block">

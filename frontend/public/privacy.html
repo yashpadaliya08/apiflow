@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — APIFlow Studio</title>
-  <meta name="description" content="APIFlow Studio Privacy Policy. Your workspace data stays in your browser. Only Live Request calls pass through our proxy, and no personally identifiable information is stored." />
+  <meta name="description" content="APIFlow Studio Privacy Policy. Workspace storage is local. Live requests and remote webhook deliveries pass through the backend; shared links and exports can contain sensitive data." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://apiflowstudio.onrender.com/privacy" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -95,10 +95,10 @@
 
   <main>
     <h1>Privacy Policy</h1>
-    <p class="meta">Last updated: October 7, 2026 &nbsp;·&nbsp; Effective immediately</p>
+    <p class="meta">Last updated: October 9, 2026 &nbsp;·&nbsp; Effective immediately</p>
 
     <div class="highlight">
-      <strong style="color:#c7d2fe;">Short version:</strong> Your workspace data (collections, environments, mock scenarios, request history) never leaves your browser. Only <strong>Live Request</strong> calls pass through our proxy server so we can bypass browser CORS restrictions. We collect no tracking cookies, and <strong>no personally identifiable information is stored</strong> beyond the anonymised, in-memory page-view counts described below.
+      <strong style="color:#c7d2fe;">Short version:</strong> Workspace storage is local, without automatic cloud sync. <strong>Live requests and remote webhook deliveries</strong> send their configured URL, credentials, and payload through the backend. Local mocks do not need the proxy. The service maintains limited in-memory telemetry and request quotas; your hosting provider can also observe network metadata.
     </div>
 
     <h2>1. Who We Are</h2>
@@ -110,13 +110,13 @@
       <li><strong>IndexedDB</strong> — your main workspace database (<code>APIFlowDB</code>)</li>
       <li><strong>localStorage</strong> — small UI state values (active collection, active endpoint, onboarding seed flag)</li>
     </ul>
-    <p>This data never touches our servers. Clearing your browser data will permanently delete it. We have no way to recover it for you.</p>
+    <p>Workspace records are not automatically uploaded. Values used in live requests are transmitted as described below. Shared links and exported files can disclose workspace data: links are not encrypted, automatic redaction is incomplete, and exports/backups are not redacted. Review the share preview and keep backups private. Clearing browser storage deletes your workspace; export a backup first.</p>
 
     <h2>3. The Live Request Proxy</h2>
-    <p>When you click <strong>Send</strong> with a real endpoint (Live mode), your HTTP request is routed through our proxy at <code>apiflowstudio.onrender.com/proxy?url=...</code> to bypass browser CORS restrictions. You should know:</p>
+    <p>When you click <strong>Send</strong> with a real endpoint (Live mode), your HTTP request is routed through our proxy at <code>apiflowstudio.onrender.com/api/proxy</code> to bypass browser CORS restrictions. You should know:</p>
     <ul>
-      <li>The target URL is transmitted in the query string (<code>/proxy?url=...</code>) and forwarded to the destination along with your headers (including any <code>Authorization</code> header or API key you add) and request body.</li>
-      <li><strong>Platform Access Logs:</strong> Because the target URL is passed as a query parameter, the full destination URL and any query parameters embedded in it (such as query-based API keys or tokens) will appear in standard HTTP access logs maintained by Render (hosting provider) and Cloudflare (CDN/proxy). We strongly advise passing sensitive API credentials in HTTP headers (e.g. <code>Authorization</code>) rather than query parameters when using the public proxy.</li>
+      <li>The target URL is transmitted inside a POST JSON envelope and forwarded to the destination along with explicitly supplied headers (including credentials) and request body. Application cookies are not implicitly forwarded. Private/reserved destinations are blocked, and redirects are not followed.</li>
+      <li><strong>Platform access:</strong> The new transport keeps target URLs out of the proxy request query string. This does not make the request private from the server operator or infrastructure provider, which handles the request data and network metadata.</li>
       <li>We do <strong>not</strong> intentionally log, store, or inspect request bodies, headers, or response payloads on our application server. Requests are processed in-memory and discarded immediately after the response is returned.</li>
       <li>Render and Cloudflare retain standard platform-level HTTP access logs (client IP address, full request URL, timestamp) per <a href="https://render.com/privacy" target="_blank" rel="noopener">Render's Privacy Policy</a> and <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's Privacy Policy</a>.</li>
     </ul>
@@ -126,12 +126,12 @@
     <p>We run a lightweight, privacy-first, server-side analytics system with no third-party scripts. Here is exactly what it does and does not collect:</p>
     <ul>
       <li><strong>What we count:</strong> aggregate page views, approximate traffic source (Google / GitHub / Direct / etc.), device type category (Desktop / Mobile / Bot), country code (from Cloudflare's <code>CF-IPCountry</code> header — a two-letter country code, not a precise location), and aggregate feature usage events (proxy requests sent, exports, code copies).</li>
-      <li><strong>No raw IP storage:</strong> Raw IP addresses are <strong>never stored</strong> in memory or written to disk. To de-duplicate visitor counts and measure active sessions without storing personal identifiers, our server computes a one-way cryptographic hash (<code>SHA-256(IP + Salt)</code>) using an ephemeral, randomly generated salt that resets every time the server restarts. Active sessions expire from memory after 5 minutes.</li>
+      <li><strong>Visitor counting and quotas:</strong> Visitor identifiers use a salted hash that resets at server restart. The proxy rate limiter separately retains socket peer addresses temporarily in memory to enforce request quotas. Neither mechanism is an anonymity guarantee.</li>
       <li><strong>IP Masking:</strong> In the ephemeral recent-visits log (capped at 100 entries, memory-only), IP addresses are stripped of identifiable segments: for IPv4, the last two octets are masked (e.g. <code>192.168.***.***</code>); for IPv6, only the first 3 hextets (48-bit network prefix) are retained while the remaining host identifier bits are masked (e.g. <code>2001:db8:85a3:*:*:*:*</code>).</li>
       <li><strong>User-Agent:</strong> Used solely to classify your device as Desktop, Mobile, Tablet, or Bot. The raw User-Agent string is never stored; only the derived category is kept.</li>
       <li><strong>What we never do:</strong> track individual users across sessions, build profiles, use browser fingerprinting, set tracking cookies, or share any telemetry data with third parties.</li>
     </ul>
-    <p>All analytics data lives in server memory only and is permanently cleared each time Render's free-tier server restarts (typically every few hours or after periods of inactivity).</p>
+    <p>Application analytics data lives in server memory and clears when the process restarts. Infrastructure access logs follow the hosting provider’s own retention policy.</p>
 
     <h2>5. Cookies</h2>
     <p>We do not set any tracking cookies. The only cookie that may be set is a short-lived session cookie used for the <code>/stats</code> admin dashboard, which is accessible only with an admin key. Cloudflare may set its own cookies (<code>__cf_bm</code>, <code>cf_clearance</code>) for bot-mitigation purposes; these are governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's Privacy Policy</a>.</p>

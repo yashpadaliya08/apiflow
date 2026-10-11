@@ -22,45 +22,28 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
   const [localSummary, setLocalSummary] = useState<AnalyticsSummary>(getStoredSummary());
   const [serverStats, setServerStats] = useState<ServerStats | null>(null);
   const [loadingServer, setLoadingServer] = useState(false);
-  const [adminKey, setAdminKey] = useState<string>(() => {
-    return typeof window !== 'undefined' ? localStorage.getItem('apiflow_admin_key') || '' : '';
-  });
   const [inputKey, setInputKey] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const fetchServerStats = async (keyToUse?: string) => {
-    const key = keyToUse !== undefined ? keyToUse : adminKey;
-    if (!key) {
-      setServerStats(null);
-      return;
-    }
-
+  const fetchServerStats = async () => {
     try {
       setLoadingServer(true);
       setAuthError(null);
       const res = await fetch('/api/stats', {
-        headers: { 'x-admin-key': key },
+        credentials: 'same-origin', cache: 'no-store',
       });
 
       if (res.ok) {
         const data = await res.json();
         setServerStats(data);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('apiflow_admin_key', key);
-          setAdminKey(key);
-        }
       } else if (res.status === 401) {
         setServerStats(null);
-        setAuthError('Invalid Admin Key. Access denied.');
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('apiflow_admin_key');
-          setAdminKey('');
-        }
       } else {
         setServerStats(null);
       }
     } catch {
-      // Backend might be offline in pure client mode
+      setServerStats(null);
+      setAuthError('Cannot reach the server. Local metrics remain available.');
     } finally {
       setLoadingServer(false);
     }
@@ -69,25 +52,30 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputKey.trim()) return;
-    await fetchServerStats(inputKey.trim());
-    setInputKey('');
+    setLoadingServer(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/admin/login', {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:inputKey.trim()})});
+      setInputKey('');
+      if (!res.ok) { setAuthError((await res.json()).error || 'Login failed.'); return; }
+      await fetchServerStats();
+    } catch { setAuthError('Cannot reach the server.'); }
+    finally { setLoadingServer(false); }
   };
 
-  const handleLock = () => {
-    setServerStats(null);
-    setAdminKey('');
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('apiflow_admin_key');
-      document.cookie = 'apiflow_admin_key=; path=/; max-age=0';
-    }
+  const handleLock = async () => {
+    try {
+      const res = await fetch('/api/admin/logout', {method:'POST',credentials:'same-origin'});
+      if (!res.ok) throw new Error('Logout failed.');
+      setServerStats(null);
+    } catch { setAuthError('Logout failed. Your session may still be active; reconnect and try again.'); }
   };
 
   useEffect(() => {
     if (isOpen) {
       setLocalSummary(getStoredSummary());
-      if (adminKey) {
-        fetchServerStats(adminKey);
-      }
+      try { localStorage.removeItem('apiflow_admin_key'); } catch { /* Storage may be unavailable. */ }
+      void fetchServerStats();
     }
   }, [isOpen]);
 
@@ -104,6 +92,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
       maxWidth="xl"
     >
       <div className="space-y-4 text-xs">
+        {authError && <div role="alert" className="text-red-400 text-xs">{authError}</div>}
         {/* Top Metric Cards Grid (Local Client) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div className="p-3 bg-[#0C0E12] border border-[#2A2F45] rounded-lg">
@@ -244,7 +233,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
 
               <div className="flex justify-end pt-1">
                 <a
-                  href={`/stats?key=${encodeURIComponent(adminKey)}`}
+                  href="/stats"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
@@ -261,9 +250,6 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
                 <span className="text-[11px]">Server visitor metrics and server traffic are restricted to admin access.</span>
               </div>
 
-              {authError && (
-                <div className="text-red-400 text-[11px]">{authError}</div>
-              )}
 
               <form onSubmit={handleUnlock} className="flex gap-1.5 items-center pt-1">
                 <input

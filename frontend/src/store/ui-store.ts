@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ExecutionMode } from '@/types';
+import type { ExecutionMode, HttpMethod } from '@/types';
 
 interface UIState {
   // Theme
@@ -12,7 +12,7 @@ interface UIState {
   sidebarWidth: number;
   sidebarCollapsed: boolean;
   searchQuery: string;
-  methodFilter: 'ALL' | 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  methodFilter: 'ALL' | HttpMethod;
   // Modals
   codeSnippetOpen: boolean;
   importOpen: boolean;
@@ -27,7 +27,7 @@ interface UIState {
   executionMode: ExecutionMode;
   isExecuting: boolean;
   // Request panel active tab
-  requestTab: 'params' | 'headers' | 'body' | 'path' | 'tests';
+  requestTab: 'params' | 'headers' | 'body' | 'path' | 'tests' | 'mock';
   // Response panel active tab
   responseTab: 'body' | 'headers' | 'cookies' | 'diff' | 'tests';
 

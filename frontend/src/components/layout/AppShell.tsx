@@ -14,17 +14,17 @@ import { OnboardingTour } from '@/components/ui/OnboardingTour';
 
 export const AppShell: React.FC = () => {
   return (
-    <main className="flex-1 flex overflow-hidden relative">
+    <main className="flex-1 flex flex-col md:flex-row overflow-auto md:overflow-hidden relative">
       {/* Pane 1: Sidebar (Collection & Endpoint Explorer) */}
       <Sidebar />
 
       {/* Pane 2: Request Builder (Method, URL, Params, Body) */}
-      <div className="flex-1 flex flex-col min-w-[280px] overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-[440px] md:min-h-0 overflow-hidden">
         <RequestBuilder />
       </div>
 
       {/* Pane 3: Response Viewer (Status, Latency, Pretty JSON Tree, Headers) */}
-      <div className="flex-1 flex flex-col min-w-[260px] overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-[380px] md:min-h-0 overflow-hidden">
         <ResponseViewer />
       </div>
 

@@ -1,5 +1,13 @@
 import type { Assertion, AssertionResult, ApiResponse } from '@/types';
 
+function strictEquals(actual: unknown, expected: string): boolean {
+  if (typeof actual === 'string') return actual === expected;
+  try {
+    const parsed = JSON.parse(expected);
+    return actual !== undefined && JSON.stringify(actual) === JSON.stringify(parsed);
+  } catch { return false; }
+}
+
 /**
  * Safely extracts a value from a nested object using dot-notation or bracket notation.
  * e.g. "data.users.0.id" or "token" or "items.length"
@@ -16,6 +24,7 @@ function getValueByPath(obj: any, path: string): any {
     if (current === null || current === undefined) {
       return undefined;
     }
+    if (!Object.prototype.hasOwnProperty.call(Object(current), part)) return undefined;
     current = current[part];
   }
   return current;
@@ -76,21 +85,19 @@ export function evaluateAssertion(assertion: Assertion, response: ApiResponse): 
 
   switch (operator) {
     case 'equals': {
-      const isNum = !isNaN(Number(expectedValue)) && !isNaN(Number(actual));
-      passed = isNum ? Number(actual) === Number(expectedValue) : String(actual).toLowerCase() === expectedValue.toLowerCase();
+      passed = strictEquals(actual, expectedValue);
       message = passed ? `${targetDesc} equals ${expectedValue}` : `Expected ${expectedValue}, got ${actualStr}`;
       break;
     }
 
     case 'not_equals': {
-      const isNum = !isNaN(Number(expectedValue)) && !isNaN(Number(actual));
-      passed = isNum ? Number(actual) !== Number(expectedValue) : String(actual).toLowerCase() !== expectedValue.toLowerCase();
+      passed = !strictEquals(actual, expectedValue);
       message = passed ? `${targetDesc} does not equal ${expectedValue}` : `Expected value to differ from ${expectedValue}`;
       break;
     }
 
     case 'contains': {
-      passed = typeof actualStr === 'string' && actualStr.toLowerCase().includes(expectedValue.toLowerCase());
+      passed = actual !== undefined && actual !== null && actualStr.includes(expectedValue);
       message = passed ? `${targetDesc} contains "${expectedValue}"` : `"${actualStr}" does not contain "${expectedValue}"`;
       break;
     }
@@ -98,7 +105,7 @@ export function evaluateAssertion(assertion: Assertion, response: ApiResponse): 
     case 'less_than': {
       const numActual = Number(actual);
       const numExpected = Number(expectedValue);
-      passed = !isNaN(numActual) && !isNaN(numExpected) && numActual < numExpected;
+      passed = actual !== null && actual !== undefined && actual !== '' && expectedValue.trim() !== '' && !isNaN(numActual) && !isNaN(numExpected) && numActual < numExpected;
       message = passed ? `${targetDesc} (${numActual}) is less than ${numExpected}` : `Expected < ${numExpected}, got ${numActual}`;
       break;
     }
@@ -106,7 +113,7 @@ export function evaluateAssertion(assertion: Assertion, response: ApiResponse): 
     case 'greater_than': {
       const numActual = Number(actual);
       const numExpected = Number(expectedValue);
-      passed = !isNaN(numActual) && !isNaN(numExpected) && numActual > numExpected;
+      passed = actual !== null && actual !== undefined && actual !== '' && expectedValue.trim() !== '' && !isNaN(numActual) && !isNaN(numExpected) && numActual > numExpected;
       message = passed ? `${targetDesc} (${numActual}) is greater than ${numExpected}` : `Expected > ${numExpected}, got ${numActual}`;
       break;
     }

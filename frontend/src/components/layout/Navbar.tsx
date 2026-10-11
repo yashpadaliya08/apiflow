@@ -25,6 +25,7 @@ import { useCollectionStore } from '@/store/collection-store';
 import { useUIStore } from '@/store/ui-store';
 import { Button } from '@/components/ui/Button';
 import { AnalyticsModal } from '@/components/modals/AnalyticsModal';
+import { hasAdminSession } from '@/lib/admin-session';
 
 interface NavbarProps {
   currentView: 'studio' | 'landing';
@@ -87,10 +88,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const hasAdminQuery = window.location.search.includes('admin=');
-      const hasAdminCookie = document.cookie.includes('apiflow_admin_key');
-      setIsAdminActive(hasAdminQuery || hasAdminCookie);
-
       const handleKeyDown = (e: KeyboardEvent) => {
         // Ctrl+Shift+A or Cmd+Shift+A toggles Analytics
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
@@ -103,6 +100,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, []);
+
+  useEffect(() => {
+    let current = true;
+    void hasAdminSession().then(active => {
+      if (current) setIsAdminActive(active || new URLSearchParams(window.location.search).has('admin'));
+    });
+    return () => { current = false; };
+  }, [analyticsOpen]);
 
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
 

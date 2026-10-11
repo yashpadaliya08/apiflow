@@ -27,7 +27,7 @@ const STEPS: Step[] = [
     icon: <Rocket className="w-7 h-7" />,
     title: 'Welcome to APIFlow Studio',
     description:
-      'The 100% private, offline-first API testing and mock simulation studio. No login. No cloud. Your data never leaves your device.',
+      'Mock APIs locally without an account. Your workspace is stored in this browser; live requests pass through the configured proxy.',
     highlight: "Let's take a 30-second tour of the three main panels.",
     color: 'from-indigo-500 to-purple-600',
   },
@@ -60,14 +60,14 @@ const STEPS: Step[] = [
     title: 'Live Mode — Real Network Calls',
     description:
       'In Live mode, requests are routed through the built-in CORS proxy gateway, letting you call real APIs from the browser without CORS errors. Simply toggle the mode selector to "Live".',
-    highlight: 'Your API keys are sent directly — they are never logged or stored.',
+    highlight: 'Live headers and bodies pass through the proxy. Self-host for sensitive workloads.',
     color: 'from-orange-500 to-amber-600',
   },
   {
     icon: <Code2 className="w-7 h-7" />,
     title: '③ Right Panel — Response Viewer',
     description:
-      'See the status code, latency, full response body (with syntax highlighting and JSON tree view), response headers, cookies, and more. Use the "Code" button to export a ready-to-paste curl / fetch / axios snippet.',
+      'See the status code, latency, full response body, response headers and assertion results. Upstream cookies are not forwarded to this app. Use the "Code" button to export a ready-to-paste curl / fetch / axios snippet.',
     highlight: 'The Diff tab shows what changed between two responses.',
     color: 'from-pink-500 to-rose-600',
   },

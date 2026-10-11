@@ -14,7 +14,7 @@ export const App: React.FC = () => {
     if (typeof window !== 'undefined') {
       const search = window.location.search;
       const hash = window.location.hash;
-      if (search.includes('mock=') || search.includes('view=studio') || hash === '#studio') {
+      if (search.includes('mock=') || hash.startsWith('#mock=') || search.includes('view=studio') || hash === '#studio') {
         return 'studio';
       }
     }

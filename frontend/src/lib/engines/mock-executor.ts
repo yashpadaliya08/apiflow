@@ -1,5 +1,7 @@
+import { prepareRequest, sendProxyRequest } from '@/lib/execution/request';
+import { generateSchemaValue } from './schema-generator';
 import { faker } from '@faker-js/faker';
-import type { Endpoint, MockResponse, StatusCode } from '@/types';
+import type { Endpoint, MockResponse, LiveResponse, StatusCode, KeyValue } from '@/types';
 import {
   generateListResponse,
   generateDetailResponse,
@@ -30,6 +32,10 @@ const mockHeaders = (): Record<string, string> => ({
 // Response body builders by status code
 // ═══════════════════════════════════════════════════
 function buildResponseBody(endpoint: Endpoint, status: StatusCode): unknown {
+  if (status >= 200 && status < 300) {
+    if (endpoint.responseExample !== undefined) return structuredClone(endpoint.responseExample);
+    if (endpoint.responseSchema) return generateSchemaValue(endpoint.responseSchema, endpoint.mockSeed);
+  }
   const path = endpoint.path.toLowerCase();
   const method = endpoint.method;
 
@@ -131,7 +137,7 @@ function locationHeader(endpoint: Endpoint, status: StatusCode): Record<string, 
 // ═══════════════════════════════════════════════════
 export async function executeMock(endpoint: Endpoint): Promise<MockResponse> {
   const status = endpoint.mockScenario;
-  const latency = randomLatency();
+  const latency = endpoint.mockLatency ?? randomLatency();
 
   // Simulate realistic network latency
   await new Promise(resolve => setTimeout(resolve, latency));
@@ -161,86 +167,22 @@ export async function executeMock(endpoint: Endpoint): Promise<MockResponse> {
 export async function executeLive(
   endpoint: Endpoint,
   baseUrl: string,
-  headers: Record<string, string>
-): Promise<MockResponse> {
+  headers: Record<string, string>,
+  variables: KeyValue[] = [],
+  signal?: AbortSignal
+): Promise<LiveResponse> {
+  const prepared = prepareRequest(endpoint, baseUrl, variables);
   const start = performance.now();
-
-  // 1. Substitute path parameters (:id or {id})
-  let resolvedPath = endpoint.path;
-  (endpoint.pathParams || []).filter((p) => p.enabled && p.key).forEach((p) => {
-    resolvedPath = resolvedPath.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
-  });
-
-  // 2. Append query parameters
-  const enabledQueryParams = (endpoint.queryParams || []).filter((q) => q.enabled && q.key);
-  const queryString = enabledQueryParams.length > 0
-    ? (resolvedPath.includes('?') ? '&' : '?') + enabledQueryParams.map((q) => `${encodeURIComponent(q.key)}=${encodeURIComponent(q.value)}`).join('&')
-    : '';
-
-  const isAbsolute = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
-  let fullTargetUrl: string;
-
-  if (isAbsolute) {
-    fullTargetUrl = `${resolvedPath}${queryString}`;
-  } else {
-    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    const cleanPath = resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`;
-    fullTargetUrl = `${cleanBase}${cleanPath}${queryString}`;
-  }
-
-  const options: RequestInit = {
-    method: endpoint.method,
-    headers: { 'Content-Type': 'application/json', ...headers },
-  };
-
-  if (['POST', 'PUT', 'PATCH'].includes(endpoint.method) && endpoint.requestBody) {
-    options.body = endpoint.requestBody;
-  }
-
-  // 3. Dispatch through CORS proxy
-  let res: Response;
-  const proxyUrl = `/proxy?url=${encodeURIComponent(fullTargetUrl)}`;
-
-  try {
-    res = await fetch(proxyUrl, options);
-    // If proxy returned a 404 or backend is not reachable, attempt direct request
-    if (res.status === 404 || res.status === 502) {
-      try {
-        const directRes = await fetch(fullTargetUrl, options);
-        res = directRes;
-      } catch {
-        // Keep original proxy response if direct fetch fails CORS
-      }
-    }
-  } catch {
-    // If proxy request errored out, try direct fetch
-    res = await fetch(fullTargetUrl, options);
-  }
-
-  const latency = Math.round(performance.now() - start);
-
-  let body: unknown;
-  const rawText = await res.text();
-  try {
-    body = JSON.parse(rawText);
-  } catch {
-    body = rawText;
-  }
-
-  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
-  const size = new Blob([bodyStr]).size;
-
-  const resHeaders: Record<string, string> = {};
-  res.headers.forEach((v, k) => { resHeaders[k] = v; });
-
+  const result = await sendProxyRequest({
+    url: prepared.url, method: prepared.method,
+    headers: { ...prepared.headers, ...headers }, body: prepared.body,
+  }, signal);
+  let body: unknown = result.body;
+  try { body = JSON.parse(result.body); } catch { /* Preserve text responses. */ }
   return {
-    mode: 'mock', // reuse same shape
-    status: res.status,
-    statusText: res.statusText || (res.ok ? 'OK' : 'Error'),
-    headers: resHeaders,
-    body,
-    latency,
-    size,
-    timestamp: new Date().toISOString(),
+    mode: 'live', url: prepared.url, status: result.status, statusText: result.statusText,
+    headers: result.headers, body,
+    latency: Math.round(performance.now() - start),
+    size: result.size, timestamp: new Date().toISOString(),
   };
 }

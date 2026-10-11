@@ -1,73 +1,43 @@
-const CACHE_NAME = 'apiflow-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
-  self.skipWaiting();
+const CACHE_NAME = 'apiflow-__BUILD_ID__';
+const BUILD_ASSETS = /* __PRECACHE__ */ [];
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg'];
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    if (CACHE_NAME.includes('__BUILD_ID__')) throw new Error('Offline caching requires a production build.');
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll([...new Set([...STATIC_ASSETS, ...BUILD_ASSETS])]);
+  })());
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    for (const key of await caches.keys()) if (key.startsWith('apiflow-') && key !== CACHE_NAME) await caches.delete(key);
+    await self.clients.claim();
+  })());
 });
-
-self.addEventListener('fetch', (event) => {
-  // Pass through non-GET requests and proxy requests
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/') || event.request.url.includes('/proxy')) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch in background to update cache
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
-            }
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // If offline and requesting navigation, return index.html
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-        });
-    })
-  );
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Whitelist app resources. Never store admin, API, proxy or arbitrary pages.
+  const navigation = url.pathname === '/' || url.pathname === '/index.html';
+  // A query changes client-side state, not the static app shell. Never persist
+  // the query URL (which may contain a legacy shared payload or credentials).
+  if (url.search && !navigation) return;
+  const asset = url.pathname.startsWith('/assets/') || ['/manifest.json','/favicon.svg'].includes(url.pathname);
+  if (!navigation && !asset) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Keep the HTML and lazy chunks from the same release until the waiting
+    // worker activates. Network-first HTML could mix a new shell with old chunks.
+    const cachedBuild = await cache.match(navigation ? '/index.html' : event.request);
+    if (cachedBuild) return cachedBuild;
+    try {
+      const response = await fetch(event.request);
+      if (!url.search && response.ok && response.type === 'basic') await cache.put(event.request, response.clone());
+      return response;
+    } catch (error) {
+      const cached = await cache.match(navigation ? '/index.html' : event.request);
+      if (cached) return cached;
+      throw error;
+    }
+  })());
 });

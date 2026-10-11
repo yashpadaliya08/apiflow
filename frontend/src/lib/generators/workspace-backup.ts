@@ -1,6 +1,15 @@
 import { db } from '@/lib/db/dexie-db';
 import type { Collection, Endpoint, Environment } from '@/types';
 import { downloadFile } from './import-export';
+import { z } from 'zod';
+import { collectionSchema, endpointSchema, environmentSchema } from '@/lib/validation';
+
+const backupSchema = z.object({
+  version: z.literal('1.0'),
+  collections: z.array(collectionSchema).max(500),
+  endpoints: z.array(endpointSchema).max(10000),
+  environments: z.array(environmentSchema).max(500).default([]),
+});
 
 export interface WorkspaceBackup {
   version: '1.0';
@@ -49,26 +58,16 @@ export async function restoreWorkspaceBackup(jsonString: string): Promise<{
     throw new Error('Invalid JSON file format.');
   }
 
-  if (!parsed || !Array.isArray(parsed.collections) || !Array.isArray(parsed.endpoints)) {
-    throw new Error('Backup file is missing required collections or endpoints structure.');
-  }
-
-  // Restore collections
-  for (const col of parsed.collections) {
-    await db.collections.put(col);
-  }
-
-  // Restore endpoints
-  for (const ep of parsed.endpoints) {
-    await db.endpoints.put(ep);
-  }
-
-  // Restore environments if present
-  if (Array.isArray(parsed.environments)) {
-    for (const env of parsed.environments) {
-      await db.environments.put(env);
-    }
-  }
+  const validated = backupSchema.safeParse(parsed);
+  if (!validated.success) throw new Error('Backup validation failed. Check its version, collections, endpoints and environments. Nothing was restored.');
+  parsed = validated.data;
+  const collectionIds = new Set(parsed.collections.map((col: Collection) => col.id));
+  if (parsed.endpoints.some((ep: Endpoint) => !collectionIds.has(ep.collectionId))) throw new Error('Backup contains endpoints without a matching collection.');
+  await db.transaction('rw', db.collections, db.endpoints, db.environments, async () => {
+    await db.collections.bulkPut(parsed.collections);
+    await db.endpoints.bulkPut(parsed.endpoints);
+    await db.environments.bulkPut(parsed.environments);
+  });
 
   return {
     collectionCount: parsed.collections.length,

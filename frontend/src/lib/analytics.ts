@@ -64,7 +64,9 @@ export function trackEvent(
 ) {
   const entry: AnalyticsEvent = {
     event,
-    properties,
+    properties: Object.fromEntries(Object.entries(properties).filter(([key, value]) =>
+      ['mode', 'status', 'latency', 'method'].includes(key) && ['string', 'number'].includes(typeof value)
+    )),
     timestamp: new Date().toISOString(),
   };
 
@@ -127,11 +129,9 @@ export function trackPageView() {
 
     const visitPayload = {
       event: 'page_view',
-      referrer: document.referrer || 'direct',
-      refParam,
-      path: window.location.pathname,
-      search: window.location.search,
-      screen: `${window.innerWidth}x${window.innerHeight}`,
+      referrer: document.referrer ? new URL(document.referrer).origin : 'direct',
+      refParam: ['reddit', 'twitter', 'hn', 'github', 'linkedin', 'producthunt'].includes(refParam) ? refParam : '',
+      path: window.location.pathname === '/' ? '/' : '/page',
       timestamp: new Date().toISOString(),
     };
 
@@ -150,4 +150,3 @@ export function trackPageView() {
     // Ignore error
   }
 }
-

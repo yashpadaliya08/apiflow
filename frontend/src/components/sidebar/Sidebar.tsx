@@ -118,8 +118,8 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      style={{ width: sidebarWidth }}
-      className="h-full bg-[#0C0E12] border-r border-[#2A2F45] flex flex-col flex-shrink-0 select-none text-xs"
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+      className="h-56 md:h-full w-full md:w-[var(--sidebar-width)] bg-[#0C0E12] border-r border-[#2A2F45] flex flex-col flex-shrink-0 select-none text-xs"
     >
       {/* Top Header: Collection name + Run + New */}
       <div className="p-3 border-b border-[#2A2F45]/80 bg-[#141720]/60 flex items-center justify-between gap-2 backdrop-blur-sm">

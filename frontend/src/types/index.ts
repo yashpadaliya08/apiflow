@@ -2,7 +2,7 @@
 // APIFlow Studio — Core Type Definitions
 // ═══════════════════════════════════════════════════
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export type HttpMethod = 'GET' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export type StatusCode = 200 | 201 | 400 | 401 | 403 | 404 | 500;
 
@@ -59,6 +59,10 @@ export interface Endpoint {
   requestBody: string; // JSON string
   mockScenario: StatusCode;
   assertions?: Assertion[];
+  responseSchema?: Record<string, unknown>;
+  responseExample?: unknown;
+  mockSeed?: number;
+  mockLatency?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +72,7 @@ export interface Collection {
   name: string;
   description?: string;
   baseUrl: string;
+  variables?: KeyValue[];
   createdAt: string;
   updatedAt: string;
 }

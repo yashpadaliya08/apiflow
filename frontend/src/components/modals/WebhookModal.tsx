@@ -1,3 +1,5 @@
+import { buildWebhookHeaders } from '@/lib/webhooks/signatures';
+import { sendProxyRequest } from '@/lib/execution/request';
 import React, { useState } from 'react';
 import {
   Radio,
@@ -52,7 +54,7 @@ const WEBHOOK_PRESETS: WebhookPreset[] = [
     id: 'github-pull-request',
     provider: 'GitHub',
     eventName: 'pull_request.opened',
-    signatureHeader: 'X-GitHub-Event',
+    signatureHeader: 'X-Hub-Signature-256',
     defaultPayload: {
       action: 'opened',
       number: 42,
@@ -93,7 +95,7 @@ const WEBHOOK_PRESETS: WebhookPreset[] = [
     id: 'shopify-order-created',
     provider: 'Shopify',
     eventName: 'orders/create',
-    signatureHeader: 'X-Shopify-Topic',
+    signatureHeader: 'X-Shopify-Hmac-Sha256',
     defaultPayload: {
       id: 5238749823,
       email: 'customer@store.com',
@@ -124,7 +126,7 @@ export const WebhookModal: React.FC = () => {
 
   const [selectedPresetId, setSelectedPresetId] = useState<string>(WEBHOOK_PRESETS[0].id);
   const [targetUrl, setTargetUrl] = useState<string>('http://localhost:3000/api/webhook');
-  const [signingSecret, setSigningSecret] = useState<string>('whsec_test_secret_key_88492048');
+  const [signingSecret, setSigningSecret] = useState<string>('');
   const [payloadString, setPayloadString] = useState<string>(() =>
     JSON.stringify(WEBHOOK_PRESETS[0].defaultPayload, null, 2)
   );
@@ -159,35 +161,24 @@ export const WebhookModal: React.FC = () => {
       // Validate JSON
       JSON.parse(payloadString);
 
-      // Simulated signature / hash token
-      const mockSignature = `t=${Math.floor(Date.now() / 1000)},v1=${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}`;
-
-      // Dispatch through proxy or direct fetch
-      const isLocalhost = targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1');
-      const fetchUrl = isLocalhost ? targetUrl : `/proxy?url=${encodeURIComponent(targetUrl)}`;
-
-      const response = await fetch(fetchUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [activePreset.signatureHeader]: mockSignature,
-          'X-Webhook-Event': activePreset.eventName,
-          'User-Agent': 'APIFlow-Studio-Webhook-Simulator/1.0',
-        },
-        body: payloadString,
-      });
-
-      const latency = Math.round(performance.now() - startTime);
-      let text = '';
-      try {
-        text = await response.text();
-      } catch {
-        text = '(Empty response body)';
+      const headers = await buildWebhookHeaders(activePreset.provider, activePreset.eventName, payloadString, signingSecret);
+      const target = new URL(targetUrl);
+      if (!['http:', 'https:'].includes(target.protocol) || target.username || target.password) throw new Error('Use an HTTP(S) target without embedded credentials.');
+      const isLocalhost = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname);
+      const signal = AbortSignal.timeout(30000);
+      let status: number, statusText: string, text: string;
+      if (isLocalhost) {
+        const response = await fetch(target.href, { method: 'POST', headers, body: payloadString, signal, credentials: 'omit', redirect: 'error' });
+        status = response.status; statusText = response.statusText; text = await response.text();
+      } else {
+        const result = await sendProxyRequest({ url: target.href, method: 'POST', headers, body: payloadString }, signal);
+        status = result.status; statusText = result.statusText; text = result.body;
       }
+      const latency = Math.round(performance.now() - startTime);
 
       const resObj = {
-        status: response.status,
-        statusText: response.statusText,
+        status,
+        statusText,
         latency,
         responseBody: text,
       };
@@ -198,7 +189,7 @@ export const WebhookModal: React.FC = () => {
           id: `wh-hist-${Date.now()}`,
           eventName: activePreset.eventName,
           targetUrl,
-          status: response.status,
+          status,
           latency,
           timestamp: new Date().toLocaleTimeString(),
           responseBody: text.substring(0, 200),
@@ -244,7 +235,7 @@ export const WebhookModal: React.FC = () => {
     <Modal
       isOpen={webhookOpen}
       onClose={() => setWebhookOpen(false)}
-      title="Simulated Webhook Dispatcher & Event Receiver"
+      title="Signed Webhook Dispatcher"
       description="Simulate incoming webhook events from Stripe, GitHub, Clerk, and Shopify directly to your local backend handler."
       maxWidth="2xl"
     >
@@ -345,7 +336,7 @@ export const WebhookModal: React.FC = () => {
         <div className="pt-2 flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-[#0C0E12] border border-[#2A2F45]/80 rounded-lg">
             <p className="text-[11px] text-white/50 leading-relaxed flex-1 min-w-0 pr-2">
-              Dispatches a signed POST request with computed signature headers to verify local consumer handlers.
+              Signs the exact payload with your handler’s secret. Local handlers must allow this app’s origin and signature headers through CORS.
             </p>
 
             <Button

@@ -2,9 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { serviceWorkerBuild } from './build/service-worker.mjs';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), serviceWorkerBuild()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -19,7 +20,7 @@ export default defineConfig({
       },
       '/api': {
         target: 'http://localhost:5000',
-        changeOrigin: true,
+        changeOrigin: false,
       },
       '/health': {
         target: 'http://localhost:5000',
@@ -28,6 +29,7 @@ export default defineConfig({
     },
   },
   build: {
+    manifest: 'asset-manifest.json',
     target: 'esnext',
     cssCodeSplit: true,
     chunkSizeWarningLimit: 600,

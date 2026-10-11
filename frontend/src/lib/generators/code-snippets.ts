@@ -1,125 +1,42 @@
 import type { Endpoint, KeyValue } from '@/types';
+import { prepareRequest } from '@/lib/execution/request';
 
-// ═══════════════════════════════════════════════════
-// Build full URL with path params substituted
-// ═══════════════════════════════════════════════════
-function buildUrl(baseUrl: string, path: string, pathParams: KeyValue[]): string {
-  let resolved = path;
-  pathParams.filter(p => p.enabled).forEach(p => {
-    resolved = resolved.replace(`:${p.key}`, p.value).replace(`{${p.key}}`, p.value);
-  });
-  return `${baseUrl}${resolved}`;
+const quoteShell = (text: string) => "'" + text.replace(/'/g, "'\\''") + "'";
+const pythonString = (text: string) => "'" + text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r/g, '\\r').replace(/\n/g, '\\n') + "'";
+
+export function buildCurl(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []): string {
+  const req = prepareRequest(endpoint, baseUrl, variables);
+  return ['curl -X ' + req.method + ' ' + quoteShell(req.url),
+    ...Object.entries(req.headers).map(([k,v]) => '-H ' + quoteShell(k + ': ' + v)),
+    ...(req.body !== undefined ? ['--data-raw ' + quoteShell(req.body)] : []),
+  ].join(' \\\n  ');
 }
-
-// ═══════════════════════════════════════════════════
-// Build query string
-// ═══════════════════════════════════════════════════
-function buildQuery(params: KeyValue[]): string {
-  const enabled = params.filter(p => p.enabled && p.key);
-  if (!enabled.length) return '';
-  return '?' + enabled.map(p => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`).join('&');
+export function buildTypeScript(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []): string {
+  const req = prepareRequest(endpoint, baseUrl, variables);
+  return `const response = await fetch(${JSON.stringify(req.url)}, ${JSON.stringify({ method:req.method, headers:req.headers, ...(req.body !== undefined ? {body:req.body} : {}) }, null, 2)});
+console.log(response.status);
+console.log(await response.text());`;
 }
-
-// ═══════════════════════════════════════════════════
-// cURL snippet
-// ═══════════════════════════════════════════════════
-export function buildCurl(endpoint: Endpoint, baseUrl: string): string {
-  const url = buildUrl(baseUrl, endpoint.path, endpoint.pathParams) + buildQuery(endpoint.queryParams);
-  const headers = endpoint.headers
-    .filter(h => h.enabled && h.key)
-    .map(h => `  -H '${h.key}: ${h.value}'`)
-    .join(' \\\n');
-
-  const body = ['POST', 'PUT', 'PATCH'].includes(endpoint.method) && endpoint.requestBody
-    ? `  -d '${endpoint.requestBody.replace(/'/g, "'\\''")}' \\\n`
-    : '';
-
-  return `curl -X ${endpoint.method} '${url}' \\
-${headers ? headers + ' \\\n' : ''}${body}  --compressed`;
-}
-
-// ═══════════════════════════════════════════════════
-// TypeScript fetch snippet
-// ═══════════════════════════════════════════════════
-export function buildTypeScript(endpoint: Endpoint, baseUrl: string): string {
-  const url = buildUrl(baseUrl, endpoint.path, endpoint.pathParams) + buildQuery(endpoint.queryParams);
-  const headersObj = Object.fromEntries(
-    endpoint.headers.filter(h => h.enabled && h.key).map(h => [h.key, h.value])
-  );
-  const hasBody = ['POST', 'PUT', 'PATCH'].includes(endpoint.method) && endpoint.requestBody;
-
-  return `const response = await fetch('${url}', {
-  method: '${endpoint.method}',
-  headers: ${JSON.stringify({ 'Content-Type': 'application/json', ...headersObj }, null, 4)},${hasBody ? `
-  body: JSON.stringify(${endpoint.requestBody}),` : ''}
-});
-
-const data = await response.json();
-console.log(data);`;
-}
-
-// ═══════════════════════════════════════════════════
-// Axios snippet
-// ═══════════════════════════════════════════════════
-export function buildAxios(endpoint: Endpoint, baseUrl: string): string {
-  const url = buildUrl(baseUrl, endpoint.path, endpoint.pathParams);
-  const params = endpoint.queryParams.filter(p => p.enabled && p.key);
-  const headersObj = Object.fromEntries(
-    endpoint.headers.filter(h => h.enabled && h.key).map(h => [h.key, h.value])
-  );
-  const hasBody = ['POST', 'PUT', 'PATCH'].includes(endpoint.method) && endpoint.requestBody;
-
+export function buildAxios(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []): string {
+  const req = prepareRequest(endpoint, baseUrl, variables);
   return `import axios from 'axios';
-
-const { data } = await axios.${endpoint.method.toLowerCase()}('${url}', ${hasBody ? `${endpoint.requestBody},\n` : ''}{
-  headers: ${JSON.stringify(headersObj, null, 4)},${params.length ? `
-  params: ${JSON.stringify(Object.fromEntries(params.map(p => [p.key, p.value])), null, 4)},` : ''}
-});
-
-console.log(data);`;
+const response = await axios.request(${JSON.stringify({url:req.url,method:req.method,headers:req.headers,...(req.body !== undefined ? {data:req.body} : {})},null,2)});
+console.log(response.data);`;
 }
+export function buildPython(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []): string {
+  const req = prepareRequest(endpoint, baseUrl, variables);
+  // JSON is parsed at runtime so true/false/null and Unicode remain valid Python.
+  return `import json
+import requests
 
-// ═══════════════════════════════════════════════════
-// Python requests snippet
-// ═══════════════════════════════════════════════════
-export function buildPython(endpoint: Endpoint, baseUrl: string): string {
-  const url = buildUrl(baseUrl, endpoint.path, endpoint.pathParams);
-  const params = endpoint.queryParams.filter(p => p.enabled && p.key);
-  const headersObj = Object.fromEntries(
-    endpoint.headers.filter(h => h.enabled && h.key).map(h => [h.key, h.value])
-  );
-  const hasBody = ['POST', 'PUT', 'PATCH'].includes(endpoint.method) && endpoint.requestBody;
-
-  return `import requests
-
-url = "${url}"
-headers = ${JSON.stringify(headersObj, null, 4).replace(/"/g, '"')}
-${params.length ? `params = ${JSON.stringify(Object.fromEntries(params.map(p => [p.key, p.value])), null, 4)}\n` : ''}${hasBody ? `payload = ${endpoint.requestBody}\n` : ''}
-response = requests.${endpoint.method.toLowerCase()}(
-    url,
-    headers=headers,${params.length ? '\n    params=params,' : ''}${hasBody ? '\n    json=payload,' : ''}
-)
-
+url = ${pythonString(req.url)}
+headers = json.loads(${pythonString(JSON.stringify(req.headers))})
+${req.body !== undefined ? 'payload = ' + pythonString(req.body) + '\n' : ''}
+response = requests.request(${pythonString(req.method)}, url, headers=headers${req.body !== undefined ? ', data=payload.encode("utf-8")' : ''}, timeout=30)
 print(response.status_code)
-print(response.json())`;
+print(response.text)`;
 }
-
-// ═══════════════════════════════════════════════════
-// All snippets
-// ═══════════════════════════════════════════════════
 export function buildAllSnippets(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []) {
-  // If variables provided, resolve baseUrl
-  let resolvedBase = baseUrl;
-  variables.filter(v => v.enabled).forEach(v => {
-    resolvedBase = resolvedBase.replace(`{{${v.key}}}`, v.value);
-  });
-
-  return {
-    curl: buildCurl(endpoint, resolvedBase),
-    typescript: buildTypeScript(endpoint, resolvedBase),
-    axios: buildAxios(endpoint, resolvedBase),
-    python: buildPython(endpoint, resolvedBase),
-  };
+  return { curl:buildCurl(endpoint,baseUrl,variables), typescript:buildTypeScript(endpoint,baseUrl,variables), axios:buildAxios(endpoint,baseUrl,variables), python:buildPython(endpoint,baseUrl,variables) };
 }
-
 export const generateAllSnippets = buildAllSnippets;

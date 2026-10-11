@@ -12,12 +12,15 @@ export const SnippetModal: React.FC = () => {
   const [activeLang, setActiveLang] = useState<'curl' | 'typescript' | 'axios' | 'python'>('curl');
   const [copied, setCopied] = useState(false);
 
-  if (!activeEndpoint) return null;
+  if (!activeEndpoint || !codeSnippetOpen) return null;
 
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
   const baseUrl = activeCollection?.baseUrl || 'https://api.enterprise.dev';
 
-  const snippets = generateAllSnippets(activeEndpoint, baseUrl, activeEnv?.variables || []);
+  let snippets = { curl:'', typescript:'', axios:'', python:'' };
+  let error = '';
+  try { snippets = generateAllSnippets(activeEndpoint, baseUrl, [...(activeEnv?.variables || []), ...(activeCollection?.variables || [])]); }
+  catch (err) { error = err instanceof Error ? err.message : 'Check your request settings.'; }
 
   const handleCopy = async () => {
     await copyToClipboard(snippets[activeLang]);
@@ -41,6 +44,7 @@ export const SnippetModal: React.FC = () => {
       maxWidth="2xl"
     >
       <div className="space-y-3">
+        {error && <p role="alert" className="text-red-300 text-xs">{error}</p>}
         {/* Language Tabs & Copy Button */}
         <div className="flex items-center justify-between border-b border-[#2A2F45] pb-2">
           <div className="flex items-center gap-1">
@@ -61,6 +65,7 @@ export const SnippetModal: React.FC = () => {
 
           <button
             onClick={handleCopy}
+            disabled={!!error}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#1C2030] hover:bg-[#2A2F48] border border-[#2A2F45] text-xs text-white/90 transition-colors"
           >
             {copied ? (

@@ -13,6 +13,7 @@ interface CollectionState {
   activeEnvironmentId: string | null;
   history: HistoryEntry[];
   isLoading: boolean;
+  saveError: string | null;
 
   // Initializer
   init: () => Promise<void>;
@@ -46,7 +47,7 @@ interface CollectionState {
 }
 
 // Debounce timer for saving endpoint drafts
-let saveDraftTimer: ReturnType<typeof setTimeout> | null = null;
+const draftWrites = new Map<string, Promise<void>>();
 
 const STORAGE_KEY_COL = 'apiflow_active_col';
 const STORAGE_KEY_EP = 'apiflow_active_ep';
@@ -60,6 +61,7 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   activeEnvironmentId: null,
   history: [],
   isLoading: true,
+  saveError: null,
 
   init: async () => {
     try {
@@ -106,8 +108,8 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
         }
 
         // Check if URL has ?mock= payload from an interactive shared link
-        if (typeof window !== 'undefined' && window.location.search.includes('mock=')) {
-          const urlParams = new URLSearchParams(window.location.search);
+        if (typeof window !== 'undefined' && (window.location.search.includes('mock=') || window.location.hash.startsWith('#mock='))) {
+          const urlParams = new URLSearchParams(window.location.hash.startsWith('#mock=') ? window.location.hash.slice(1) : window.location.search);
           const mockParam = urlParams.get('mock');
           if (mockParam) {
             const decoded = decodeEndpointFromUrl(mockParam);
@@ -126,6 +128,11 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
                 headers: decoded.headers || [],
                 requestBody: decoded.requestBody || '',
                 mockScenario: decoded.mockScenario || 200,
+                assertions: decoded.assertions,
+                responseSchema: decoded.responseSchema,
+                responseExample: decoded.responseExample,
+                mockSeed: decoded.mockSeed,
+                mockLatency: decoded.mockLatency,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               };
@@ -158,7 +165,8 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
         finalEnvs = [defaultEnv];
         activeEnvId = defaultEnv.id;
       } else {
-        const active = envs.find((e) => e.isActive) || envs[0];
+        const savedEnvId = typeof window !== 'undefined' ? localStorage.getItem('apiflow_active_env') : null;
+        const active = envs.find((e) => e.id === savedEnvId) || envs.find((e) => e.isActive) || envs[0];
         activeEnvId = active?.id || null;
       }
 
@@ -184,6 +192,8 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   selectCollection: async (id: string) => {
+    await get().saveActiveEndpointDraft();
+    if (get().saveError) return;
     const col = await db.collections.get(id);
     if (!col) return;
     const endpoints = await db.endpoints.where('collectionId').equals(id).toArray();
@@ -298,6 +308,8 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   selectEndpoint: async (id: string | null) => {
+    await get().saveActiveEndpointDraft();
+    if (get().saveError) return;
     if (!id) {
       set({ activeEndpoint: null });
       return;
@@ -378,21 +390,18 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
     const active = get().activeEndpoint;
     if (!active) return;
 
-    // Debounce IndexedDB writes to 250ms to prevent lock contention on rapid typing
-    if (saveDraftTimer) clearTimeout(saveDraftTimer);
-    saveDraftTimer = setTimeout(async () => {
-      try {
-        const latest = get().activeEndpoint;
-        if (latest) {
-          await db.endpoints.put({ ...latest, updatedAt: new Date().toISOString() });
-        }
-      } catch (err) {
-        console.error('[CollectionStore] Failed to save draft:', err);
-      }
-    }, 250);
+    // Capture this endpoint now and serialize writes for its ID.
+    const pending = (draftWrites.get(active.id) || Promise.resolve()).then(async () => {
+      await db.endpoints.put({ ...active, updatedAt: new Date().toISOString() });
+      set({ saveError: null });
+    }).catch(() => { set({ saveError: 'Could not save changes. Check available browser storage and export a backup.' }); });
+    draftWrites.set(active.id, pending);
+    await pending;
+    if (draftWrites.get(active.id) === pending) draftWrites.delete(active.id);
   },
 
   deleteEndpoint: async (id: string) => {
+    await draftWrites.get(id);
     await db.endpoints.delete(id);
     const activeCol = get().activeCollection;
     if (activeCol) {
@@ -426,6 +435,10 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
 
   setActiveEnvironmentId: (id: string | null) => {
     set({ activeEnvironmentId: id });
+    if (typeof window !== 'undefined') {
+      if (id) localStorage.setItem('apiflow_active_env', id);
+      else localStorage.removeItem('apiflow_active_env');
+    }
   },
 
   loadHistory: async () => {
@@ -434,7 +447,10 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   },
 
   addHistoryEntry: async (entry: Omit<HistoryEntry, 'id'>) => {
-    await db.history.add(entry as HistoryEntry);
+    await db.transaction('rw', db.history, async () => {
+      await db.history.add(entry as HistoryEntry);
+      await db.history.orderBy('id').reverse().offset(50).delete();
+    });
     const history = await db.history.orderBy('id').reverse().limit(50).toArray();
     set({ history });
   },

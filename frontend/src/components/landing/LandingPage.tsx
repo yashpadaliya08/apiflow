@@ -18,8 +18,10 @@ import {
   RefreshCw,
   Sliders,
   Terminal,
+  Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { generateSchemaValue } from '@/lib/engines/schema-generator';
 
 interface LandingPageProps {
   onLaunchStudio: () => void;
@@ -27,12 +29,56 @@ interface LandingPageProps {
 
 type DemoScene = 'mock' | 'assertions' | 'webhooks' | 'pwa';
 
+const SCHEMA_PRESETS: Record<'user' | 'order' | 'event', Record<string, unknown>> = {
+  user: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      name: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      role: { type: 'string', enum: ['Senior Architect', 'Frontend Lead', 'DevOps Engineer', 'Product Manager'] },
+      active: { type: 'boolean' },
+      createdAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  order: {
+    type: 'object',
+    properties: {
+      orderId: { type: 'string', format: 'uuid' },
+      customer: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      amount: { type: 'number', minimum: 25, maximum: 850 },
+      currency: { type: 'string', enum: ['USD', 'EUR', 'GBP'] },
+      status: { type: 'string', enum: ['paid', 'processing', 'dispatched'] },
+    },
+  },
+  event: {
+    type: 'object',
+    properties: {
+      eventId: { type: 'string', format: 'uuid' },
+      event: { type: 'string', enum: ['api_request', 'user_signup', 'checkout_completed'] },
+      timestamp: { type: 'string', format: 'date-time' },
+      latencyMs: { type: 'integer', minimum: 14, maximum: 320 },
+      success: { type: 'boolean' },
+    },
+  },
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   // Demo player state
   const [activeScene, setActiveScene] = useState<DemoScene>('mock');
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [progress, setProgress] = useState<number>(0);
   const [demoStatus, setDemoStatus] = useState<number>(200);
+
+  // Live in-place schema editor state
+  const [schemaPreset, setSchemaPreset] = useState<'user' | 'order' | 'event'>('user');
+  const [schemaText, setSchemaText] = useState<string>(() => JSON.stringify(SCHEMA_PRESETS.user, null, 2));
+  const [mockSeed, setMockSeed] = useState<number>(42);
+  const [activeEditorTab, setActiveEditorTab] = useState<'schema' | 'request'>('schema');
+  const [schemaError, setSchemaError] = useState<string | null>(null);
+  const [liveResponse, setLiveResponse] = useState<unknown>(null);
+  const [copiedMock, setCopiedMock] = useState<boolean>(false);
 
   // Assertion simulation toggles
   const [assertionFailScenario, setAssertionFailScenario] = useState<boolean>(false);
@@ -42,6 +88,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
   const [webhookProvider, setWebhookProvider] = useState<'stripe' | 'github' | 'clerk'>('stripe');
 
   const [isDemoVisible, setIsDemoVisible] = useState<boolean>(false);
+
+  // Live generator computation
+  useEffect(() => {
+    if (demoStatus >= 200 && demoStatus < 300) {
+      try {
+        const parsed = JSON.parse(schemaText);
+        const generated = generateSchemaValue(parsed, mockSeed);
+        setLiveResponse(generated);
+        setSchemaError(null);
+      } catch (err) {
+        setSchemaError((err as Error).message || 'Invalid JSON Schema');
+      }
+    } else {
+      setSchemaError(null);
+      if (demoStatus === 400) {
+        setLiveResponse({ statusCode: 400, error: 'Bad Request', message: 'Invalid parameter format' });
+      } else if (demoStatus === 401) {
+        setLiveResponse({ statusCode: 401, error: 'Unauthorized', message: 'Missing Bearer token in Authorization header' });
+      } else if (demoStatus === 404) {
+        setLiveResponse({ statusCode: 404, error: 'Not Found', message: 'Requested user does not exist' });
+      } else {
+        setLiveResponse({ statusCode: 500, error: 'Internal Server Error', message: 'Simulated downstream service failure' });
+      }
+    }
+  }, [schemaText, mockSeed, demoStatus]);
 
   // Detect when interactive demo enters viewport before starting intervals
   useEffect(() => {
@@ -88,6 +159,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
     setProgress(0);
   };
 
+  const handleSelectPreset = (preset: 'user' | 'order' | 'event') => {
+    setSchemaPreset(preset);
+    setSchemaText(JSON.stringify(SCHEMA_PRESETS[preset], null, 2));
+    setIsPlaying(false);
+  };
+
+  const handleCopyMock = () => {
+    if (!liveResponse) return;
+    navigator.clipboard.writeText(JSON.stringify(liveResponse, null, 2));
+    setCopiedMock(true);
+    setTimeout(() => setCopiedMock(false), 2000);
+  };
+
   const handleTriggerWebhook = () => {
     setWebhookSent(true);
     setTimeout(() => setWebhookSent(false), 2200);
@@ -123,12 +207,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.15]">
           Design, Test & Validate APIs.{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 animate-gradient-text font-black">
-            100% Client-Side.
+            Mock Locally. Test Confidently.
           </span>
         </h1>
 
         <p className="mt-5 text-base sm:text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">
-          Simulate realistic REST APIs directly inside your browser. Build visual schema assertions with zero code, dispatch simulated webhooks to your local server, and install as an offline desktop PWA with zero memory bloat.
+          Simulate realistic REST APIs directly inside your browser. Build visual schema assertions with zero code, dispatch simulated webhooks to your local server, and install as a PWA for offline mocking. Live requests use the proxy server.
         </p>
 
         {/* Hero CTA Controls */}
@@ -286,56 +370,121 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           {/* ── Scene 1: Instant Mock Engine ── */}
           {activeScene === 'mock' && (
             <div key="mock" className="animate-fade-in p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 divide-y md:divide-y-0 md:divide-x divide-[#2A2F45]">
+              {/* Left Column: Interactive Schema Editor / Simulated Request */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider font-semibold">
-                    Simulated Request
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-white/40 font-mono">Status Scenario:</span>
-                    <select
-                      value={demoStatus}
-                      onChange={(e) => setDemoStatus(Number(e.target.value))}
-                      className="bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded px-2 py-0.5 focus:outline-none"
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 bg-[#0C0E12] p-0.5 rounded-lg border border-[#2A2F45]">
+                    <button
+                      onClick={() => setActiveEditorTab('schema')}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                        activeEditorTab === 'schema'
+                          ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40'
+                          : 'text-white/60 hover:text-white'
+                      }`}
                     >
-                      <option value={200}>200 OK</option>
-                      <option value={201}>201 Created</option>
-                      <option value={400}>400 Bad Request</option>
-                      <option value={401}>401 Unauthorized</option>
-                      <option value={404}>404 Not Found</option>
-                      <option value={500}>500 Server Error</option>
-                    </select>
+                      <Code2 className="w-3 h-3 text-indigo-400" />
+                      <span>Schema Editor</span>
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 uppercase tracking-wider font-mono">
+                        Live
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setActiveEditorTab('request')}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                        activeEditorTab === 'request'
+                          ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40'
+                          : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      <Terminal className="w-3 h-3 text-white/60" />
+                      <span>Request HTTP</span>
+                    </button>
+                  </div>
+
+                  {/* Schema Preset Selector */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-white/40 uppercase tracking-wider font-mono">Preset:</span>
+                    {(['user', 'order', 'event'] as const).map((preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => handleSelectPreset(preset)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-mono capitalize transition-colors ${
+                          schemaPreset === preset
+                            ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-semibold'
+                            : 'bg-[#0C0E12] text-white/60 hover:text-white border border-[#2A2F45]'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] space-y-2">
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      GET
-                    </span>
-                    <span className="text-white font-medium">/api/v1/users/usr_982</span>
+                {activeEditorTab === 'schema' ? (
+                  <div className="space-y-2">
+                    <div className="relative rounded-lg bg-[#0C0E12] border border-[#2A2F45] focus-within:border-indigo-500/50 transition-colors">
+                      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#2A2F45]/60 text-[10px] font-mono text-white/40">
+                        <span>json-schema.json (editable)</span>
+                        <span className="text-emerald-400/80 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          Watching edits
+                        </span>
+                      </div>
+                      <textarea
+                        value={schemaText}
+                        onChange={(e) => {
+                          setSchemaText(e.target.value);
+                          setIsPlaying(false);
+                        }}
+                        rows={10}
+                        spellCheck={false}
+                        className="w-full bg-transparent p-3 font-mono text-xs text-white/90 focus:outline-none resize-none leading-relaxed selection:bg-indigo-500/30"
+                        placeholder="Type JSON schema properties..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-indigo-300/80 bg-indigo-500/5 border border-indigo-500/15 rounded-md px-2.5 py-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <span>Type custom fields or change types above — mock response updates live in real-time.</span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-white/50 space-y-1 font-mono">
-                    <div>Host: <span className="text-white/80">api.enterprise.dev</span></div>
-                    <div>Authorization: <span className="text-indigo-400">Bearer eyJhbGciOi...</span></div>
-                    <div>Accept: <span className="text-white/80">application/json</span></div>
-                  </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] space-y-2">
+                      <div className="flex items-center gap-2 font-mono text-xs">
+                        <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          GET
+                        </span>
+                        <span className="text-white font-medium">
+                          {schemaPreset === 'user'
+                            ? '/api/v1/users/usr_982'
+                            : schemaPreset === 'order'
+                            ? '/api/v1/orders/ord_512'
+                            : '/api/v1/telemetry/events'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-white/50 space-y-1 font-mono">
+                        <div>Host: <span className="text-white/80">api.enterprise.dev</span></div>
+                        <div>Authorization: <span className="text-indigo-400">Bearer eyJhbGciOi...</span></div>
+                        <div>Accept: <span className="text-white/80">application/json</span></div>
+                      </div>
+                    </div>
 
-                <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-xs text-white/70 space-y-1">
-                  <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Realistic Synthetic Heuristics</span>
+                    <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-xs text-white/70 space-y-1">
+                      <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Realistic Synthetic Heuristics</span>
+                      </div>
+                      <p className="text-[11px] text-white/50">
+                        Generates realistic names, UUIDs, ISO timestamps, and nested objects using in-browser Faker algorithms without making a single external network request.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-white/50">
-                    Generates realistic names, UUIDs, ISO timestamps, and nested objects using in-browser Faker algorithms without making a single external network request.
-                  </p>
-                </div>
+                )}
               </div>
 
-              {/* Right: Response Sandbox */}
+              {/* Right Column: Live Real-Time Response Sandbox */}
               <div className="md:pl-4 space-y-3 pt-3 md:pt-0">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-2 py-0.5 rounded text-[11px] font-bold ${
@@ -346,79 +495,80 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                     >
                       {demoStatus} {demoStatus === 200 ? 'OK' : demoStatus === 201 ? 'Created' : 'Error'}
                     </span>
-                    <span className="text-white/40 text-[11px] font-mono">⚡ 18ms • 1.2 KB</span>
+                    <select
+                      value={demoStatus}
+                      onChange={(e) => setDemoStatus(Number(e.target.value))}
+                      className="bg-[#0C0E12] border border-[#2A2F45] text-xs font-mono text-indigo-300 rounded px-1.5 py-0.5 focus:outline-none"
+                    >
+                      <option value={200}>200 OK</option>
+                      <option value={201}>201 Created</option>
+                      <option value={400}>400 Bad Request</option>
+                      <option value={401}>401 Unauthorized</option>
+                      <option value={404}>404 Not Found</option>
+                      <option value={500}>500 Server Error</option>
+                    </select>
                   </div>
-                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded">
-                    Mock Engine Active
-                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        setMockSeed((prev) => prev + 1);
+                        setIsPlaying(false);
+                      }}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#0C0E12] hover:bg-white/5 border border-[#2A2F45] text-[11px] font-mono text-indigo-300 transition-colors"
+                      title="Generate new values with incremented seed"
+                    >
+                      <RefreshCw className="w-3 h-3 text-indigo-400" />
+                      <span>Seed #{mockSeed}</span>
+                    </button>
+
+                    <button
+                      onClick={handleCopyMock}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#0C0E12] hover:bg-white/5 border border-[#2A2F45] text-[11px] font-mono text-white/70 hover:text-white transition-colors"
+                      title="Copy JSON response"
+                    >
+                      {copiedMock ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-white/50" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                <pre className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] text-white/80 text-xs font-mono leading-relaxed overflow-x-auto max-h-56">
-                  {demoStatus === 200 &&
-                    JSON.stringify(
-                      {
-                        id: 'usr_982',
-                        name: 'Elena Rostova',
-                        email: 'elena@enterprise.dev',
-                        role: 'Senior Architect',
-                        active: true,
-                        lastLogin: '2026-09-30T14:20:00Z',
-                      },
-                      null,
-                      2
-                    )}
-                  {demoStatus === 201 &&
-                    JSON.stringify(
-                      {
-                        id: 'usr_8491',
-                        status: 'created',
-                        message: 'Resource provisioned successfully',
-                        createdAt: new Date().toISOString(),
-                      },
-                      null,
-                      2
-                    )}
-                  {demoStatus === 400 &&
-                    JSON.stringify(
-                      {
-                        statusCode: 400,
-                        error: 'Bad Request',
-                        message: 'Invalid email parameter format',
-                      },
-                      null,
-                      2
-                    )}
-                  {demoStatus === 401 &&
-                    JSON.stringify(
-                      {
-                        statusCode: 401,
-                        error: 'Unauthorized',
-                        message: 'Missing or expired Bearer token in Authorization header',
-                      },
-                      null,
-                      2
-                    )}
-                  {demoStatus === 404 &&
-                    JSON.stringify(
-                      {
-                        statusCode: 404,
-                        error: 'Not Found',
-                        message: 'User with identifier usr_982 does not exist',
-                      },
-                      null,
-                      2
-                    )}
-                  {demoStatus === 500 &&
-                    JSON.stringify(
-                      {
-                        statusCode: 500,
-                        error: 'Internal Server Error',
-                        message: 'Simulated downstream upstream timeout',
-                      },
-                      null,
-                      2
-                    )}
-                </pre>
+                {/* Response Output or Error State */}
+                {schemaError ? (
+                  <div className="p-3.5 rounded-lg bg-red-500/10 border border-red-500/30 text-xs font-mono text-red-300 space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-semibold text-red-400">
+                      <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>Invalid JSON Schema</span>
+                    </div>
+                    <p className="text-[11px] text-red-200/80 leading-relaxed">
+                      {schemaError}
+                    </p>
+                    <p className="text-[10px] text-white/40 pt-1">
+                      Tip: Keep quotes on keys and values, e.g. "type": "string"
+                    </p>
+                  </div>
+                ) : (
+                  <pre className="p-3 rounded-lg bg-[#0C0E12] border border-[#2A2F45] text-emerald-300/90 text-xs font-mono leading-relaxed overflow-x-auto max-h-60 select-all">
+                    {JSON.stringify(liveResponse, null, 2)}
+                  </pre>
+                )}
+
+                <div className="flex items-center justify-between text-[10px] text-white/40 font-mono pt-1">
+                  <span className="flex items-center gap-1.5 text-emerald-400/90">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Pure client-side execution (0 network calls)</span>
+                  </span>
+                  <span>⚡ 12ms</span>
+                </div>
               </div>
             </div>
           )}
@@ -637,7 +787,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                     Runs in its own borderless window. 100% offline.
                   </h3>
                   <p className="text-xs text-white/60 leading-relaxed">
-                    With an integrated Service Worker cache and Dexie IndexedDB, APIFlow launches in under 100ms on Windows, macOS, Linux, and Android with zero Electron memory bloat.
+                    The production app caches its assets for offline mocking after setup. Live API calls and webhook dispatch need a network connection.
                   </p>
                 </div>
 
@@ -739,7 +889,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
             <h3 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">Dual Execution Mode</h3>
             <p className="text-xs text-white/50 leading-relaxed">
-              Switch effortlessly between instant client-side mock simulation (15–40ms latency) and live network execution via the built-in CORS bypass proxy.
+              Switch between client-side mock simulation with configurable delay and live network execution via the built-in proxy.
             </p>
           </div>
 
@@ -750,7 +900,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
             <h3 className="text-base font-semibold text-white group-hover:text-orange-300 transition-colors">Contract Portability</h3>
             <p className="text-xs text-white/50 leading-relaxed">
-              Full import and export support for official OpenAPI 3.1.0 specifications and Postman Collection v2.1. Zero vendor lock-in.
+              Import and export OpenAPI 3.x and Postman 2.1 JSON. Preserve response schemas and review warnings for unsupported features.
             </p>
           </div>
 
@@ -761,7 +911,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
             </div>
             <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors">Offline Desktop PWA</h3>
             <p className="text-xs text-white/50 leading-relaxed">
-              Install in 1 click from Chrome, Edge, or Brave. Runs in its own standalone borderless window with 100% offline capability and zero Electron memory footprint.
+              Install in 1 click from Chrome, Edge, or Brave. Runs in its own standalone borderless window with offline mocking after the app assets finish caching.
             </p>
           </div>
         </div>
@@ -926,7 +1076,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <span>Event-Driven Architecture</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-              Simulated Webhook Dispatcher & Receiver
+              Signed Webhook Dispatcher
             </h2>
             <p className="text-sm text-white/60 leading-relaxed">
               Modern APIs like Stripe, GitHub, Clerk, and Shopify rely heavily on webhooks. Traditionally, developers have had to setup ngrok tunnels or fake webhook relays just to trigger events locally.
@@ -962,16 +1112,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               <span>Installable Desktop Tool</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-              Installable PWA — 100% Offline Desktop Tool
+              Installable PWA — Offline Mocking
             </h2>
             <p className="text-sm text-white/60 leading-relaxed">
-              Matches the desktop feel of Postman without the 500MB download size or memory bloat. APIFlow runs in its own borderless window on Windows, Mac, Linux, and Android, working 100% offline without needing an active internet connection.
+              Install APIFlow in a supported browser for a standalone window. Collections and mock generation work offline after setup; live requests require a network connection.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2">
               <div className="flex items-center gap-2 text-white/80">
                 <Check className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>Zero Electron memory bloat</span>
+                <span>No separate desktop runtime to install</span>
               </div>
               <div className="flex items-center gap-2 text-white/80">
                 <Check className="w-4 h-4 text-purple-400 shrink-0" />
@@ -1083,11 +1233,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>User owns 100% of data (persisted securely in IndexedDB)</span>
+                <span>User owns 100% of data (stored locally in IndexedDB)</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>In-browser client-side simulation (0–40ms latency, zero fees)</span>
+                <span>In-browser simulation with configurable delay</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-emerald-400 font-bold">✓</span>
@@ -1139,7 +1289,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                 <span className="group-hover:text-cyan-300 transition-colors">Ephemeral, Frictionless Sharing</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
-                No sign-up walls. Using URL-safe UTF-8 base64 state (<code className="text-cyan-300">?mock=...</code>), an interactive mock is compressed directly into the URL query. When a teammate opens the link, the browser engine recreates the mock state immediately with zero login.
+                No sign-up walls. Using URL-safe UTF-8 base64 state (<code className="text-cyan-300">#mock=...</code>), a redacted mock is encoded into the URL fragment, which browsers do not send to the hosting server. When a teammate opens the link, the browser engine recreates the mock state immediately with zero login.
               </p>
             </div>
 
