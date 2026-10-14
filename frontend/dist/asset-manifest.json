@@ -15,7 +15,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-ZCCoxh1A.js",
+    "file": "assets/index-DqcKeeRg.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -29,11 +29,11 @@
       "src/components/stats/StatsDashboard.tsx"
     ],
     "css": [
-      "assets/index-DIPDQmMA.css"
+      "assets/index-CUg2TD1a.css"
     ]
   },
   "src/components/landing/LandingPage.tsx": {
-    "file": "assets/LandingPage-BaEwBuhb.js",
+    "file": "assets/LandingPage-hcB0KJ4d.js",
     "name": "LandingPage",
     "src": "src/components/landing/LandingPage.tsx",
     "isDynamicEntry": true,
@@ -47,7 +47,7 @@
     ]
   },
   "src/components/layout/AppShell.tsx": {
-    "file": "assets/AppShell-dg-Fhori.js",
+    "file": "assets/AppShell-DfmpMIo8.js",
     "name": "AppShell",
     "src": "src/components/layout/AppShell.tsx",
     "isDynamicEntry": true,
@@ -60,7 +60,7 @@
     ]
   },
   "src/components/stats/StatsDashboard.tsx": {
-    "file": "assets/StatsDashboard-B_W6hSiS.js",
+    "file": "assets/StatsDashboard-B3KQ3UmT.js",
     "name": "StatsDashboard",
     "src": "src/components/stats/StatsDashboard.tsx",
     "isDynamicEntry": true,

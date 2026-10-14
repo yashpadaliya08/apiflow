@@ -282,25 +282,77 @@ code, pre, .font-mono {
 [data-workspace] .response-state-content { width: 100%; max-width: 340px; }
 [data-workspace] .response-state h3 { font-size: 16px; font-weight: 600; letter-spacing: -.02em; }
 [data-workspace] .response-state p { margin-top: 10px; color: #a1aabb; font-size: 13px; line-height: 1.7; }
-@media (min-width: 1024px) {
-  [data-workspace] .workspace-navbar { flex-wrap: wrap; padding-top: 10px; gap: 10px 20px; }
-  [data-workspace] .workspace-tools {
-    width: 100%;
-    flex-wrap: wrap;
-    padding: 6px 0;
-    border-top: 1px solid #2a2f45;
-    gap: 12px;
-  }
-  [data-workspace] .workspace-tools > div {
-    background: transparent;
-    border: 0;
-    border-right: 1px solid #2a2f45;
-    border-radius: 0;
-    padding: 0 12px 0 0;
-  }
-  [data-workspace] .workspace-tools button { border-color: transparent; color: #c4ccda; border-radius: 4px; }
-  [data-workspace] .workspace-tools button svg { color: #929eb2; fill: none; }
-  [data-workspace] .workspace-tools button span { display: inline; }
+/* Responsive 2-tier studio navbar: Row 1 = Brand + Mode switch, Row 2 = Tools */
+[data-workspace] .workspace-navbar {
+  flex-wrap: wrap;
+  padding-top: 10px;
+  padding-bottom: 8px;
+  gap: 8px 16px;
+}
+
+[data-workspace] .workspace-tools {
+  width: 100%;
+  flex-wrap: wrap;
+  padding: 6px 0 2px 0;
+  border-top: 1px solid #2a2f45;
+  gap: 8px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+[data-workspace] .workspace-tools::-webkit-scrollbar {
+  display: none;
+}
+
+/* Linear / Raycast Style (Tactile Action Pills) */
+.tactile-pill-btn,
+[data-workspace] .workspace-tools button {
+  background: #161B28 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #2B3349 !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+  transition: all 120ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.tactile-pill-btn:hover,
+[data-workspace] .workspace-tools button:hover {
+  background: #20273A !important;
+  border-color: #3D4766 !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tactile-pill-btn:active,
+[data-workspace] .workspace-tools button:active {
+  background: #121520 !important;
+  border-color: #242B3E !important;
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.tactile-pill-btn:focus-visible,
+[data-workspace] .workspace-tools button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 2px rgba(99, 102, 241, 0.5) !important;
+  border-color: #6366F1 !important;
+}
+
+/* Ensure vibrant icons retain their accent colors and subtle depth */
+[data-workspace] .workspace-tools button svg {
+  transition: transform 120ms ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+[data-workspace] .workspace-tools button:hover svg {
+  transform: scale(1.08);
 }
 [data-workspace] .workspace-analytics { font-size: 12px; }
 [data-workspace] .workspace-analytics .analytics-metrics > div {

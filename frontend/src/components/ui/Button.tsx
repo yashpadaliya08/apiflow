@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'accent' | 'outline';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'accent' | 'outline' | 'tactile';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
@@ -30,6 +30,8 @@ export const Button: React.FC<ButtonProps> = ({
     outline: 'bg-transparent hover:bg-white/5 text-white/80 border border-[#2A2F45] hover:text-white',
     ghost: 'bg-transparent hover:bg-white/5 text-white/70 hover:text-white',
     danger: 'bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30',
+    tactile:
+      'bg-[#161B28] hover:bg-[#20273A] active:bg-[#121520] text-slate-200 hover:text-white border border-[#2B3349] hover:border-[#3D4766] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_1px_2px_rgba(0,0,0,0.35)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_2px_6px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] rounded-lg font-medium',
   }[variant];
 
   const sizes = {

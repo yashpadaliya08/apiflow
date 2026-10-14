@@ -218,9 +218,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
   }
 
   return (
-    <header className="workspace-navbar min-h-14 w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex items-center justify-between select-none z-30 gap-2 shrink-0 relative overflow-visible">
-      {/* Left: Brand + Collection Picker */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+    <header className="workspace-navbar w-full max-w-full bg-[#141720] border-b border-[#2A2F45] px-3 sm:px-4 flex flex-col justify-center select-none z-30 py-2 gap-2 shrink-0 relative overflow-visible">
+      {/* Top Row: Brand & Collection (Left) + Mode Switch (Right) */}
+      <div className="flex items-center justify-between w-full gap-2">
+        {/* Left: Brand + Collection Picker */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div
           onClick={() => onToggleView('landing')}
           className="flex items-center gap-2.5 cursor-pointer group"
@@ -359,124 +361,129 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
         </div>
       </div>
 
-      {/* Center: Execution Mode Segmented Control */}
-      <div className="flex items-center bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] shrink-0 whitespace-nowrap">
-        <button
-          onClick={() => setExecutionMode('mock')}
-          aria-pressed={executionMode === 'mock'}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
-            executionMode === 'mock'
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
-          }`}
-          title="Simulate responses client-side with 7 status codes & Faker heuristics"
-        >
-          <Zap className="w-3.5 h-3.5 shrink-0" />
-          <span className="whitespace-nowrap">Mock <span className="hidden xl:inline">Engine</span></span>
-        </button>
+        {/* Right: Execution Mode Segmented Control */}
+        <div className="flex items-center bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45] shrink-0 whitespace-nowrap">
+          <button
+            onClick={() => setExecutionMode('mock')}
+            aria-pressed={executionMode === 'mock'}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
+              executionMode === 'mock'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+            title="Simulate responses client-side with 7 status codes & Faker heuristics"
+          >
+            <Zap className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Mock <span className="hidden xl:inline">Engine</span></span>
+          </button>
 
-        <button
-          onClick={() => setExecutionMode('live')}
-          aria-pressed={executionMode === 'live'}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
-            executionMode === 'live'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
-          }`}
-          title="Send real HTTP requests via local backend CORS bypass proxy"
-        >
-          <Globe className="w-3.5 h-3.5 shrink-0" />
-          <span className="whitespace-nowrap">Live <span className="hidden xl:inline">Proxy</span></span>
-        </button>
+          <button
+            onClick={() => setExecutionMode('live')}
+            aria-pressed={executionMode === 'live'}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
+              executionMode === 'live'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+            title="Send real HTTP requests via local backend CORS bypass proxy"
+          >
+            <Globe className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Live <span className="hidden xl:inline">Proxy</span></span>
+          </button>
+        </div>
       </div>
 
-      {/* Right: Grouped Studio Actions */}
-      <div className="workspace-tools flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap" role="group" aria-label="Workspace tools">
+      {/* Bottom Row: Tactile Studio Action Pills (Linear / Raycast Style) */}
+      <div className="workspace-tools w-full flex items-center gap-1.5 sm:gap-2 whitespace-nowrap overflow-x-auto pt-1.5 border-t border-[#2A2F45]" role="group" aria-label="Workspace tools">
         {/* Group 1: Execution Tools */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+        <div className="flex items-center gap-1.5">
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setWebhookOpen(true)}
             leftIcon={<Radio className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
             title="Simulate and dispatch Stripe, GitHub, Clerk webhooks to local handlers"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span>Webhooks</span>
           </Button>
 
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setRunnerOpen(true)}
             leftIcon={<Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/30 shrink-0" />}
             title="Run all endpoints in collection sequentially"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span>Runner</span>
           </Button>
         </div>
 
+        <div className="h-4.5 w-px bg-[#262C3E] mx-0.5 shrink-0" aria-hidden="true" />
+
         {/* Group 2: Workflows & Export */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+        <div className="flex items-center gap-1.5">
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setTemplatesOpen(true)}
             leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
             title="Browse industry API starter templates (Stripe, OpenAI, SaaS Auth)"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span>Templates</span>
           </Button>
 
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setCodeSnippetOpen(true)}
             leftIcon={<Code2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
             title="Generate cURL, TypeScript, Axios, and Python code"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span className="hidden lg:inline">Code</span>
           </Button>
 
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setShareOpen(true)}
             leftIcon={<Share2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
             title="Generate 1-click shareable interactive mock link"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span className="hidden xl:inline">Share</span>
           </Button>
 
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setImportOpen(true)}
             leftIcon={<Download className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
             title="Import / Export OpenAPI 3.1 & Postman 2.1 collections"
-            className="text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span className="hidden xl:inline">Import / export</span>
           </Button>
         </div>
 
+        <div className="h-4.5 w-px bg-[#262C3E] mx-0.5 shrink-0" aria-hidden="true" />
+
         {/* Group 3: History & App */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#0C0E12] p-1 rounded-xl border border-[#2A2F45]">
+        <div className="flex items-center gap-1.5">
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={() => setHistoryOpen(true)}
             leftIcon={<History className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-            className="relative text-white/80 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="relative px-2.5"
             title="View recent execution history"
           >
             <span className="hidden lg:inline">History</span>
             {history.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-indigo-500/30 text-indigo-300 rounded-full font-mono">
+              <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full font-mono font-medium">
                 {history.length}
               </span>
             )}
@@ -484,53 +491,58 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onToggleView }) => 
 
           <Button
             size="sm"
-            variant="ghost"
+            variant="tactile"
             onClick={handleInstallPWA}
             leftIcon={<Laptop className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
             title="Install APIFlow Studio as desktop app (PWA)"
-            className="text-white/70 hover:text-white hover:bg-[#1C2030] rounded-lg px-2"
+            className="px-2.5"
           >
             <span className="hidden 2xl:inline">Install</span>
           </Button>
         </div>
 
-        {isAdminActive && (
+        <div className="h-4.5 w-px bg-[#262C3E] mx-0.5 shrink-0" aria-hidden="true" />
+
+        {/* Group 4: Meta & Docs */}
+        <div className="flex items-center gap-1.5">
+          {isAdminActive && (
+            <Button
+              size="sm"
+              variant="tactile"
+              onClick={() => setAnalyticsOpen(true)}
+              leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+              title="Admin Telemetry (Ctrl+Shift+A)"
+              className="px-2.5"
+            >
+              <span className="hidden xl:inline">Analytics</span>
+            </Button>
+          )}
+
           <Button
             size="sm"
-            variant="outline"
-            onClick={() => setAnalyticsOpen(true)}
-            leftIcon={<BarChart3 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
-            title="Admin Telemetry (Ctrl+Shift+A)"
-            className="px-2"
+            variant="tactile"
+            onClick={() => {
+              localStorage.removeItem('apiflow-onboarding-v1');
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
+            }}
+            leftIcon={<HelpCircle className="w-3.5 h-3.5 text-yellow-400 shrink-0" />}
+            title="Open Quick Tour (press ? anytime)"
+            className="px-2.5"
           >
-            <span className="hidden xl:inline">Analytics</span>
+            <span className="hidden xl:inline">Tour</span>
           </Button>
-        )}
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            localStorage.removeItem('apiflow-onboarding-v1');
-            window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
-          }}
-          leftIcon={<HelpCircle className="w-3.5 h-3.5 text-yellow-400 shrink-0" />}
-          title="Open Quick Tour (press ? anytime)"
-          className="border-[#2A2F45] hover:border-yellow-500/40 text-yellow-200 px-2"
-        >
-          <span className="hidden xl:inline">Tour</span>
-        </Button>
-
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onToggleView('landing')}
-          leftIcon={<BookOpen className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
-          title="Return to Landing Page & Overview Docs"
-          className="border-[#2A2F45] hover:border-purple-500/40 text-purple-200 px-2 sm:px-2.5"
-        >
-          <span>Docs</span>
-        </Button>
+          <Button
+            size="sm"
+            variant="tactile"
+            onClick={() => onToggleView('landing')}
+            leftIcon={<BookOpen className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+            title="Return to Landing Page & Overview Docs"
+            className="px-2.5 sm:px-3 font-semibold"
+          >
+            <span>Docs</span>
+          </Button>
+        </div>
       </div>
 
       <AnalyticsModal isOpen={analyticsOpen} onClose={() => setAnalyticsOpen(false)} />
