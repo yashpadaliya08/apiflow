@@ -1414,6 +1414,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
           </a>
         </div>
 
+        <div className="flex justify-center pt-1">
+          <a
+            href="https://shipthing.com/projects/apiflow-studio?utm_source=badge"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-lg opacity-85 hover:opacity-100 hover:scale-[1.02] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-400"
+          >
+            <img
+              src="https://shipthing.com/shipthing/images/badges/featured-on-dark.svg"
+              alt="Featured on ShipThing"
+              style={{ height: 40, width: 'auto' }}
+              loading="lazy"
+            />
+          </a>
+        </div>
+
         <p className="text-white/30 text-[11px] pt-1">
           © 2026 APIFlow Studio — Standalone Browser API Testing, Contract Simulator &amp; Mock Runner
         </p>
