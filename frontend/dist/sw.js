@@ -1,5 +1,5 @@
-const CACHE_NAME = 'apiflow-dc6331c9a602806e21f0';
-const BUILD_ASSETS = ["/assets/vendor-dexie-B0yzgGqo.js","/assets/vendor-faker-CdBPqZdY.js","/assets/vendor-lucide-BLObK2Hs.js","/assets/index-DqcKeeRg.js","/assets/index-CUg2TD1a.css","/assets/LandingPage-hcB0KJ4d.js","/assets/AppShell-DfmpMIo8.js","/assets/StatsDashboard-B3KQ3UmT.js","/assets/schema-generator-LtWMFmUy.js"];
+const CACHE_NAME = 'apiflow-adaa8c1f6b57ec7355e7';
+const BUILD_ASSETS = ["/assets/vendor-dexie-B0yzgGqo.js","/assets/vendor-faker-bhLxTHyt.js","/assets/vendor-lucide-BLObK2Hs.js","/assets/index-DYhoefOP.js","/assets/index-DD7hLfyQ.css","/assets/LandingPage-QRdG7Vjk.js","/assets/AppShell-CplwjkXT.js","/assets/StatsDashboard-xp_nlO0Y.js","/assets/schema-generator-DhfDf5Ey.js"];
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

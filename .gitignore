@@ -23,7 +23,9 @@ lerna-debug.log*
 
 # Marketing & Internal drafts (excluded from public repo)
 marketing/
-docs/
+docs/*
+!docs/security-runtime-update.md
+!docs/analytics-setup.md
 HANDOFF.md
 
 # Environment files
@@ -62,3 +64,4 @@ logs/
 *.tar.gz
 scratch/
 
+.neon

@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const analyticsStore = require('./analytics-store').configuredStore();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -55,6 +56,7 @@ app.use(cors({
 }));
 
 // Body parsers
+require('./blog').registerBlog(app);
 app.use('/api/proxy', express.json({ limit: '1mb' }));
 app.use(['/api/telemetry', '/api/visit'], express.json({ limit: '8kb' }));
 app.use('/api/admin', express.json({ limit: '4kb' }));
@@ -285,6 +287,9 @@ function recordVisit({ ip, userAgent, referrer, refParam, path: visitPath, count
   if (globalStats.recentVisits.length > 100) {
     globalStats.recentVisits.pop();
   }
+  return { totalPageviews: 1, sourceCounts: { [src]: 1 }, deviceCounts: { [device]: 1 },
+    countryCounts: { [resolvedCountry]: 1 },
+    campaignCounts: parsed.tag && /^[a-zA-Z0-9_. /-]{1,64}$/.test(parsed.tag) && parsed.tag !== 'direct' ? { [parsed.tag]: 1 } : {} };
 }
 
 function getActiveVisitorsCount() {
@@ -301,7 +306,7 @@ function getActiveVisitorsCount() {
   if (globalStats.uniqueIps.size > 10000) {
     globalStats.uniqueIps.clear();
   }
-  return Math.max(active, 1); // at least current session
+  return active;
 }
 
 // Background memory guard: periodically prune inactive sessions and bound unique IPs
@@ -313,7 +318,28 @@ setInterval(() => {
 }, 5 * 60 * 1000).unref();
 
 // Telemetry & Visitor Ingestion Endpoint
-app.post(['/api/telemetry', '/api/visit'], (req, res) => {
+const telemetryWindows = new Map();
+let telemetryPending = 0;
+setInterval(() => {
+  for (const [key, entry] of telemetryWindows) if (entry.until <= Date.now()) telemetryWindows.delete(key);
+}, 60000).unref();
+app.use(['/api/telemetry', '/api/visit'], (req, res, next) => {
+  const key = hashIp(req.ip || req.socket.remoteAddress);
+  let entry = telemetryWindows.get(key);
+  if (!entry || entry.until <= Date.now()) {
+    if (telemetryWindows.size >= 10000 && !entry) return res.status(429).json({ ok: false });
+    entry = { count: 0, until: Date.now() + 60000 };
+    telemetryWindows.set(key, entry);
+  }
+  if (++entry.count > 120 || telemetryPending >= 20) return res.status(429).json({ ok: false });
+  telemetryPending++;
+  let released = false;
+  const release = () => { if (!released) { released = true; telemetryPending--; } };
+  res.once('finish', release);
+  res.once('close', release);
+  next();
+});
+app.post(['/api/telemetry', '/api/visit'], async (req, res) => {
   try {
     const data = Buffer.isBuffer(req.body)
       ? JSON.parse(req.body.toString('utf8'))
@@ -323,8 +349,9 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
     const country = req.headers['cf-ipcountry'] || 'Global';
     const userAgent = req.headers['user-agent'] || '';
 
+    let increments = {};
     if (data?.event === 'page_view') {
-      recordVisit({
+      increments = recordVisit({
         ip: clientIp,
         userAgent,
         referrer: data.referrer,
@@ -333,23 +360,27 @@ app.post(['/api/telemetry', '/api/visit'], (req, res) => {
         country,
       });
     } else if (data?.event === 'request_simulated') {
+      increments = { totalEvents: 1, [data.properties?.mode === 'live' ? 'totalLiveProxy' : 'totalSimulations']: 1 };
       globalStats.totalEvents++;
       if (data.properties?.mode === 'live') globalStats.totalLiveProxy++;
       else globalStats.totalSimulations++;
       trackSession(clientIp);
     } else if (data?.event === 'code_copied') {
+      increments = { totalEvents: 1, totalCodeCopies: 1 };
       globalStats.totalEvents++;
       globalStats.totalCodeCopies++;
       trackSession(clientIp);
     } else if (data?.event === 'spec_exported') {
+      increments = { totalEvents: 1, totalExports: 1 };
       globalStats.totalEvents++;
       globalStats.totalExports++;
       trackSession(clientIp);
     }
 
+    if (analyticsStore) await analyticsStore.record(increments);
     res.json({ ok: true, activeVisitors: getActiveVisitorsCount() });
   } catch (err) {
-    res.json({ ok: false, error: err.message });
+    res.status(503).json({ ok: false, error: 'Analytics could not be saved.' });
   }
 });
 
@@ -497,7 +528,7 @@ function renderAdminLoginPage() {
 }
 
 // JSON Stats API Endpoint (Protected with Admin Auth)
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   if (!verifyAdmin(req)) {
     return res.status(401).json({
@@ -506,10 +537,20 @@ app.get('/api/stats', (req, res) => {
     });
   }
 
-  res.json({
+  const period = req.query.period || 'lifetime';
+  if (!['lifetime', 'today', '7d', '30d'].includes(period)) return res.status(400).json({ error: 'Invalid analytics period.' });
+  let saved = {};
+  if (analyticsStore) {
+    try { saved = await analyticsStore.summary(period); }
+    catch { return res.status(503).json({ error: 'Analytics database unavailable. Historical totals could not be loaded.' }); }
+  }
+  const snapshot = {
     status: 'online',
     activeVisitors: getActiveVisitorsCount(),
-    uniqueVisitors: Math.max(globalStats.uniqueVisitorsCount || globalStats.uniqueIps.size, 1),
+    uniqueVisitors: globalStats.uniqueVisitorsCount || globalStats.uniqueIps.size,
+    visitorScope: 'Approximate unique IPs since this process started',
+    storage: analyticsStore ? 'postgres' : 'memory',
+    period: analyticsStore ? period : 'process',
     totalPageviews: globalStats.totalPageviews,
     totalSimulations: globalStats.totalSimulations,
     totalLiveProxy: globalStats.totalLiveProxy,
@@ -522,7 +563,10 @@ app.get('/api/stats', (req, res) => {
     recentVisits: globalStats.recentVisits.slice(0, 30),
     uptimeSeconds: Math.round(process.uptime()),
     serverStartTime: globalStats.serverStartTime,
-  });
+    ...saved,
+  };
+  if (req.query.format === 'json') res.attachment('apiflow-analytics.json');
+  res.json(snapshot);
 });
 
 // Visual Admin Stats Dashboard (Protected with Admin Auth)
@@ -737,6 +781,12 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
         </div>
       </div>
       <div class="controls">
+        <label for="stats-period">Period (UTC)</label>
+        <select id="stats-period" class="btn-refresh" onchange="fetchStats()">
+          <option value="lifetime">Lifetime</option><option value="today">Today</option>
+          <option value="7d">Last 7 days</option><option value="30d">Last 30 days</option>
+        </select>
+        <a class="btn-refresh" href="/api/stats?format=json">Export totals</a>
         <div class="status-badge">
           <span class="pulse-dot"></span>
           <span>Live Auto-Refresh (3s)</span>
@@ -746,6 +796,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
       </div>
     </header>
 
+    <p id="storage-status" role="status" style="margin-bottom:16px;color:#cbd5e1">Loading analytics storage status…</p>
     <!-- Top KPIs -->
     <section class="kpi-grid">
       <div class="kpi-card">
@@ -756,7 +807,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
       <div class="kpi-card">
         <div class="kpi-label">Unique Visitors <span>👥</span></div>
         <div class="kpi-val" id="val-visitors">1</div>
-        <div class="kpi-sub">Total unique IP addresses</div>
+        <div class="kpi-sub">Approximate unique IPs since server restart</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Total Page Views <span>👁️</span></div>
@@ -790,7 +841,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
           <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">1-Click Copy</span>
         </h2>
         <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
-          Use these links when posting on Reddit, Twitter, or blogs to track exactly who clicks!
+          Use public campaign links to compare aggregate visits. Counts do not identify individual people.
         </p>
         <div class="link-builder">
           <div class="link-item">
@@ -873,16 +924,20 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
     }
     async function fetchStats() {
       try {
-        const res = await fetch('/api/stats', { credentials: 'same-origin', cache: 'no-store' });
+        const res = await fetch('/api/stats?period=' + document.getElementById('stats-period').value, { credentials: 'same-origin', cache: 'no-store' });
         if (res.status === 401) {
           window.location.reload();
           return;
         }
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unable to load analytics');
+        document.getElementById('storage-status').textContent = data.storage === 'postgres'
+          ? 'Saved totals: ' + data.period + ' (UTC). Online visitors and recent visits are live, since server restart.'
+          : 'Temporary storage: totals reset on restart. Configure DATABASE_URL to preserve analytics.';
 
         // Update KPIs
-        document.getElementById('val-active').textContent = data.activeVisitors || 1;
-        document.getElementById('val-visitors').textContent = data.uniqueVisitors || 1;
+        document.getElementById('val-active').textContent = data.activeVisitors ?? 0;
+        document.getElementById('val-visitors').textContent = data.uniqueVisitors ?? 0;
         document.getElementById('val-views').textContent = data.totalPageviews || 0;
         document.getElementById('val-simulations').textContent = (data.totalSimulations || 0) + (data.totalLiveProxy || 0);
         document.getElementById('val-proxy').textContent = data.totalLiveProxy || 0;
@@ -937,6 +992,7 @@ app.get(['/stats', '/admin/stats'], (req, res) => {
           }).join('');
         }
       } catch (err) {
+        document.getElementById('storage-status').textContent = 'Unable to refresh totals. Previously displayed values may be stale.';
         console.error('Failed to update stats:', err);
       }
     }
@@ -1005,9 +1061,12 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', (req, res) => {
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=86400');
-  const sitemapFile = path.resolve(__dirname, '../frontend/dist/sitemap.xml');
+  const sourceSitemap = path.resolve(__dirname, '../frontend/public/sitemap.xml');
+  const sitemapFile = fs.existsSync(sourceSitemap) ? sourceSitemap : path.resolve(__dirname, '../frontend/dist/sitemap.xml');
   if (fs.existsSync(sitemapFile)) {
-    return res.sendFile(sitemapFile);
+    const blogUrls = ['/blog', ...require('./blog').articles.map(a => '/blog/' + a.slug)]
+      .map(route => '<url><loc>https://apiflowstudio.onrender.com' + route + '</loc></url>').join('');
+    return res.send(fs.readFileSync(sitemapFile, 'utf8').replace('</urlset>', blogUrls + '</urlset>'));
   }
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://apiflowstudio.onrender.com/</loc>\n    <lastmod>2026-10-06</lastmod>\n    <priority>1.0</priority>\n  </url>\n</urlset>`);
 });

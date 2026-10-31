@@ -40,7 +40,7 @@ This comparison reflects only features that are currently implemented and verifi
 
 ## Run locally
 
-Use Node.js 20+ or 24 LTS and npm for production. The Docker build targets Node 24.
+Use Node.js 24.22.1 and npm. The repository's `.node-version`, CI, and both Docker stages select this patched release. See [the security update deployment guide](docs/security-runtime-update.md) before redeploying on Render.
 
 ```sh
 npm run install:all
@@ -72,7 +72,7 @@ Limits: 1 MB request envelope, 5 MB upstream response, 5-second DNS deadline, 30
 
 Admin login exchanges the key for a 30-minute HttpOnly session. Key-bearing URLs/headers and legacy raw-key cookies no longer authenticate. Read [release hardening and operator checklist](docs/release-hardening.md) before publishing. For current work, verification evidence, and IDE transfer instructions, read [HANDOFF.md](HANDOFF.md).
 
-The application records in-memory traffic counters and latency percentiles. Distinct visitor counting salt-hashes and masks client IPs (e.g. `142.250.***.***`); raw client IPs are not stored. Platform operators can still observe network metadata. See the in-app privacy page.
+With `DATABASE_URL` configured, daily aggregate analytics persist in PostgreSQL. Without it, counters are temporary. Online visitors and approximate unique-IP counts remain process-scoped; raw IPs and visitor identifiers are not stored in PostgreSQL. Platform operators can still observe network metadata. See the in-app privacy page.
 
 Share links are readable by anyone who has them. Known credential fields are redacted, sensitive assertions and non-JSON bodies are omitted, and schema secret literals may be removed. **Review the payload preview**: automatic detection cannot recognize all sensitive information. Backups and collection exports are not redacted or encrypted; treat them as secrets.
 
@@ -86,7 +86,11 @@ Share links are readable by anyone who has them. Known credential fields are red
 - Offline: after a successful production service-worker install, cached app assets and local mocks work offline. Live calls need a network connection. Admin/API responses and query-string URLs are excluded from app caching.
 - Workspace backups include collections, endpoints, and environments, not execution history. Restore validates before transactional writes; matching IDs are replaced.
 
-## Verification
+## Admin analytics and guides
+
+Set a private `DATABASE_URL` to retain daily aggregate admin analytics across deployments. Without it, analytics remain temporary and the dashboard displays a warning. See [database setup and retention](docs/analytics-setup.md). The public `/blog` contains API testing guides with full HTML and sitemap entries.
+
+### Verification commands
 
 ```sh
 npm test
@@ -94,7 +98,7 @@ npm run check
 npm run build
 ```
 
-Tests cover transport isolation/SSRF boundaries, single-attempt live requests, draft identity, strict assertions, webhook signatures, import fidelity, schema generation, share redaction, backup validation, service-worker exclusions, and ARD catalog root conformance (49 automated tests). They use local fixtures, not third-party APIs.
+Tests cover transport isolation/SSRF boundaries, single-attempt live requests, draft identity, strict assertions, webhook signatures, import fidelity, schema generation, share redaction, backup validation, service-worker exclusions, ARD catalog conformance, analytics persistence across database reopening, UTC periods, failure reporting, blog routes, and telemetry rate limits (53 automated tests). They use local fixtures, not third-party APIs.
 
 See [the reliability notes](docs/reliability.md) for upgrade details and remaining hardening work.
 

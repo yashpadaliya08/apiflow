@@ -3,7 +3,9 @@
 # -------------------------------------------------------------
 # Stage 1: Build React 19 Frontend Bundle
 # -------------------------------------------------------------
-FROM node:24-alpine AS frontend-builder
+FROM node:24.22.1-alpine AS frontend-builder
+
+RUN apk upgrade --no-cache && apk add --no-cache ca-certificates && update-ca-certificates
 
 WORKDIR /app/frontend
 
@@ -18,7 +20,9 @@ RUN npm run build
 # -------------------------------------------------------------
 # Stage 2: Production Server Runner
 # -------------------------------------------------------------
-FROM node:24-alpine AS runner
+FROM node:24.22.1-alpine AS runner
+
+RUN apk upgrade --no-cache && apk add --no-cache ca-certificates && update-ca-certificates
 
 WORKDIR /app
 

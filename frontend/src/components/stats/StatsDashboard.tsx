@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Zap, RefreshCw, Copy, Check, ExternalLink } from 'lucide-react';
 
 interface StatsData {
+  storage?: string;
+  period?: string;
   status: string;
   activeVisitors: number;
   uniqueVisitors: number;
@@ -28,16 +30,22 @@ export const StatsDashboard: React.FC = () => {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [period, setPeriod] = useState('lifetime');
+  const [error, setError] = useState('');
 
   const fetchStats = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/stats');
+      const res = await fetch('/api/stats?period=' + period, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setStats(data);
+        setError('');
+      } else {
+        setError('Unable to load totals. Previously displayed values may be stale.');
       }
     } catch (err) {
+      setError('Unable to reach analytics. Previously displayed values may be stale.');
       console.error('Failed to fetch stats:', err);
     } finally {
       setIsLoading(false);
@@ -48,7 +56,7 @@ export const StatsDashboard: React.FC = () => {
     fetchStats();
     const interval = setInterval(fetchStats, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [period]);
 
   const handleCopy = (key: string, url: string) => {
     navigator.clipboard.writeText(url).then(() => {
@@ -100,6 +108,14 @@ export const StatsDashboard: React.FC = () => {
           </div>
         </header>
 
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <label htmlFor="analytics-period">Period (UTC)</label>
+          <select id="analytics-period" value={period} onChange={e => setPeriod(e.target.value)} className="bg-[#12161F] border border-white/20 rounded px-3 py-2">
+            <option value="lifetime">Lifetime</option><option value="today">Today</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option>
+          </select>
+          <a className="underline" href={'/api/stats?format=json&period=' + period}>Export totals</a>
+          <p role="status">{error || (stats?.storage === 'postgres' ? 'Saved totals. Online and unique visitors are since restart.' : 'Temporary totals: configure DATABASE_URL to preserve analytics.')}</p>
+        </div>
         {/* Top KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-[#12161F]/80 border border-white/10 backdrop-blur-md">
@@ -108,7 +124,7 @@ export const StatsDashboard: React.FC = () => {
               <span>🟢</span>
             </div>
             <div className="text-3xl font-extrabold text-emerald-400 tracking-tight">
-              {stats?.activeVisitors ?? 1}
+              {stats?.activeVisitors ?? 0}
             </div>
             <div className="text-[11px] text-white/40 mt-1">Visitors active in last 5 minutes</div>
           </div>
@@ -119,9 +135,9 @@ export const StatsDashboard: React.FC = () => {
               <span>👥</span>
             </div>
             <div className="text-3xl font-extrabold text-white tracking-tight">
-              {stats?.uniqueVisitors ?? 1}
+              {stats?.uniqueVisitors ?? 0}
             </div>
-            <div className="text-[11px] text-white/40 mt-1">Total unique IP addresses</div>
+            <div className="text-[11px] text-white/40 mt-1">Approximate unique IPs since restart</div>
           </div>
 
           <div className="p-5 rounded-2xl bg-[#12161F]/80 border border-white/10 backdrop-blur-md">

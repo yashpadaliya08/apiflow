@@ -3,8 +3,8 @@
     "file": "assets/vendor-dexie-B0yzgGqo.js",
     "name": "vendor-dexie"
   },
-  "_vendor-faker-CdBPqZdY.js": {
-    "file": "assets/vendor-faker-CdBPqZdY.js",
+  "_vendor-faker-bhLxTHyt.js": {
+    "file": "assets/vendor-faker-bhLxTHyt.js",
     "name": "vendor-faker"
   },
   "_vendor-lucide-BLObK2Hs.js": {
@@ -15,7 +15,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-DqcKeeRg.js",
+    "file": "assets/index-DYhoefOP.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -29,11 +29,11 @@
       "src/components/stats/StatsDashboard.tsx"
     ],
     "css": [
-      "assets/index-CUg2TD1a.css"
+      "assets/index-DD7hLfyQ.css"
     ]
   },
   "src/components/landing/LandingPage.tsx": {
-    "file": "assets/LandingPage-hcB0KJ4d.js",
+    "file": "assets/LandingPage-QRdG7Vjk.js",
     "name": "LandingPage",
     "src": "src/components/landing/LandingPage.tsx",
     "isDynamicEntry": true,
@@ -47,7 +47,7 @@
     ]
   },
   "src/components/layout/AppShell.tsx": {
-    "file": "assets/AppShell-DfmpMIo8.js",
+    "file": "assets/AppShell-CplwjkXT.js",
     "name": "AppShell",
     "src": "src/components/layout/AppShell.tsx",
     "isDynamicEntry": true,
@@ -55,12 +55,12 @@
       "index.html",
       "_vendor-lucide-BLObK2Hs.js",
       "src/lib/engines/schema-generator.ts",
-      "_vendor-faker-CdBPqZdY.js",
+      "_vendor-faker-bhLxTHyt.js",
       "_vendor-dexie-B0yzgGqo.js"
     ]
   },
   "src/components/stats/StatsDashboard.tsx": {
-    "file": "assets/StatsDashboard-B3KQ3UmT.js",
+    "file": "assets/StatsDashboard-xp_nlO0Y.js",
     "name": "StatsDashboard",
     "src": "src/components/stats/StatsDashboard.tsx",
     "isDynamicEntry": true,
@@ -71,12 +71,12 @@
     ]
   },
   "src/lib/engines/schema-generator.ts": {
-    "file": "assets/schema-generator-LtWMFmUy.js",
+    "file": "assets/schema-generator-DhfDf5Ey.js",
     "name": "schema-generator",
     "src": "src/lib/engines/schema-generator.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_vendor-faker-CdBPqZdY.js"
+      "_vendor-faker-bhLxTHyt.js"
     ]
   }
 }

@@ -1373,6 +1373,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         </div>
 
         {/* Community & Legal Links */}
+        <a href="/blog" className="inline-block text-indigo-300 underline underline-offset-4">API testing guides</a>
         <div className="flex flex-wrap items-center justify-center gap-5 text-white/50 text-xs pt-1">
           <a
             href="https://github.com/yashpadaliya08/apiflow"
