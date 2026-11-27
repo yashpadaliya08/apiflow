@@ -1,11 +1,22 @@
 import type { Endpoint, KeyValue } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
 
-export function prepareRequest(endpoint: Endpoint, baseUrl: string, variables: KeyValue[] = []) {
+export function prepareRequest(
+  endpoint: Endpoint,
+  baseUrl: string,
+  variables: KeyValue[] = [],
+  options?: { allowUnresolved?: boolean }
+) {
+  const unresolved = new Set<string>();
   const resolve = (value: string) => {
     const resolved = interpolateVariables(value, variables);
     const missing = resolved.match(/\{\{[\w.-]+\}\}/g);
-    if (missing) throw new Error(`Unresolved variables: ${[...new Set(missing)].join(', ')}`);
+    if (missing) {
+      if (!options?.allowUnresolved) {
+        throw new Error(`Unresolved variables: ${[...new Set(missing)].join(', ')}`);
+      }
+      for (const m of missing) unresolved.add(m);
+    }
     return resolved;
   };
   const prepared: Endpoint = {
@@ -29,7 +40,14 @@ export function prepareRequest(endpoint: Endpoint, baseUrl: string, variables: K
   const headers = Object.fromEntries(prepared.headers.filter(h => h.enabled && h.key).map(h => [h.key, h.value]));
   const hasBody = !['GET', 'HEAD'].includes(prepared.method) && !!prepared.requestBody;
   if (hasBody && !Object.keys(headers).some(k => k.toLowerCase() === 'content-type')) headers['Content-Type'] = 'application/json';
-  return { endpoint: prepared, url: url.href, method: prepared.method, headers, body: hasBody ? prepared.requestBody : undefined };
+  return {
+    endpoint: prepared,
+    url: url.href,
+    method: prepared.method,
+    headers,
+    body: hasBody ? prepared.requestBody : undefined,
+    unresolvedVariables: [...unresolved],
+  };
 }
 
 export async function sendProxyRequest(request: { url: string; method: string; headers: Record<string, string>; body?: string }, signal?: AbortSignal) {

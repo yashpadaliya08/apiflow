@@ -14,6 +14,17 @@ test('one request preparation resolves variables and encodes path segments', () 
   assert.throws(() => prepareRequest(ep, '{{baseUrl}}', []), /Unresolved/);
 });
 
+test('code snippets preserve unresolved template variables as placeholders', () => {
+  const { generateAllSnippets } = require('../frontend/src/lib/generators/code-snippets.ts');
+  const templateEp = { ...ep, path: '/v1/customers', pathParams: [], queryParams: [], headers: [{ id: 'h', key: 'Authorization', value: 'Bearer {{stripe_secret_key}}', enabled: true }], requestBody: '{"email":"test@example.com"}' };
+  const snippets = generateAllSnippets(templateEp, 'https://api.stripe.com', []);
+  assert.match(snippets.curl, /Bearer \{\{stripe_secret_key\}\}/);
+  assert.match(snippets.typescript, /Bearer \{\{stripe_secret_key\}\}/);
+  assert.match(snippets.axios, /Bearer \{\{stripe_secret_key\}\}/);
+  assert.match(snippets.python, /Bearer \{\{stripe_secret_key\}\}/);
+  assert.deepEqual(snippets.unresolvedVariables, ['{{stripe_secret_key}}']);
+});
+
 test('runner fails a 200 response when a saved body assertion fails', async () => {
   const { executeEndpoint } = require('../frontend/src/lib/execution/execute-endpoint.ts');
   const result = await executeEndpoint({ ...ep, path:'/items', assertions:[{id:'a', enabled:true,target:'bodyPath',property:'missing',operator:'exists',expectedValue:''}] }, 'https://example.com', [], 'mock');

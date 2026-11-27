@@ -17,10 +17,13 @@ export const SnippetModal: React.FC = () => {
   const activeEnv = environments.find((e) => e.id === activeEnvironmentId);
   const baseUrl = activeCollection?.baseUrl || 'https://api.enterprise.dev';
 
-  let snippets = { curl:'', typescript:'', axios:'', python:'' };
+  let snippets: { curl: string; typescript: string; axios: string; python: string; unresolvedVariables?: string[] } = { curl:'', typescript:'', axios:'', python:'', unresolvedVariables: [] };
   let error = '';
   try { snippets = generateAllSnippets(activeEndpoint, baseUrl, [...(activeEnv?.variables || []), ...(activeCollection?.variables || [])]); }
   catch (err) { error = err instanceof Error ? err.message : 'Check your request settings.'; }
+  const unresolvedWarning = snippets.unresolvedVariables?.length
+    ? `Unresolved variables kept as placeholders: ${snippets.unresolvedVariables.join(', ')}`
+    : '';
 
   const handleCopy = async () => {
     await copyToClipboard(snippets[activeLang]);
@@ -45,6 +48,11 @@ export const SnippetModal: React.FC = () => {
     >
       <div className="space-y-3">
         {error && <p role="alert" className="text-red-300 text-xs">{error}</p>}
+        {!error && unresolvedWarning && (
+          <p role="status" className="text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-1.5 text-xs">
+            {unresolvedWarning}
+          </p>
+        )}
         {/* Language Tabs & Copy Button */}
         <div className="flex items-center justify-between border-b border-[#2A2F45] pb-2">
           <div className="flex items-center gap-1">
